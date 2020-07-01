@@ -1,0 +1,532 @@
+\documentclass[12pt]{article}
+%\usepackage[utf8]{inputenc}
+%\documentclass[UTF8]{ctexart}
+%\usepackage[UTF8, heading = false, scheme = plain]{ctex}
+\usepackage{geometry}
+%geometry{a4paper,scale=0.9}
+\geometry{a4paper,left=1cm,right=1cm,top=1cm,bottom=2cm}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{cite}
+%\addbibresource{ref.bib}
+%\bibliography{ref.bib}
+\usepackage{caption}
+\usepackage{graphicx, subfig}
+\usepackage{float}
+%\usepackage[fontset=ubuntu]{ctex}
+%\usepackage{fontspec}
+\usepackage{xeCJK}
+%\usepackage[colorlinks,
+%anchorcolor=black,
+%citecolor=black]{hyperref}
+%\setmainfont{SimSun}
+\usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{indentfirst}
+\usepackage{setspace}%使用间距宏包
+\linespread{1.5}
+%\title{预备知识}
+%\author{leolinuxer }
+%\date{June 2020}
+
+
+\title{求解五次以下方程的方法\cite{From_Linear_Equation_To_Galois_Theory}}
+\author{leolinuxer}
+%\date{June 2020}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{一次、二次、三次、四次方程的求解}
+\subsection{一次方程}
+一次方程：
+$$
+px + q = 0, p, q \in Z, p \ne 0
+$$
+的解为:
+$$
+x = -\frac{q}{p}
+$$
+
+\subsection{二次方程}
+一般的二次方程形式为：
+$$
+ax^2 + bx + c = 0, a \ne 0
+$$
+
+方程的解为：
+$$
+x_{1,2} = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$
+
+\subsection{三次方程}
+一般的三次方程形式为：
+$$
+az^3 + bz^2 + cz + d = 0, a \ne 0
+$$
+
+可以转化为：
+$$
+y^3 + ay^2 + by + c = 0
+$$
+
+这种最高次项的系数为1的方程，称为\textbf{首1（多项式）方程}。
+
+对方程进行变量替换：$y = x - \frac{a}{3}$，有：
+\begin{align*}
+(x-\frac{a}{3})^3 + a(x-\frac{a}{3})^2 + b(x - \frac{a}{3}) + c &= 0 \\
+x^3 - ax^2 + \frac{a^2}{3}x - \frac{a^3}{27} + ax^2 - \frac{2a^2}{3}x + \frac{a^3}{9} + bx - \frac{ab}{3} + c &= 0 \\
+\end{align*}
+
+也就是说，转换成了：
+$$
+x^3 + px + q = 0
+$$
+类型的方程。这是简化后的三次方程。
+
+令 $x = u + v$，代入后化简可得：
+$$
+(u^3 + v^3) + 3uv(u+v) + p(u+v) + q = 0
+$$
+
+$x$是一个未知数，而 $u,v$ 是2个未知数，为此我们对 $u,v$ 再加一个约束条件：$3uv = -p$，于是上式可化简为：
+$$
+u^3 + v^3 + q = 0
+$$
+
+以$v = \frac{-p}{3u}$ 代入，可得：
+$$
+u^6 + qu^3 - \frac{p^3}{27} = 0
+$$
+$$
+v^6 + qv^3 - \frac{p^3}{27} = 0
+$$
+
+因此$u,v$都是同一个六次方程的根。该六次方程的根很容易看出来是：
+$$
+u^3 = \frac{-q \pm \sqrt{q^2 + 4p^3/27}}{2} = -\frac{q}{2} \pm \sqrt{\frac{q^2}{4} + \frac{p^3}{27}}
+$$
+
+即原问题可求解，可得到卡丹公式如下：
+$$
+x = u+v = \sqrt[3]{\frac{-q}{2} + \sqrt{\frac{q^2}{4} + \frac{p^3}{27}}} + \sqrt[3]{\frac{-q}{2} - \sqrt{\frac{q^2}{4} + \frac{p^3}{27}}} 
+$$
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small{
+解方程：$x^3 - 15x - 126 = 0$
+
+此时$p = -15, q = -126$，有$u^3 = 125$，\textbf{$u$有三个解：$u_1 = 5, u_2 = 5(\cos(120^\circ) + i\sin(120^\circ)), u_3 = 5(\cos(240^\circ) + i\sin(240^\circ))$}，令$\cos(120^\circ) + i\sin(120^\circ) = \omega$，即$\omega = -\frac{1}{2} + \frac{\sqrt{3}}{2}i$，有$u_2 = 5\omega, u_3 = 5\omega^2$，于是从：$v = \frac{-p}{3u}$，有 $v_1 = 1, v_2 = \omega^2, v3 = \omega$，最后有：$x_{1,2,3} = 6, 5\omega+\omega^2, 5\omega^2 + \omega$。
+}
+\end{framed}
+
+\subsection{四次方程}
+对于一般首1的四次方程：
+$$
+y^4 + ay^3 + by^2 + cy + d = 0
+$$
+
+先进行变量替换 $y = x - \frac{a}{4}$，化为如下一般首1的简化四次方程：
+$$
+x^4 + px^2 + qx + r = 0
+$$
+
+令：
+$$
+x^4 + px^2 + qx + r = (x^2 + kx + l)(x^2 + nx + m)
+$$
+
+比较两边的各项系数，可以得到：
+$$
+n = -k, \quad l + m - k^2 = p, \quad k(m-l) = q, \quad lm = r
+$$
+
+如果能解出$k,l,m,n$，就可以通过求解两个二次方程来得到原四次方程的解。
+
+为此，可以得到：
+$$
+2m = k^2 + p + q/k, \quad 2l = k^2 + p - q/k
+$$
+
+于是，有：
+$$
+k^6 + 2pk^4 + (p^2 - 4r)k^2 - q^2 = 0
+$$
+
+这是关于 $k^2$ 的三次方程，因此 $k$ 是可解的，于是 $m, l, n$ 也可解，于是得到 $x$ 的解。
+
+\section{有关方程的一些理论}
+\subsection{韦达与根和系数的关系}
+\textbf{韦达定理}：若$a_1, a_2$是方程$x^2 + px + q=0$的两个根，则：$x^2 + px + q = (x - a_1)(x - a_2)$，从而有：
+$$
+a_1 + a_2 = -p, \quad a_1\cdot a_2 = q
+$$
+
+同理，对于三次方程：$x^3 + rx^2 + px + q = 0$，有：
+$$
+a_1 + a_2 + a_3 = -r, \quad a_1\cdot a_2 + a_2\cdot a_3 + a_3 \cdot a_1 = p, \quad a_1\cdot a_2 \cdot a_3 = -q
+$$
+
+更进一步，可以证明，如果$a_1, a_2, \cdots, a_n$ 是一般首1的$n$次方程 $x^n + b_1x^{n-1} + \cdots + b_n = 0$的 $n$ 个根，则有：
+\begin{align*}
+\sigma_1 &= a_1 + a_2 + \cdots + a_n = -b_1  \\
+\sigma_2 &= a_1a_2 + a_1a_3 + \cdots + a_1a_n + a_2a_3 + \cdots + a_{n-1}a_n = b_2 \\
+& \cdots \\
+\sigma_n &= a_1a_2\cdots a_n = (-1)^nb_n
+\end{align*}
+
+这里的$\sigma_k, k = 1, 2, \cdots, n$ 表示所有可能的$k$个$a_i$ 的乘积之和。
+
+\subsection{牛顿与牛顿定理}
+对于两个变量$a_1,a_2$而言，表达式$\sigma_1 = a_1 + a_2, \sigma_2 = a_1 \cdot a_2$都是\textbf{对称多项式}，因为它们在 $a_1$ 变为 $a_2$，$a_2$ 变为 $a_1$ 的同时置换下都保持不变。$a_1 \rightarrow a_2, a_2 \rightarrow a_1$ 可以形象地表示为：
+$$
+\begin{pmatrix}
+a_1 & a_2 \\
+\downarrow & \downarrow \\
+a_2 & a_1
+\end{pmatrix}
+$$
+
+或更简单的表示为：
+$$
+\begin{pmatrix}
+a_1 & a_2 \\
+a_2 & a_1
+\end{pmatrix}
+\text{或}
+\begin{pmatrix}
+1 & 2 \\
+2 & 1
+\end{pmatrix}
+$$
+
+当然它们在变换：
+$$
+\begin{pmatrix}
+a_1 & a_2 \\
+\downarrow & \downarrow \\
+a_1 & a_2
+\end{pmatrix}
+\text{或}
+\begin{pmatrix}
+a_1 & a_2 \\
+a_1 & a_2
+\end{pmatrix}
+\text{或}
+\begin{pmatrix}
+1 & 2 \\
+1 & 2
+\end{pmatrix}
+$$
+
+下也不变，容易看出$a_1^2 + a_2^2$ 在 
+$$
+S_2 = \begin{Bmatrix}
+\begin{pmatrix}
+1 & 2 \\
+1 & 2 \\
+\end{pmatrix}, & \begin{pmatrix}
+1 & 2 \\
+2 & 1 \\
+\end{pmatrix} 
+\end{Bmatrix}
+$$
+下也是不变的，因此$a_1^2 + a_2^2$ 也是对称多项式，进而从：
+$$
+a_1^2 + a_2^2 = (a_1 + a_2)^2 - 2a_1a_2 =   \sigma_1^2 - 2\sigma_2    
+$$
+可知，对称多项式$a_1^2 + a_2^2$可以用对称多项式$\sigma_1, \sigma_2$ 的多项式来表示，这似乎表明$\sigma_1, \sigma_2$更基本一些，为此，我们把$\sigma_1, \sigma_2$称为\textbf{基本对称多项式或初等对称多项式}。
+
+对于3个变量$a_1, a_2, a_3$而言，表达式$\sigma_1 = a_1 + a_2 + a_3, \sigma_2 = a_1 \cdot a_2 + a_2 \cdot a_3 + a_3 \cdot a_1, \sigma_3 = a_1 \cdot a_2 \cdot a_3$  就是初等对称多项式，而在多项式$5a_1^3 + 5a_2^3 + 5a_3^3 - 15a_1a_2a_3$ 中，$a_1, a_2, a_3$的“地位”是完全一样的，因此它就是 $a_1, a_2, a_3$ 的对称多项式。用严格的数学语言来说，这指的是它在下面6个\textbf{变量}或\textbf{置换}下是\textbf{不变的}：
+\begin{align*}
+S_3 &= \begin{Bmatrix}
+\begin{pmatrix}
+1 & 2 & 3\\
+1 & 2 & 3
+\end{pmatrix}, & 
+\begin{pmatrix}
+1 & 2 & 3\\
+1 & 3 & 2
+\end{pmatrix}, &
+\begin{pmatrix}
+1 & 2 & 3\\
+3 & 2 & 1
+\end{pmatrix}, &
+\begin{pmatrix}
+1 & 2 & 3\\
+2 & 1 & 3
+\end{pmatrix}, &
+\begin{pmatrix}
+1 & 2 & 3\\
+2 & 3 & 1
+\end{pmatrix}, &
+\begin{pmatrix}
+1 & 2 & 3\\
+3 & 1 & 2
+\end{pmatrix}
+\end{Bmatrix}  \\
+&= \{g_1, g_2, g_3, g_4, g_5, g_6\}
+\end{align*}
+
+此外，从
+$$5a_1^3 + 5a_2^3 + 5a_3^3 - 15a_1a_2a_3  = 5(a_1 + a_2 + a_3)^3 - 15(a_1+a_2+a_3)(a_1a_2 + a_2a_3 + a_3a_1) = 5\sigma_1 - 15\sigma_1\sigma_2$$  
+可知，$5a_1^3 + 5a_2^3 + 5a_3^3 - 15a_1a_2a_3$可用初等多项式$\sigma_1, \sigma_2$的多项式表出。
+
+\textbf{牛顿定理：任何一个关于变量$a_1, a_2, \cdots, a_n$的对称多项式，都可以唯一的表示为初等多项式$\sigma_1, \sigma_2, \cdots, \sigma_n$的一个多项式}。
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small{
+一类常见的问题：不解方程 $x^2 + bx + c = 0$，求 $x_1^2 + x_2^2$ 的值
+
+该问题的解题过程就是在验证牛顿定理；把 $x_1^2 + x_2^2$ 用初等对称多项式$\sigma_1 = x_1 + x_2 = -b, \sigma_2 = x_1 \cdot x_2 = c$ 表示出来
+}
+\end{framed}
+
+\subsection{欧拉与复数}
+复数的\textbf{代数表示式}：
+$$
+z = a + bi, \quad a,b \in R
+$$
+
+复数的\textbf{三角表示式}：
+$$
+z = r(\cos\theta + i\sin\theta)
+$$
+
+同时，有：
+$$
+e^{i\theta} = \cos\theta + i\sin\theta
+$$
+
+所以有复数的\textbf{指数表示式}：
+$$
+z = e^{i\theta}
+$$
+
+令$\theta=\pi$，可以得到\textbf{欧拉魔幻等式}：
+$$
+e^{i\pi} + 1 = 0
+$$
+
+利用指数表示式，有：
+$$
+e^{i\theta_1} \cdot e^{i\theta_2} = (\cos\theta_1 + i\sin\theta_1)\cdot(\cos\theta_2 + i\sin\theta_2) = e^{i(\theta_1+\theta_2)}
+$$
+
+同时，有：
+$$
+(e^{i\theta})^n = e^{in\theta}
+$$
+
+\subsection{1的根}
+方程：
+$$
+x^n - 1 = 0
+$$
+的根，可以利用公式$(e^{i\theta})^n = e^{in\theta}$求得。设$x = r(\cos\theta + i\sin\theta)$，则从 $x^n = 1$ 可得，$r = 1$，且$n\theta = 2k\pi, k = 0, 1, \cdots, n-1$，所以方程的解为：
+$$
+1, \zeta = e^{i2\pi/n},  \zeta^2 = e^{i4\pi/n}, \cdots,  \zeta^{n-1} = e^{i2\pi(n-1)/n}
+$$
+
+一般来说，上述解是用指数式或三角式表示的，还不是根式解，不过，对于$n=1,2,3,4$，不难求得下列各解：
+$$
+1; 1, -1; 1, \omega, \omega^2; 1, i, -1, -i
+$$
+其中，$\omega = -\frac{1}{2} + \frac{\sqrt{3}}{2}i$，且满足：
+$$
+1 + \omega + \omega^2 = 0, \omega \cdot \omega^2 = \omega^3 = 1
+$$
+
+同时，因为 $x^n - 1= (x-1)(x^{n-1} + x^{n-2} + \cdots + x + 1)$，$\zeta$是$x^{n-1} + x^{n-2} + \cdots + x + 1 = 0$ 的根，也是 $x^n-1=0$的根，所以对于 $\zeta$，有：
+$$
+1 + \zeta + \zeta^2 + \cdots + \zeta^{n-1} = 0, \quad \zeta^i\cdot\zeta^{n-i} = 1, i = 1, 2, \cdots, n
+$$
+
+\section{范德蒙与“根的对称式表达”方法}
+\subsection{范德蒙方法}
+以方程 $x^2 + bx + c = 0$ 为例，设方程的根为：$a_1, a_2$，由$x^2=1$有解$\pm 1$，且$(+1) + (-1) = 0$，有：
+$$
+a_1 = \frac{1}{2}[(a_1 + a_2) + (a_1 - a_2)]
+$$
+$$
+a_2 = \frac{1}{2}[(a_1 + a_2) - (a_1 - a_2)]
+$$
+
+其中，$a_1 + a_2 = \sigma = -b$ 是根的初等对称多项式，而$a_1 - a_2$却不是根的对称多项式，不过注意到
+$$
+[\pm(a_1 - a_2)]^2 = (a_1 + a_2)^2 - 4a_1a_2 = \sigma_1^2 - 4\sigma_2 = b^2 - 4c
+$$
+因此，$(b^2-4c)^{\frac{1}{2}} = \pm(a_1-a_2)$，如果 $b^2-4c \ge 0$，且符号$\sqrt{b^2-4c}$表示算术根的话，就可以得到：
+$$
+a_{1,2} = \frac{-b \pm \sqrt{b^2-4c}}{2a}
+$$
+
+\subsection{用范德蒙方法解三次方程}
+设$x^3 + px + q = 0$的根为$a_1, a_2, a_3$，注意到$x^3=1$有三个根 $1, \omega, \omega^2$满足 $1+\omega+\omega^2=0$，$w^3 = 1$，则：
+\begin{align*}
+a_1 &= \frac{1}{3}[(a_1 + a_2 + a_3) + (a_1 + \omega a_2 + \omega^2a_3) + (a_1 + \omega^2 a_2 + \omega a_3)],\\
+a_2 &= \frac{1}{3}[(a_1 + a_2 + a_3) + \omega^2(a_1 + \omega a_2 + \omega^2a_3) + \omega(a_1 + \omega^2 a_2 + \omega a_3)],\\
+a_2 &= \frac{1}{3}[(a_1 + a_2 + a_3) + \omega(a_1 + \omega a_2 + \omega^2a_3) + \omega^2(a_1 + \omega^2 a_2 + \omega a_3)],\\
+\end{align*}
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small{
+推导思路：
+\begin{align*}
+a_i &= \frac{1}{3}[(a_i + a_i + a_i) + (1+\omega+\omega^2)a_j + (1+\omega+\omega^2)a_k]\\
+    &= \frac{1}{3}[(a_i + a_j + a_k) + (a_i + \omega a_j + \omega^2 a_k) + (a_i + \omega^2a_j + \omega a_k)]
+\end{align*}
+}
+\end{framed}
+
+记
+$$
+U = (a_1 + \omega a_2 + \omega^2 a_3)^3, V = (a_1 + \omega^2 a_2 + \omega a_3)^3
+$$
+
+因此，这三个根可以统一写成：
+$$
+x = \frac{1}{3}(a_1+a_2+a_3) + \sqrt[3]{\frac{U}{27}} + \sqrt[3]{\frac{V}{27}}
+$$
+
+上一节中，我们想办法将 $a_1-a_2$ 联系了起来，我们接下来需要想办法将$U,V$和根$a_1,a_2,a_3$的初等对称多项式$\sigma_1, \sigma_2, \sigma_3$联系起来。
+
+对 $U,V$施以$S_3$ 的各置换，有如下结果：
+\begin{table}[H]
+	\centering  % 显示位置为中间
+	\begin{tabular}{|c|c|c|c|}  
+	    \hline
+	    置换 & 作用对象 & U & V \\
+	    \hline
+	    $g_1 = \begin{pmatrix}
+	    1 & 2 & 3\\1 & 2 & 3
+	    \end{pmatrix}$ & 得出结果 & $U$ & $V$ \\
+		\hline
+		$g_2 = \begin{pmatrix}
+	    1 & 2 & 3\\1 & 3 & 2
+	    \end{pmatrix}$ & 得出结果 & $V$ & $U$ \\
+	    \hline
+	    $g_3 = \begin{pmatrix}
+	    1 & 2 & 3\\3 & 2 & 1
+	    \end{pmatrix}$ & 得出结果 & $V$ & $U$ \\
+	    \hline
+	    $g_4 = \begin{pmatrix}
+	    1 & 2 & 3\\2 & 1 & 3
+	    \end{pmatrix}$ & 得出结果 & $V$ & $U$ \\
+	    \hline
+	    $g_5 = \begin{pmatrix}
+	    1 & 2 & 3\\2 & 3 & 1
+	    \end{pmatrix}$ & 得出结果 & $U$ & $V$ \\
+	    \hline
+	    $g_6 = \begin{pmatrix}
+	    1 & 2 & 3\\3 & 1 & 2
+	    \end{pmatrix}$ & 得出结果 & $U$ & $V$ \\
+	    \hline
+	\end{tabular}
+\end{table}
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small{
+推导思路：
+\begin{align*}
+    & g_1: \text{略} \\
+    & g_2: \text{略} \\
+    & g_3: \quad U' = (a_3+\omega a_2 + \omega^2 a_1)^3 = \omega^3 (\omega^2 a_1 + \omega a_2 + a_3)^3 = 
+    (\omega^3 a_1 + \omega^2 a_2 + \omega a_3)^3 =
+     (a_1 + \omega^2 a_2 + \omega a_3)^3 = V\\
+     & g_4: \quad U' = (a_2+\omega a_1 + \omega^2 a_3)^3 = \omega^6 (\omega a_1 + a_2 + \omega^2a_3)^3 = 
+    (\omega^3 a_1 + \omega^2 a_2 + \omega^4 a_3)^3 = (a_1 + \omega^2 a_2 + \omega a_3)^3 = V\\
+    & g_5: \text{略} \\
+    & g_6: \text{略} \\
+\end{align*}
+}
+\end{framed}
+
+由此可见，$U,V$在$S_3$ 变换下，都不是不变的，而 $U+V, U\cdot V$却是$S_3$下不变的。即它们是$a_1,a_2,a_3$的对称多项式，因此根据牛顿定律，可以用：
+$$
+\sigma_1 = a_1 + a_2 + a_3 = 0, \sigma_2 = a_1a_2 + a_2a_3 + a_3a_1 = p, \sigma_3 = a_1a_2a_3 = -q
+$$
+表出，经过一些代数运算后，有：
+$$
+U + V = -27q, U \cdot V = -27p^3
+$$
+
+因此，$U,V$是如下方程的根：
+$$
+t^2 + 27qt - 27p^3 = 0
+$$
+
+所以，可以解出来$U,V$，根据$x = \frac{1}{3}(a_1+a_2+a_3) + \sqrt[3]{\frac{U}{27}} + \sqrt[3]{\frac{V}{27}}$ 便能得到卡丹公式：
+$$
+x = \sqrt[3]{\frac{-q}{2} + \sqrt{\frac{q^2}{4}+ \frac{p^3}{27}}} + \sqrt[3]{\frac{-q}{2} + \sqrt{\frac{q^2}{4} - \frac{p^3}{27}}}
+$$
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small{
+$$
+U = (a_1 + \omega a_2 + \omega^2 a_3)^3
+$$
+$$
+V = (a_1 + \omega^2 a_2 + \omega a_3)^3
+$$
+
+因为$a_1, a_2, a_3$ 是方程$x^3+px+q=0$的解，所以$
+a_1^3 + a_2^3+a_3^3 = -p(a_1+a_2+a_3)-3q = -3q$
+
+因为$1 + \omega + \omega^2 = 0$，所以$\omega + \omega^2 = -1$
+
+\begin{align*}
+U + V &= 2(a_1^3 + a_2^3+a_3^3) + 12a_1a_2a_3\omega^3 \\
+&+ 3(\omega a_1^2a_2
++ \omega^2a_1^2a_3 + \omega^4 a_2^2a_3 + \omega^2a_1a_2^2 + \omega^4a_1a_3^2 + \omega^5a_2a_3^2) \\
+&+ 3(\omega^2 a_1^2a_2
++ \omega a_1^2a_3 + \omega^5 a_2^2a_3 + \omega^4a_1a_2^2 + \omega^2a_1a_3^2 + \omega^4a_2a_3^2) \\
+&= -6q - 12q - 3(a_1^2a_2 + a_1^2a_3 + a_2^2a_3 + a_1a_2^2 + a_1a_3^2 + a_2a_3^2) \\
+&= -18q - [(a_1+a_2+a_3)^3-(a_1^3+a_2^3+a_3^3) - 6abc] \\
+&= -18q - 3q - 6q = -27q
+\end{align*}
+
+\begin{align*}
+U \cdot V &= [(a_1+\omega a_2+\omega^2a_3)(a_1 + \omega^2a_2 + \omega a_3)]^3 \\
+&= \cdots \\
+&= [(a_1^2+a_2^2+a_3^2) - p]^3 \\
+&= [(a_1+a_2+a_3)^2 - 2(a_1a_2 + a_1a_3 + a_2a_3) - p]^3 \\
+&= [-2p - p]^3 \\
+&= -27p^3
+\end{align*}
+}
+\end{framed}
+
+\section{拉格朗日和他的预解式方法}
+略
+
+\section{高斯与代数基本定理}
+\subsection{代数基本定理}
+$n(>0)$次多项式方程$x^n + a_1x^{n-1} + \cdots + a_{n-1}x + a_n = 0, a_i \in C, i = 1, 2, \cdots, n$ 有$n$个复数根。
+
+如果我们一开始就在复数集合中求解方程，由于复系数方程的根仍还是复数，因此就不必再将复数集合扩张了。因此，$C$叫做\textbf{代数闭域}。
+
+\subsection{分圆方程与它的根式求解}
+略
+
+\subsection{开方运算的多值性与卡丹公式}
+略
+
+
+%\printbibliography
+\bibliography{../../ref}
+\bibliographystyle{IEEEtran}
+\end{document}

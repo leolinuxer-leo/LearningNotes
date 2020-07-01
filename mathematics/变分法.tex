@@ -1,0 +1,216 @@
+\documentclass[12pt]{article}
+%\usepackage[utf8]{inputenc}
+%\documentclass[UTF8]{ctexart}
+%\usepackage[UTF8, heading = false, scheme = plain]{ctex}
+\usepackage{geometry}
+%geometry{a4paper,scale=0.9}
+\geometry{a4paper,left=1cm,right=1cm,top=1cm,bottom=2cm}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{cite}
+%\addbibresource{ref.bib}
+%\bibliography{ref.bib}
+\usepackage{caption}
+\usepackage{graphicx, subfig}
+\usepackage{float}
+%\usepackage[fontset=ubuntu]{ctex}
+%\usepackage{fontspec}
+\usepackage{xeCJK}
+%\usepackage[colorlinks,
+%anchorcolor=black,
+%citecolor=black]{hyperref}
+%\setmainfont{SimSun}
+\usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{indentfirst}
+\usepackage{setspace}%使用间距宏包
+\linespread{1.5}
+%\title{预备知识}
+%\author{leolinuxer }
+%\date{June 2020}
+
+\title{变分法\cite{Talk_About_Variational_Principle}}
+%\author{leolinuxer }
+%\date{June 2020}
+
+\begin{document}
+\maketitle
+
+\section{简单的背景介绍}
+让一个物体从静止开始沿着一个光滑无摩擦的轨道下滑，如果要求下滑过程耗时最短，轨道应该是什么形状？这个问题被称作最速降曲线问题（the brachistochrone problem）。
+
+\section{变分大法}
+假设我们有两个定点 $(a,p)$ 和 $(b,q)$，连接这两点的任意曲线的方程$y=f(x)$ 都将满足如下的边界条件：
+\begin{equation}
+    y(a) = p, y(b) = q
+\end{equation}
+
+现在考虑如下形式的定积分：
+\begin{equation}
+    I = \int_a^b{f(y,y')dx}
+\end{equation}
+
+其中$f(y,y')$ 是关于$y(x)$和其一阶导数 $y'(x)$ 的函数，我们期望找到一个具体的 $y(x)$，使得$I$ 有极值（极大或极小）。
+
+注意在一般的极值问题中，我们考察的是自变量$x$ 的变化：$x$ 取值多少时，函数会有极值。而现在这个新问题的不同之处，我们考察的是函数$y(x)$的变化$y(x)$ 是什么形式时，$I$会有极值（高大上叫法：$I$ 称作函数 $y(x)$ 的泛函）。\textbf{然而这两类问题依然有共通之处：当 $I$ 取极值时，对 $y(x)$ 作微小的变化，$I$ 在一级近似下应该保持不变。}
+
+如果$y(x)$有微小改变$\delta y(x)$（高大上叫法：$\delta y(x)$ 称作函数$y(x)$ 的变分），那么 $f(y,y')$ 的变化为：
+\begin{equation}
+    \delta f = \frac{\partial f}{\partial y} \delta y + \frac{\partial f}{\partial y'} \delta y'
+\end{equation}
+
+$I$ 相应的变化为：
+\begin{equation}
+    \delta I = \int_a^b[\frac{\partial f}{\partial y} \delta y + \frac{\partial f}{\partial y'} \delta y']dx
+\end{equation}
+
+方括号里的第二项可以改写成 $\frac{\partial f}{\partial y'}\frac{d(\delta y)}{dx}$，然后我们可以进行分部积分：
+
+\begin{align}
+    \int_a^b{\frac{\partial f}{\partial y'}\delta y'dx} &= \int_a^b\frac{\partial f}{\partial y'}d(\delta y) \\
+    &= \frac{\partial f}{\partial y'}\partial y \big|_a^b - \int_a^b{\delta y}\frac{d}{dx}(\frac{\partial f}{\partial y'})dx
+\end{align}
+
+由于$y(x)$的边界条件固定，$\delta y(a) = \delta y(b) = 0$，所以分部积分出来的第一项为零，仅第二项有贡献。代回（4）式中，稍作化简可以得到
+\begin{equation}
+    \delta I = \int_a^b[\frac{\partial f}{\partial y} - \frac{d}{dx} (\frac{\partial f}{\partial y'})]\delta y(x)dx
+\end{equation}
+
+如果$I$ 有极值，对任意满足边界条件的 $\delta y(x)$都必须有$\delta I = 0$，这就要求：
+\begin{equation}
+   \frac{\partial f}{\partial y} - \frac{d}{dx} (\frac{\partial f}{\partial y'}) = 0
+\end{equation}
+
+这便是传说中的 Euler-Lagrange 方程，它是变分法的核心定理。有了此等大杀器，原则上就可以找出所寻求的极值函数$y(x)$。
+
+通常来讲 Euler-Lagrange 方程会是一个二阶的微分方程， $y(x)$ 的通解中含有的两个待定常数刚好可以通过两个边界条件确定。我们下面来举几个例子操练操练。
+
+\subsection{例：两点间的最短路经}
+先来一个简单的例子小试牛刀。
+给定平面上两点$(a,p)$和 $(b,q)$，连接它们的长度最短的曲线是什么？
+
+曲线$y(x)$上相近的两点 $(x,y)$ 和$(x+dx,y+dy)$ 之间的曲线元长度为：
+\begin{equation}
+   ds = \sqrt{dx^2+dy^2} = \sqrt{1+y'^2}dx
+\end{equation}
+曲线的总长度为：
+\begin{equation}
+   S = \int_a^b{\sqrt{1+y'^2}}dx
+\end{equation}
+
+现在希望 $S$ 有最小值，我们可以取 $f(y,y') = \sqrt{1+y'^2}$，运用 Euler-Lagrange 方程来寻找可以让 $S$ 有极小的函数$y(x)$。注意到：
+\begin{equation}
+   \frac{\partial f}{\partial y} = 0, \quad \frac{\partial f}{\partial y'} = \frac{y'}{\sqrt{1+y'^2}}
+\end{equation}
+
+代回（6）式中，容易得到
+\begin{equation}
+    \frac{d}{dx}\frac{\partial f}{\partial y'} = \frac{y'}{\sqrt{1+y'^2}} = 0
+\end{equation}
+
+括号里这一大坨的导数为零，那么括号里这一大坨必然是一个常数，我们马上可以推出$y'(x)$ 也必然是一个常数。因此我们需要寻找的$y(x)$ 满足直线方程：
+\begin{equation}
+    y = kx + c
+\end{equation}
+斜率$k$ 和截距 $c$ 很容易通过边界点的坐标算出。由此我们证明了大家非常熟悉的结论：两点之间直线段的距离最短。
+
+\subsection{例：最速降曲线}
+问题在开篇的历史故事介绍中已经有提到，我们这里直接进入解答环节。
+
+为方便起见，我们将坐标系的 $y$-轴搞成朝下的方向，斜向下的轨道可以由函数$y(x)$ 给出，其中轨道的起点和终点分别设为$(0,0)$ 和 $(a,b)$，我们来试求最速降曲线的函数式。
+
+当物理下滑到 $(x,y)$ 位置时，它的速度大小可以根据能量守恒关系解出
+$$
+\frac{1}{2}mv^2 = mgy
+$$
+\begin{equation}
+    v = \sqrt{2gy}
+\end{equation}
+
+而根据定义，速度大小等于单位时间内走过的轨道长度
+\begin{equation}
+    v = \frac{ds}{dt} = \sqrt{1+y'^2}\frac{dx}{dt}
+\end{equation}
+
+联立后有：
+\begin{equation}
+    dt = \sqrt{\frac{1+y'^2}{2gy}}dx
+\end{equation}
+
+积分后就可以得到总时间的表达式：
+\begin{equation}
+    T = \frac{1}{\sqrt{2g}}\int_0^a{\frac{1+y'^2}{y}dx}
+\end{equation}
+
+令 $f(y,y') = \frac{1+y'^2}{y}$，有：
+$$
+    \frac{\partial f}{\partial y} =  -\frac{1}{2}\sqrt{\frac{1+y'^2}{y^3}}  \quad \frac{\partial f}{\partial y'} = \frac{y'}{\sqrt{y(1+y'^2)}}
+$$
+
+丢回Euler-Lagrange式里面，我们可以得到这么一个初步的方程：
+
+\begin{equation}
+   \frac{1}{2}\sqrt{\frac{1+y'^2}{y^3}} + \frac{d}{dx}(\frac{y'}{\sqrt{y(1+y'^2)}}) = 0
+\end{equation}
+
+看到这种东西，要保持平静，铁了头往下算，要相信好多恶心的东西会神奇地同归于尽。
+
+\begin{equation}
+   \frac{1}{2}\sqrt{\frac{1+y'^2}{y^3}} + \frac{y''}{\sqrt{y(1+y'^2)}} - \frac{1}{2}\frac{y'^2}{\sqrt{y^3(1+y'^2)}} - \frac{y'^2y''}{\sqrt{y(1+y'^2)^3}}
+\end{equation}
+
+\begin{equation}
+   \frac{1}{2}(1+y'^2)^2 + y(1+y'^2)y'' - \frac{1}{2}y'^2(1+y'^2) - yy'^2y'' = 0
+\end{equation}
+
+\begin{equation}
+   \frac{1}{2}(1+y'^2) + yy'' = 0
+\end{equation}
+
+瞧，柳暗花明又一村。不过这还远没完，解这个二阶微分方程还需要一个骚操作。我们对上式乘上一个$2y'$：
+
+\begin{equation}
+   y'(1+y'^2) + 2yy'y'' = 0
+\end{equation}
+\begin{equation}
+   \frac{d}{dx}[y(1+y'^2)] = 0
+\end{equation}
+
+它要等于零，方括号里那一坨等于常数就完儿事了。且让我们将这个常数写作 $k$：
+$$
+y(1+y'^2) = k
+$$
+$$
+y'^2 = \frac{k}{y} - 1 = \frac{k-y}{y}
+$$
+$$
+y' = \frac{dy}{dx} = \sqrt{\frac{k-y}{y}}
+$$
+
+原来的二阶微分方程降次变成了一阶，我们终于可以愉快地分离变量两边积分了：
+$$
+x = \int{dx} = \int{\sqrt{\frac{y}{k-y}}dy}
+$$
+
+后略。
+
+\section{分部积分}
+$$
+\int{u(x)v'(x)}dx = u(x)v(x) - \int{u'(x)v(x)}dx
+$$
+也可以简写成：
+$$
+\int{udv} = uv - \int{vdu}
+$$
+
+%\printbibliography
+\bibliography{../ref}
+\bibliographystyle{IEEEtran}
+\end{document}

@@ -1,0 +1,70 @@
+\documentclass[12pt]{article}
+%\usepackage[utf8]{inputenc}
+%\documentclass[UTF8]{ctexart}
+%\usepackage[UTF8, heading = false, scheme = plain]{ctex}
+\usepackage{geometry}
+%geometry{a4paper,scale=0.9}
+\geometry{a4paper,left=1cm,right=1cm,top=1cm,bottom=2cm}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{cite}
+%\addbibresource{ref.bib}
+%\bibliography{ref.bib}
+\usepackage{caption}
+\usepackage{graphicx, subfig}
+\usepackage{float}
+%\usepackage[fontset=ubuntu]{ctex}
+%\usepackage{fontspec}
+\usepackage{xeCJK}
+%\usepackage[colorlinks,
+%anchorcolor=black,
+%citecolor=black]{hyperref}
+%\setmainfont{SimSun}
+\usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{indentfirst}
+\usepackage{setspace}%使用间距宏包
+\linespread{1.5}
+%\title{预备知识}
+%\author{leolinuxer }
+%\date{June 2020}
+
+\title{各种场景的处理方法}
+%\author{leolinuxer }
+%\date{June 2020}
+
+\begin{document}
+\maketitle
+
+\section{不均衡样本集的处理\cite{Handle_Unbalanced_Samples}}
+\subsection{场景描述}
+在训练二分类模型时，经常会遇到正负样本不均衡的问题，例如医疗诊断、网络入侵检测、信用卡反诈骗等。对于很多分类算法，如果直接采用不均衡的样本集来进行训练学习，会存在一些问题。例如，如果正负样本比例达到1:99，则分类器简单地将所有样本都判为负样本就能达到99\%的正确率，显然这并不是我们想要的，我们想让分类器在正样本和负样本上都有足够的准确率和召回率。
+
+\subsection{问题}
+对于二分类问题，当训练集中正负样本非常不均衡时，如何处理数据以更好地训练分类模型？ 
+
+\subsection{处理方法}
+\subsubsection{基于数据的方法}
+主要是对数据进行重采样，使原本不均衡的样本变得均衡。
+
+直接的随机采样虽然可以使样本集变得均衡，但会带来一些问题：过采样对少数类样本进行了多次复制，扩大了数据规模，增加了模型训练的复杂度，同时也容易造成过拟合；欠采样会丢弃一些样本，可能会损失部分有用信息，造成模型只学到了整体模式的一部分。
+
+为了解决上述问题，通常在过采样时并不是简单的复制样本，而是采用一些方法生成新的样本，这样可以降低过拟合的风险。
+
+在实际应用中，具体的采样操作可能并不总是如上述几个算法一样，但基本思路很多时候还是一致的。例如，基于聚类的采样方法，利用数据的类簇信息来指导过采样/欠采样操作；经常用到的数据扩充 (data augmentation) 方法也是一种过采样，对少数类样本进行一些噪音扰动或变换（如图像数据集中对图片进行裁剪、翻转、旋转、加光照等）以构造出新的样本；而Hard Negative Mining则是一种欠采样，把比较难的样本抽出来用于迭代分类器。
+
+\subsubsection{基于算法的方法}
+在样本不均衡时，也可以通过改变模型训练时的目标函数（如代价敏感学习中不同类别有不同的权重）来矫正这种不平衡性；当样本数目极其不均衡时，也可以将问题转化为one-class learning / anomalydetection。本节主要关注采样，不再细述这些方法（我们会在其它章节的陆续推送相关知识点）。
+
+%\printbibliography
+\bibliography{../ref}
+\bibliographystyle{IEEEtran}
+\end{document}
+

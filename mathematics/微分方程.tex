@@ -1,0 +1,449 @@
+\documentclass[12pt]{article}
+%\usepackage[utf8]{inputenc}
+%\documentclass[UTF8]{ctexart}
+%\usepackage[UTF8, heading = false, scheme = plain]{ctex}
+\usepackage{geometry}
+%geometry{a4paper,scale=0.9}
+\geometry{a4paper,left=1cm,right=1cm,top=1cm,bottom=2cm}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{cite}
+%\addbibresource{ref.bib}
+%\bibliography{ref.bib}
+\usepackage{caption}
+\usepackage{graphicx, subfig}
+\usepackage{float}
+%\usepackage[fontset=ubuntu]{ctex}
+%\usepackage{fontspec}
+\usepackage{xeCJK}
+%\usepackage[colorlinks,
+%anchorcolor=black,
+%citecolor=black]{hyperref}
+%\setmainfont{SimSun}
+\usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{indentfirst}
+\usepackage{setspace}%使用间距宏包
+\linespread{1.5}
+%\title{预备知识}
+%\author{leolinuxer }
+%\date{June 2020}
+
+\title{微分方程}
+\author{leolinuxer}
+%\date{June 2020}
+
+\begin{document}
+\maketitle
+\section{基本概念及分类\cite{Differential_Equation_1_Basic}}
+\subsection{基本概念}
+微分方程指的是：含有未知函数及其导数的方程。
+
+常微分方程（Ordinary Differential Equation，ODE）指的是：仅含有一个独立变量的微分方程。
+
+偏微分方程指的是：微分方程中的未知函数包含两个或两个以上的独立变量。
+
+微分方程的阶数取决于方程中出现的最高次导数阶数。
+
+特解指的是满足微分方程的某一个解；通解指的是满足微分方程的一组解。一些微分方程有无穷多解，而有的微分方程无解，有的微分方程则仅有有限个解。
+
+\subsection{初值问题和边界值问题}
+在给微分方程添加附加条件时，如果附加条件中未知函数及其导数的独立变量取值相同，则为初值问题；如果附加条件中未知函数及其导数的独立变量取值不同，则为边界值问题。
+
+一个初值问题或边界值问题的解 $y(x)$ 不仅要满足微分方程，还要满足所有附加条件。
+
+\subsection{一阶微分方程的常见形式}
+\subsubsection{标准及微分形式
+}
+一阶微分方程的标准形式是：
+$$
+y' = f(x,y)
+$$
+
+其中，微分部分仅出现在方程的左侧。大部分（不是所有）一阶微分方程都可以通过代数方法写为以上形式。
+
+上式的右侧也可以写为两个函数$M(x,y)$和 $-N(x,y)$ 的商的形式。那么整体就可写为微分形式：
+$$
+\frac{dy}{dx} = \frac{M(x,y)}{-N(x,y)}
+$$
+$$
+M(x,y)dx + N(x,y)dy = 0
+$$
+
+\subsubsection{线性方程}
+对于一阶方程的标准形式，如果标准形式的右侧$f(x,y)$可以写为:
+$$
+f(x,y) = -p(x)y + q(x)
+$$
+
+即，一个关于 $x$ 的函数乘以 $y$  ，再加上一个关于  $x$  的函数。那么该微分方程即为线性微分方程，一阶线性微分方程可以写为以下形式：
+$$
+y' + p(x)y = q(x)
+$$
+
+\subsubsection{伯努利方程}
+伯努利方程是具有以下形式的微分方程：
+$$
+y' + p(x)y = q(x)y^n
+$$
+
+其中， $n$ 为实数。当 $n=0$或 $n=1$ 时，伯努利方程将退化为线性方程形式。
+
+\subsubsection{齐次方程}
+对于一阶微分方程，如果对于任意实数 [公式] 满足：
+$$
+f(tx,ty) = f(x,y)
+$$
+则为齐次方程。注意：此处的“齐次”概念狭义上仅针对一阶微分方程成立，且与齐次线性微分方程中的“齐次”并非同一概念，注意区分。
+
+\subsubsection{可分离变量方程}
+对于前面提到的微分方程的微分形式：
+$$
+M(x,y)dx + N(x,y)dy = 0
+$$
+
+如果其满足 $M(X,y)=M(x)$（即为只与 [公式] 有关的函数）和 $N(X,y)=N(y)$，（即为只与 [公式] 有关的函数）。那么该微分方程即为可分离变量的微分方程：
+$$
+M(x)dx + N(y)dy = 0
+$$
+
+\subsubsection{恰当方程}
+对于微分方程的微分形式：
+$$
+M(x,y)dx + N(x,y)dy = 0
+$$
+
+如果满足以下条件：
+$$
+\frac{\partial M(x,y)}{\partial y} = \frac{\partial N(x,y)}{\partial x}
+$$
+则称其为恰当方程。
+
+\section{一阶常微分方程的解法\cite{Differential_Equation_2_Solution}}
+\subsection{可分离变量方程 Separable Equations}
+对于一阶可分离变量的微分方程：
+$$
+M(x)dx + N(y)dy = 0
+$$
+
+为求其解，只需两端积分：
+$$
+\int M(x)dx + \int N(y)dy = 0
+$$
+其中， $C$ 代表任意常数。
+
+在实际情况中，上式的积分结果往往无法得到解析表达式。因此，通常采用数值方法得到近似解。就算上式的积分结果可以得到解析表达式，也可能得不到$y$ 关于变量 $x$ 的显式表达式，那么解将保留隐式表达式。
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+例子：求解
+$$
+\frac{dy}{dx} = \frac{x^2+2}{y}
+$$
+
+此方程可以写为以下形式：
+$$
+(x^2+2)dx - ydy = 0
+$$
+$$
+\int(x^2+2)dx - \int ydy = C
+$$
+$$
+\frac{1}{3}x^3 + 2x - \frac{1}{2}y^2 = C
+$$
+
+为了求解 $y$，可以先得到解的隐形表达式：
+$$
+y^2 = \frac{2}{3}x^3 + 4x + k \quad k = -2C
+$$
+
+所以，求解得到 $y$ 的显式表达式：
+$$
+y = \pm\sqrt{\frac{2}{3}x^3 + 4x + k}
+$$
+\end{framed}
+
+\subsection{齐次方程 Homogeneous Equations}
+\textbf{【注意】这里的“齐次”与一般的线性齐次微分方程中的“齐次”不是同一个概念，注意区分。}
+
+对于齐次微分方程：
+$$
+\frac{dy}{dx} = f(x,y)
+$$
+
+其具有以下特性：
+$$
+f(tx,ty) = f(x,y)
+$$
+
+那么其可以通过代换令$y = xv$，其中，$v$ 也是关于 $x$的函数，使之变为可分离变量的微分方程：
+$$
+\frac{dy}{dx} = v + x\frac{dv}{dx}
+$$
+
+这样，可以用解可分离变量的方法得到变量$v$ 与变量 $x$ 之间的关系。再通过“逆代法”求解原方程。
+
+或者，将原式写为：
+$$
+\frac{dx}{dy} = \frac{1}{f(x,y)}
+$$
+
+并令 $x = yu$ ，相应的微分为：
+$$
+\frac{dx}{dy} = u + y\frac{du}{dy}
+$$
+通过简化得到可分离变量形式。
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+例子：求解
+$$
+y' = \frac{y+x}{x}
+$$
+
+该微分方程不是可分离变量的。但它具有以下形式：
+$$
+y' = f(x,y)
+$$
+其中：
+$$
+f(x,y) = \frac{y+x}{x}
+$$
+
+而且满足：
+$$
+f(tx,ty) = f(x,y)
+$$
+
+因此，其为齐次微分方程。令 $y = xv$，得到：
+$$
+v + \frac{dv}{dx} = \frac{xv+x}{x}
+$$
+$$
+x\frac{dv}{dx} = 1
+$$
+$$
+\frac{1}{x}dx - dv = 0
+$$
+
+此时式子就是可分离变量的微分方程了。解为：
+$$
+\int\frac{1}{x}dx - \int vdv = C
+$$
+
+因此有：
+$$
+v = \ln|x| - C \rightarrow v = \ln|kx|
+$$
+其中，$C = -\ln|k|$
+
+然后通过逆代法，$v = \frac{y}{x}$，则有：
+$$
+y = x\ln|kx|
+$$
+\end{framed}
+
+\subsection{恰当方程 Exact Equations}
+对于以下形式的微分方程：
+$$
+M(x,y)dx + N(x,y)dy = 0
+$$
+
+如果存在函数$g(x,y)$满足：
+$$
+dg(x,y) = M(x,y)dx + N(x,y)dy
+$$
+则称为“恰当方程”。
+
+注意，可以验证：
+
+如果$M(x,y)$和$N(x,y)$都是连续函数且在 $xy$ 平面上的具有一阶连续偏导。当且仅当下式成立时原方程为恰当方程：
+$$
+\frac{\partial M(x,y)}{\partial y} = \frac{\partial N(x,y)}{\partial x}
+$$
+
+假设原方程是恰当方程，即存在$g(x,y)$满足：
+$$
+\frac{\partial g(x,y)}{\partial x} = M(x,y)
+$$
+$$
+\frac{\partial g(x,y)}{\partial y} = N(x,y)
+$$
+
+又由于，原方程是：
+$$
+M(x,y)dx + N(x,y)dy = 0
+$$
+
+即：
+$$
+dg(x,y(x)) = 0
+$$
+$$
+\int dg(x,y(x)) = C
+$$
+
+\subsubsection{积分因子}
+通常而言，原方程不是恰当方程。但是在某种特殊情形下却可以转化为满足恰当方程条件的微分方程。令积分因子 $I(x,y)$ ，如果能够使得下式成为恰当方程。则原方程的解可由下式得到：
+$$
+I(x,y)[M(x,y)dx + N(x,y)dy] = 0
+$$
+
+如果有：
+$$
+\frac{1}{N}(\frac{\partial M}{\partial y} - \frac{\partial N}{\partial x}) \equiv g(x)
+$$
+
+即结果仅是$x$的函数。那么：
+$$
+I(x,y) = e^{\int g(x)dx}
+$$
+
+如果有：
+$$
+\frac{1}{M}(\frac{\partial M}{\partial y} - \frac{\partial N}{\partial x}) \equiv h(x)
+$$
+
+即结果仅是$y$的函数。那么：
+$$
+I(x,y) = e^{-\int h(y)dy}
+$$
+
+如果有：
+$$
+M = yf(xy), N = xg(xy)
+$$
+
+那么：
+$$
+I(x,y) = \frac{1}{xM - yN}
+$$
+
+通常该积分因子很难找到，如果微分方程不满足上面的可能情况，则需要采用其他方法进行求解。
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+例子：求解
+$$
+2xydx + (1+x^2)dy = 0
+$$
+
+令 $M(x,y) = 2xy, N(x,y) = 1+x^2$，则有:
+$$
+\frac{\partial M}{\partial y} = \frac{\partial N}{\partial x} = 2x
+$$
+
+则该微分方程为恰当方程。因为该方程是恰当方程，因此，令函数$g(x,y)$满足上式。
+
+对于$M(x,y) = 2xy$，由于 $\frac{\partial g(x,y)}{\partial x} = M(x,y)$
+
+因此有：
+$$
+\int \frac{\partial g}{\partial x}dx = \int 2xydx
+$$
+$$
+g(x,y) = x^2y+h(y)
+$$
+
+注意：这里仅针对$x$ 进行积分，所以常数部分可以与 $h$ 相关。
+
+接着是要确定$h(y)$。
+
+对于$N(x,y) = (1+x^2)$，由 $\frac{N(x,y)}{dy} = x^2 + h'(y)$ ，因此有：$h'(y) = 1$
+
+所以有$h(y) = y + C_1$。
+
+则有：
+$$
+g(x,y) = x^2y + y + C_1
+$$
+
+令 $g(x,y) = C$，得到微分方程的隐式解：
+$$
+x^2y + y = C_2 \quad (C_2 = C - C_1)
+$$
+
+显式解为：
+$$
+y = \frac{C_2}{x^2 + 1}
+$$
+\end{framed}
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+例子：确定下列微分方程是否为恰当方程：
+$$
+ydx - xdy = 0
+$$
+
+由微分形式微分方程可令：$M(x,y) = y$ 和 $N(x,y) = -x$，因此：
+$$
+\frac{\partial M}{\partial y} = 1 \neq \frac{\partial N}{\partial x} = -1
+$$
+
+因此，该微分方程不是恰当方程。
+\end{framed}
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+例子：判断 $-\frac{1}{x^2}$ 是否为以下微分方程的积分因子：
+$$
+ydx - xdy = 0
+$$
+
+从上面的例子可知，原方程不是恰当方程，但是通过乘以 $-\frac{1}{x^2}$ ，可得：
+$$
+\frac{1}{x^2}(ydx - xdy) = 0
+$$
+$$
+-\frac{y}{x^2}dx + \frac{1}{x}dy = 0
+$$
+
+此时有：$M(x,y) = -\frac{y}{x^2}$和$N(x,y) = \frac{1}{x}$
+$$
+\frac{\partial M}{\partial y} = -\frac{1}{x^2} = \frac{\partial N}{\partial x}
+$$
+
+即，转化后的方程为恰当方程，所以 $-\frac{1}{x^2}$是原微分方程的积分因子。
+\end{framed}
+
+\subsection{线性微分方程 Linear Equations}
+一阶线性微分方程具有以下形式：
+$$
+y' + p(x)y = q(x)
+$$
+
+可以先将该标准形式转化为微分形式看看：
+$$
+[p(x)y - q(x)]dx + dy = 0
+$$
+
+然后，看看是否能转化为恰当方程。
+$$
+\frac{1}{N}(\frac{\partial M}{\partial y} - \frac{\partial N}{\partial x}) = p(x)
+$$
+
+发现结果仅仅与$x$ 有关，所以一阶线性微分方程都可以转化为恰当方程。
+
+\section{伯努利方程 Bernoulli Equations}
+伯努利方程具有以下形式：
+$$
+y' + p(x)y = q(x)y^n
+$$
+其中， $n$为实数。令：
+$$
+z = y^{1-n}
+$$
+
+这样就将原伯努利方程转化成了关于函数 $z(x)$的一阶线性常微分方程。就可用求解线性微分方程的方法来求解原方程。
+%\printbibliography
+\bibliography{../ref}
+\bibliographystyle{IEEEtran}
+\end{document}
