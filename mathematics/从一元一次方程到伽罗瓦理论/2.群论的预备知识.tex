@@ -65,6 +65,11 @@
 4) 若$f$ 既是单射又是满射，则称$f$为\textbf{双射}；此时从 $f(a) = b$，可记$a = f^{-1}(b)$，从而确定了映射$f^{-1}: B \rightarrow A$，称为$f$的\textbf{逆映射}。
 
 5) 若$C \subset A$，则由于$f(c) \in B$ 对应于$c \in C$，可定义$f_c: C \rightarrow B$，即把$f$的定义域缩小到$C$上，则称$f_c$为$f$到$C$的\textbf{限制}。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/SetMappingClassification.png}
+\end{figure}
+
 
 \begin{framed}
 %\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
@@ -529,7 +534,7 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
 %backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
 ]
 \textbf{
-定理：设 $H \subseteq G$，$H$是$G$的子群的充要条件是对任意$a, b \in H$，有$ab^{-1} \in H$
+子群的判断定理：设 $H \subseteq G$，$H$是$G$的子群的充要条件是对任意$a, b \in H$，有$ab^{-1} \in H$
 }
 \end{mdframed}
 
@@ -599,7 +604,8 @@ $$
 Z = \{\cdots, -n, \cdots, -2, -1, 0, 1, 2, \cdots, n, \cdots \}
 $$
 
-我们在实数加群里面随便选取一个$a = 2.5$, 得到$a$确定$G$在$H$上的左陪集是
+我们在实数加群里面随便选取一个$a = 2.5$, 得到$a$确定$G$在$H$上的左陪集是(即\textbf{2.5确定的$\langle R, + \rangle$中的整数的左陪集}）。
+)
 $$
 aH = \{\cdots, 2.5-n, \cdots, 2.5-2, 2.5-1, 2.5, 2.5+1, 2.5+2, \cdots, 2.5+n, \cdots \}
 $$
@@ -673,7 +679,7 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
 
 下面来谈谈商的本质，其实\textbf{商就是把有等价关系的两个元素在新的群中看成同一个，而等价关系的给出，就是由被商掉的那个群决定的}。
 
-回到之前的例子，我现在把一个班级看成一个子群，就取高一一班好了，这里的等价关系就是同一个班级的学生是彼此等价的，显然互反性，传递性，对称性满足，这确实是个等价关系。那么做商以后得到的集合是什么呢，这个集合就是这个高中班级的集合，里面有十五个元素：高一一班一直到高三五班。每个元素都是一个集合，里面的元素是这个班级的学生，这样在这个商关系之下，班级也就是所谓的陪集。
+回到之前的例子，我现在把一个班级看成一个子群，就取高一一班好了，这里的等价关系就是同一个班级的学生是彼此等价的，显然互反性，传递性，对称性满足，这确实是个等价关系。那么\textbf{做商以后得到的集合是什么呢，这个集合就是这个高中班级的集合}，里面有十五个元素：高一一班一直到高三五班。每个元素都是一个集合，里面的元素是这个班级的学生，\textbf{这样在这个商关系之下，班级也就是所谓的陪集}。
 
 现在我们换一下，把年级看成等价关系，被商的子群就是一个年级，就取高一年级，这样得到的商群中的元素就是三个年级。
 
@@ -693,6 +699,10 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
 理解3：回忆，\textbf{商集合}是由集合$A$的各个类作元素得到的集合，其中的每个类都是一个等价类（即类内元素等价）；而\textbf{商群}是由正规子群构成的群。
 
 理解4：再加深一下对“商”的理解，比如有6个桔子，按照每行2个排列成3行，那么对于每一行的2个桔子，可以看成这一行内的桔子是等价的，并且一共有3“类”。
+
+理解5：构造商集的主要目的就是把“多对一”的映射变成“一对一”的映射。在代数里面称为同构。它的基本想法是把原像集里面对应于像集中同一个原素的所有元素看成是一个元素（等价类）。原像集中的两个元素如果具有相同的像，则称这两个元素等价，所有等价的元素放在一起称为等价类，可以看成是一个元素，每一个等价类可以用一个代表元（可在等价类中任意选取，不唯一）来表示。可以证明，这种等价关系给出了原像集的一个划分。这个划分后的集合称为原像集的商集。商集中的元素与像集是一一对应的。这样“多对一”映射就变成了“一对一”映射。这个看法很简单，但是很重要。
+
+来源于：https://www.zhihu.com/question/52574116/answer/131797911
 }
 \end{framed}
 
@@ -840,6 +850,316 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
 素数阶群必是可换群，又因为它没有任何真子群，所以它又是可换单群；反过来，设$G$是$n$阶可换单群，因此$G$就没有任何真子群，任取$a \in G$，且$a \neq e$，构造$\langle a \rangle$，那么$\langle a \rangle = G$，于是$G = \{a^0=e, a, a^2, \cdots, a^{n-1}\}$；若 $n$是合数，则从$n = l \cdot m, 1 < l < n, 1 < m < n$ 可推知$\langle a^l \rangle$ 是$G$的一个真子群，这就矛盾了，因此$n$比是素数。所以\textbf{有限可换单群}一定是素数阶群。
 
 \subsection{群的同态映射与同构映射}
+给定两个群$(G, \cdot)$和$(G', \times)$，要把这两个群联系起来的话，需要讨论$G$到$G'$的映射。但是这时的$G$和$G'$除了是集合外，还是群，所以所考虑的映射还要与它们的乘法运算联系起来。
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+同态映射的定义：映射$f: (G, \cdot) \rightarrow (G', \times) $称为一个同态映射，如果对任意$a, b \in G$，都有：
+$$
+f(a\cdot b) = f(a) \times f(b)
+$$
+}
+\end{mdframed}
+
+即$a$和$b$的乘积$a \cdot b$（按照$G$中的$\cdot$进行），对应于它们在$G'$中的像$f(a)$和$f(b)$的乘积$f(a) \times f(b)$（按照$G'$中的$\times$进行）。
+
+这一条件也可以简单说为“$f$\textbf{保持群的运算}”。在上式中，令$a = e$，则有：$f(b) = f(e) \times f(b)$，由此可推知$f(e)$是$G'$的单位元$e'$。因此$f$将“单位元映为单位元”。再令$b = a^{-1}$，有$f(e) = f(a) \times f(a^{-1})$，由此可推知$f(a^{-1}) = (f(a)^{-1})$，即$f$将“逆元映为逆元”。在不至于混淆的情况下，我们就省略“$\cdot \quad \times$”这些符号。
+
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small {
+理解：$f$是$G$到$G'$的映射，也就是说给定元$a \in G, b \in G$，有 $f(a) \in G', f(b) \in G'$；并且$a \cdot b \in G, f(a \cdot b) \in G', f(a) \times f(b) \in G'$。
+}
+\end{framed}
+
+
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+同构映射的定义：映射$f:G \rightarrow G'$如果是同态映射，又是双射，则称为同构映射。此时称$G$和$G'$同构，记作$G \approx G'$。
+$$
+f(a\cdot b) = f(a) \times f(b)
+$$
+}
+\end{mdframed}
+
+很明显，两个同构的群，在抽象意义上来看是完全一样的，两者只有符号上的差别。
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small {
+前文所讨论的对称性群$G_3 = \{g_1, g_2, g_3\}$（旋转$0^\circ, 120^\circ, 240^\circ$）与$x^3 - 1 = 0$的三个根构成的循环群$\{1, \omega, \omega^2\}$显然是同构的：$0^\circ, 120^\circ, 240^\circ$的转动分别对应$1, \omega, \omega^2$。事实上，\textbf{任意$n$阶循环群都是同构的}。
+}
+\end{framed}
+
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small {
+理解同态映射和同构映射：
+
+你可以定义一个二进制自然数到十进制自然数的映射，叫做“把一个数映到它自己”；然后这个映射是个（半环）同构，它保持加法保持乘法——意思是两个数在二进制下怎么加，在十进制下还是怎么加，加出来的结果还是能相互对应；还是个双射。然后你就相信了，二进制自然数和十进制自然数其实是同一个东西，这个世界上只有一种自然数，进制的不同并不会改变自然数半环本身的加法乘法结构以及序结构等等；但是一个小学生可能很难理解，他会觉得，二进制和十进制看起来如此不同，怎么能把他们看成同一个对象？
+
+所以同构起到的就是这么个作用，它抓取一个数学对象最本质的信息（比如上面例子里的加法和乘法结构），而忽略其他没那么重要的信息（比如进制），然后把具有相同“本质信息”的对象视为一体。“同构”或者更一般地，“取等价类”这种思想观念其实在你学抽象代数之前早就有了。比如“三个苹果”和“三个香蕉”在只考虑数目的情况下“同构”，他们帮助你给出了3这个抽象的数学概念。再比如两个全等的三角形可以被视为一体，但是他们被摆放的位置明明不同，但是你知道，在很多情况下，位置的信息并不重要，重要的是三角形本身的几何信息，比如边长、内角等等。
+
+至于同态，那比同构的含义更广一些。它是在两个本质不一定相同的数学对象之间建立联系；比如自然数半环包含进实数域的那个包含映射，就是一个（单的）半环同态，它告诉你自然数可以视为实数这个更大的结构的一部分——而不是说自然数和实数是一回事。所以同态相当于是两个数学对象之间的“纽带”。
+
+来源于：https://www.zhihu.com/question/293890350/answer/487914082
+~\\
+
+如果群 $G$ 和群$H$之间若建立了同构映射，那么不仅群$G$中的每个元素在群 $G'$中都有一一对应（元素$g_i \in G$对应$f(g_i) \in G'$），而且对于群$G$中的两个元素 $g_1, g_2$，在群运算$\cdot$ 下得到的元素$g_1 \cdot g_2 \in G$ 也在这个映射下保持一一对应（对应$f(g_1 \cdot g_2) = f(g_1) \times f(g_2) \in G'$)
+~\\
+}
+\end{framed}
+
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+像和核的定义：设$f: G \rightarrow G'$是一个同态映射，定义：
+$$
+\text{Im} f = \{f(a) | a \in G\}, \quad \text{Ker} f = \{a \in G| f(a) = e'\}
+$$
+$\text{Im} f$称为同态$f$的像(Image)，$\text{Ker} f$称为同态$f$的核(Kernel)。
+}
+\end{mdframed}
+
+\textbf{$\text{Im} f$显然就是$f$的值域，即$\text{Im} f = f(G)$，当然$\text{Im} f \subset G'$，且$f$是满射的充要条件是$\text{Im} f = G'$；}
+
+\textbf{$\text{Ker} f$ 是$e'$的原像的全体，即$\text{Im} f$ 表示的是$G$中的所有像是$e'$的那些元所构成的集合，当然$\text{Ker}f\subset G$，且$f$是单射的充要条件是$\text{Ker} f = \{e\} $}。
+
+\textbf{还可以证明$\text{Im} f \unlhd G'$，以及$G \rhd \text{Ker} f$}，也就是说，\textbf{$\text{Im} f$是$G'$的子群，$\text{Ker} f$是$G$的正规子群}。
+
+由$G$和它的正规子群$\text{Ker} f$，我们有商群$G/\text{Ker} f$，它的元是$a\text{Ker}f$形式的陪集。因此由$a\text{Ker}f$映射为$f(a)$，可定义：$g: G/\text{Ker} f \rightarrow \text{Im}f$，不难证明这个$g$是一个同构映射。因此有：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{同态基本定理：如果$f: G \rightarrow G'$是一个同态映射，则：}
+$$
+G/\text{Ker}f \approx \text{Im}f
+$$
+\textbf{如果$f$还是一个满射，那么$\text{Im} f = G'$，从而：}
+$$
+G/\text{Ker}f  \approx G'
+$$
+\end{mdframed}
+
+有了群的概念后，我们就能更详细地描述以前提到过的数集合$\textbf{N, Z, Q, R, C}$。
+
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+加深对同态基本定理的理解：
+
+同态不是同构的原因主要体现在：相应的映射不是双射，即不是单射或不是满射。当然也可能既不是单射也不是满射：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/SetMappingClassification.png}
+\end{figure}
+
+(1) 当映射不是满射时，我们只需考虑映射的像集，这个像集是原来代数结构的子结构。比如，对群的情形，同态的像集是一个子群。用子结构替换原来的代数结构，原来的映射变成了满射！
+
+(2) 当映射不是单射时，不同的元素被映到相同的元素。这时，可以把映到同一个元素的元素看成是一样的，或者说它们是等价的。这样我们将得到一个等价关系，做商集。在这个商集上诱导的映射就是一个单射了。这就是同态基本定理的主要想法。在这个商集上可以定义类似的代数结构，使得前面提到的映射是同态。从这个商代数到上述提到的子代数诱导的映射就是一个同构映射了。
+
+来源于：https://www.zhihu.com/question/301173742/answer/526247988
+\end{framed}
+
+\section{数与代数系}
+\subsection{自然数集$\textbf{N}$作为可换半群及其可数性}
+自然数集$\textbf{N} = \{0, 1, 2, \cdots \}$对加法运算满足：(1)封闭性 (2)结合律（不满足逆元条件）。数学家把满足条件(1)(2)的代数系称为\textbf{半群}。在$\textbf{N}$这个半群中，它还有加法的零元，以及加法运算是可交换的，因此$(\textbf{N}, +)$是一个\textbf{有零元的可换半群}。
+
+虽然$\textbf{N}$有无限多个元素，但是这个无限有一个特性：任意一个$n \in \textbf{N}$，只要0， 1， 2， …… 这样数下去，总可以数到，所以我们称$\textbf{N}$是（无限）\textbf{可数}的。
+
+\subsection{整数集合$\textbf{Z}$与整环}
+对于自然数集$\textbf{N}$来说，$3 \in \textbf{N}$，但是它的加法负元$-3 \notin \textbf{N}$，因此$\textbf{N}$还不是群，所以必须扩展$\textbf{N}$，让它把负整数添加进去，这就有了整数集合$\textbf{Z} = \{0, \pm 1, \pm 2, \cdots\}$，此时$(\textbf{Z}, +)$是一个可换群。
+
+$\textbf{Z}$中还有通常的乘法运算“$\cdot$”，容易知道$(\textbf{Z}, \cdot)$\textbf{是一个具有单位元1的可换半群}。如果我们在$\textbf{Z}$中同时考虑“+”和“$\cdot$” 这两种运算，那么$(\textbf{Z}, +, \cdot)$还分别满足左分配律$a \cdot (b + c) = a \cdot b + a \cdot c$和右分配律$(b + c) \cdot a = b \cdot a + c \cdot a$，因此我们引入\textbf{环}的概念。
+
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+环的定义：集合$K$有“+”和“$\cdot$”运算，并满足：(1)$(K, +)$构成可换群；(2)$(K, \cdot)$构成半群；(3)$(K, +, \cdot)$有左、右分配率，则称$(K, +, \cdot)$构成一个环；如果$(K, \cdot)$还满足(4)交换律，则称$(K, +, \cdot)$是一个可换环。
+}
+\end{mdframed}
+
+于是，$(K, +, \cdot)$是一个有乘法单位元1的可转环。同时$(K, \cdot)$还满足\textbf{消去律}，即对任意$c \neq 0$，由$c \cdot a = c \cdot b$，可推出 $a = b$，这是一个很重要的性质，为此我们引入：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+整环的定义：有乘法单位元的可换环，若满足消去律，则称为整环。
+}
+\end{mdframed}
+
+\section{域与有理数域Q}
+对于整环$(K, +, \cdot)$而言，$(K, \cdot)$ 一定不是群。这是因为$K$中的加法零元，是一定没有乘法的逆元的。这一点可以用反证法来证明。设0 的乘法逆元为$a$，于是$0 \cdot a = 1$（这里1是乘法元，因此我们假定了$K$中至少存在0， 1两个元素），然而由分配率可知，$0 \cdot a  = (1 - 1)\cdot a = a - a = 0$，即$0 = 1$，这就矛盾了，因此我们只能要求$K^* = K - \{0\}$成群，从而有：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+域的定义：如果整环$(F, +, \cdot)$至少有2个元，且对$F$中的每一个非零元素都有逆元，则称$F$是一个域。
+}
+\end{mdframed}
+
+由此可见，域对加法是加群，而$F^* = F - \{0\}$对乘法是可换群，且对乘法和加法有分配率。在域$F$中，按$a\div b = a \cdot b^{-1}， a,b \in F, b \neq 0$，可引入除法。这样，域是一种具有良好运算的数学对象。在其中，\textbf{域运算}，即四则运算（加减乘除）能\textbf{如常地进行}。在方程的根式求解中，我们对数字要进行域运算及开放运算，对域运算而言，由数字构成的域——\textbf{数域}就十分重要了。设$a \in F$，则一般来说$\sqrt[n]{a}, n \in N^*$ 不一定属于$F$，所以对开方运算来说，\textbf{扩域}就十分重要了。
+
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+例：当$n =$素数$p$时，$\mathbf{Z}_p = \{\overline{1}, \overline{2}, \cdots, \overline{p}\}$，定义$\overline{a} + \overline{b} = \overline{a + b}, \overline{a} \cdot \overline{b} = \overline{a \cdot b}$，而：
+$$
+\mathbf{Z}_p - \{\overline{0}\} = \mathbf{Z}'_p = \{\overline{1}, \overline{2}, \cdots, \overline{p-1}\}
+$$
+
+可知$\mathbf{Z}_p$构成域，称为\textbf{素域}。
+\end{framed}
+
+不难知道，作为整数$\mathbf{Z}$的扩张，有理数集合$(\mathbf{Q}, +, \cdot)$是一个数域，称为\textbf{有理数域}。而且$\mathbf{Q}$也是可数的，下图给出了正有理数$\mathbf{Q}^+$的一种数数的方法（跳过重复出现的数字），那么负有理数$\mathbf{Q}^-$也是可数的，再由$\mathbf{Q} = \{0\} \cup \mathbf{Q}^+ \cup \mathbf{Q}^- $可知$\mathbf{Q} $也是可数的。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.3\textwidth]{fig/GroupTheoryRationalComputational.png}
+\end{figure}
+
+\subsection{实数域\textbf{R}的不可数性}
+对于实数集合\textbf{R}及其中的运算“+”和“$\cdot$”而言，可以验证\textbf{R}构成\textbf{实数域}。\textbf{R}中除了有理数，还包括无理数，这使得\textbf{R}不可数了。下面用反证法证明：
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+证明：\textbf{R} 是不可数的。
+
+思路：通过满足$0 < r < 1$的全体实数$\bar{r}$是不可数的，从而证明\textbf{R}是不可数的。
+
+假定$\bar{r}$是可数的，因而存在双射$f: N \rightarrow \bar{r}$，有：
+\begin{align*}
+f(0) &= 0.a_{00}a_{01}a_{02}\cdots, \\
+f(1) &= 0.a_{10}a_{11}a_{12}\cdots, \\
+f(2) &= 0.a_{20}a_{21}a_{22}\cdots, \\
+&\cdots
+\end{align*}
+现构造：
+$$
+b = 0.b_0b_1b_2\cdots, \quad \text{其中} 
+b_n = \begin{cases}
+a_{nn} - 1, \quad \text{若} a_{nn} \neq 0, \\
+1, \quad \text{若} a_{nn} = 0, \\
+\end{cases} n = 0, 1, 2, \cdots
+$$
+即$b$的第0位$b_0 = a_{00}$，第1位$b_1 = a_{11}$，第2位$b_2 = a_{22}$，……
+
+因为$0 < b < 1$，由此可推出$b \in \bar{r}$，但$b_n \neq a_{nn}, n = 0, 1, 2, \cdots$，因此$b$不会出现在上述排列之中，这就与$f$是双射矛盾了，所以\textbf{R} 是不可数的。
+\end{framed}
+
+\subsection{复数域\textbf{C}与子域}
+不难验证复数集合\textbf{C}，对通常的“+”和“$\cdot$”运算而言，满足域的定义，因此有\textbf{复数域}。作为集合，显然有$ \textbf{C} \supset \textbf{R} \supset \textbf{Q}$，那么它们之间是否有进一层的关系呢？为此我们引入
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+子域和扩域的定义：若域$E \supseteq F, F \neq \varnothing$，$F$对于$E$中的“+” 和 “$\cdot$”  构成一个域，则称$F$为$E$的一个子域，而$E$为$F$的一个扩域，记作$E/F$。
+}
+\end{mdframed}
+
+从域的定义以及子群的判断定理（设 $H \subseteq G$，$H$是$G$的子群的充要条件是对任意$a, b \in H$，有$ab^{-1} \in H$），有：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+子域的判断定理：设$F \subseteq E$，$E$是域，而$F \neq \varnothing$，则$F$是$E$的子域的充要条件为：}
+
+(1) $\forall a, b \in F$，有$b - a \in F$；
+
+(2) $\forall a, b \in F$，$b\neq 0$，有$ab^{-1} \in F$；
+\end{mdframed}
+
+换言之，$F$在“+”，“-”，“$\times$”，“$\div$”运算下是封闭的。于是不难验证$\textbf{C}/\textbf{R}$，$\textbf{C}/\textbf{Q}$，$\textbf{R}/\textbf{Q}$等。我们把$\textbf{C}$以及它的任意子域都称为\textbf{数域}。
+
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+数域的定义：数域$P$是复数域C的子集，它至少包含数$1$与$-1$，并且它对复数的加法、乘法以及非零数的取逆运算封闭。
+}
+
+来源：https://zhuanlan.zhihu.com/p/36202766
+\end{mdframed}
+
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small{
+数域的常见例子：
+
+全体有理数构成数域，称为有理数域，记为\textbf{Q}；全体实数构成数域，称为实数域，记为\textbf{R}；\textbf{有理数域是最小的数域；复数域是最大的数域；在实数域与复数域之间没有其它的数域}（因为复数域作为实数域上的向量空间是2维的）。
+}
+\end{framed}
+
+
+设$F$是一个数域，因为$1 \in F$，由此能推出$1 - 1 = 0, 1 + 1 = 2, \cdots$都属于$F$，即$\textbf{N} \subset F$，再由加法运算的负元都属于$F$，能推出$Z \subset F$。最后由除法运算的封闭性（0 不做除数）能推出$Q \subseteq F$，即：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+定理：对任意数域$F$都有$F/Q$，即$Q$是任意数域的子域。
+}
+\end{mdframed}
+
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+定理：设$E$为一个域，则$E$的所有子域的交集$F$是$E$的一个子域。
+}
+\end{mdframed}
+
+除了上面的\textbf{C}，\textbf{R}，\textbf{Q}外，还有许多其他的数域。例如，由\textbf{Q}可构成：
+$$
+\textbf{Q}(\sqrt{2}) = \{a + b\sqrt{2}|a, b \in Q\}
+$$
+
+对于任意$a_i + b_i\sqrt{2} \in Q(\sqrt{2}), i = 1, 2$，有：
+$$
+(a_1 + b_1\sqrt{2}) \pm (a_2 + b_2\sqrt{2}) = (a_1 \pm a_2) + (b_1 \pm b_2)\sqrt{2}
+$$
+$$ (a_1 + b_1\sqrt{2})(a_2 + b_2\sqrt{2}) = (a_1a_2 + 2b_1b_2) + (a_1b_2 + a_2b_1)\sqrt{2}
+$$
+$$
+\frac{1}{a + b\sqrt{2}} = \frac{a}{a^2+2b^2} - \frac{b}{a^2+2b^2}\sqrt{2}, \quad(a, b \neq 0)\quad\text{即通常的“分母有理化”}
+$$
+
+从上可知，$\textbf{Q}(\sqrt{2})$是一个域，称为\textbf{Q}\textbf{添加}$\sqrt{2}$而构成的域。有了域的概念，接下来就能讨论域上的向量空间了。
+
+\begin{framed}
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+理解群、环、域：
+
+半群：定义了“乘法”一种运算，并且该运算满足(1)封闭性；(2)结合律；
+
+群：定义了“乘法”一种运算，并且该运算满足(1)封闭性；(2)结合律；(3)单位元；(4)逆元；??群也是一种特殊的环??。
+
+环：定义了“加法”和“乘法”两种运算，其中“加法”运算满足可换群的条件，“乘法”运算满足半群的条件，“乘法”对“加法”满足分配率。
+
+可换环：“乘法”运算还满足交换律的环。
+
+整环：三个条件：(1)有乘法单位元，(2)是可换环，(3)满足消去律；是一种特殊的环。
+
+域：满足逆元的整环，是一种特殊的环。
+
+因此，环是基础，群、域都是特殊的环。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1.0\textwidth]{fig/GroupRingField.jpg}
+\end{figure}
+\end{framed}
 
 %\printbibliography
 \bibliography{../../ref}
