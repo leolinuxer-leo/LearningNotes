@@ -1109,6 +1109,10 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
 \textbf{
 定理：对任意数域$F$都有$F/Q$，即$Q$是任意数域的子域。
 }
+
+\small{
+理解：有理数域\textbf{Q}是任意数域的子域 $\Leftrightarrow$ 有理数域\textbf{Q}是最小的数域；
+}
 \end{mdframed}
 
 \begin{mdframed}[
@@ -1135,7 +1139,7 @@ $$
 \frac{1}{a + b\sqrt{2}} = \frac{a}{a^2+2b^2} - \frac{b}{a^2+2b^2}\sqrt{2}, \quad(a, b \neq 0)\quad\text{即通常的“分母有理化”}
 $$
 
-从上可知，$\textbf{Q}(\sqrt{2})$是一个域，称为\textbf{Q}\textbf{添加}$\sqrt{2}$而构成的域。有了域的概念，接下来就能讨论域上的向量空间了。
+从上可知，$\textbf{Q}(\sqrt{2})$是一个域，称为\textbf{Q}\textbf{添加}$\sqrt{2}$而构成的域。有了域的概念，接下来就能讨论域上的向量空间了。（有理数域\textbf{Q}中只包含有理数，不包含$\sqrt{2}$，而$\textbf{Q}(\sqrt{2})$添加了元$\sqrt{2}$。）
 
 \begin{framed}
 %\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
@@ -1161,7 +1165,153 @@ $$
 \end{figure}
 \end{framed}
 
+\section{域上的向量空间}
+\subsection{向量空间的定义}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+向量和向量空间的定义：集合$V$称为数域$F$上的向量空间，$V$中的元素称为向量，如果有：
+}
+
+(1)集合$V$中定义了“+”运算，使$(V,+)$构成可换群，此时的零元是\textbf{零向量}，记为0，而$v \in V$的负元记为$-v$；
+
+(2)对于$a \in F, v \in V$ 定义了它们的数乘运算，即$av \in V$，而对$v_1, v_2,  v \in V, a, b \in F$，有：
+$$
+a(v_1 + v_2) = av_1 + av_2, (a+b)v = av + bv, (ab)v = a(bv), 1 \cdot v = v
+$$
+其中 1 是域$F$的乘法单位元，即数字1。
+\end{mdframed}
+
+据此，不难得出平面中的所有向量构成\textbf{R}上的向量空间$V_2$。类似地，域$F$上的一元多项式全体，即
+$$
+F[x] = \{a_nx^n + \cdots + a_1x + a_0 = \sum_{i=0}^na_ix^i | a_i \in F, n \in N\}
+$$
+以多项式的加法定义$F[x]$中元素的加法，以数与多项式的乘法定义$F[x]$中元素的数乘，则$F[x]$就是$F$上的一个向量空间。
+
+\subsection{向量空间的一些基础理论}
+我们知道，在$V_2$中还存在着向量$\mathbf{i}$和$\mathbf{j}$，它们有以下性质：(1)任意的向量$v \in V_2$，都可以唯一地表示为$v = a\mathbf{i} + b\mathbf{j}, a, b \in \mathbf{R}$；(2)若$a\mathbf{i} + b\mathbf{j} = \textbf{0}$，则必有$a = b = 0$。这里前面的一个\textbf{0} 是零向量，后面的0是\textbf{R}中的数字0，但一般不会混淆，后文不加区分。在一般情况下，有：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+基和维度的定义：设$v_1, v_2, \cdots, v_s \in V$，称它们是线性无关的，如果$a_1v_1 + a_2v_2 + \cdots + a_sv_s = 0, a_1, a_2, \cdots, a_s \in F$，能推出$a_1 = a_2 = \cdots = a_s = 0$，否则则是线性相关的。若$V$中存在$n$个线性无关的向量 $u_1, u_2, \cdots, u_n$，且对任意$v \in V$，都可表示为$v = a_1u_1 + a_2u_2 + \cdots + a_nv_n$，其中$a_1, a_2, \cdots, a_n \in F$，则称$\{u_1, u_2, \cdots, u_n\}$是$V$在$F$上的一个基，且$V$是$n$维的。
+}
+\end{mdframed}
+
+因此，上述$\mathbf{i}$和$\mathbf{j}$是线性无关的，它们是$V_2$的一个基，且$V_2$是2维的，而$F[x]$中的$1, x, x^2, \cdots$是线性无关的，且$F[x]$不是有限维的。(？？\textcolor{red}{为什么$F[x]$不是有限维的}？？)
+
+\subsection{数域作为向量空间}
+以有理数域\textbf{Q}为例来说明，\textbf{Q}作为域，已有元素间的加法和乘法。现在把向量空间定义中的$V$取为\textbf{Q}，F也取为\textbf{Q}，则由\textbf{Q}是域不难看出，此时\textbf{Q}是\textbf{Q}自己身上的向量空间，而且此时\textbf{Q} 是1维的。类似地，\textbf{R}和\textbf{C}都分别是其自身上的向量空间。
+
+如果我们取$\textbf{V} = \textbf{C}, \textbf{F} = \textbf{R}$，即这时的数乘是用实数去乘，则\textbf{C}也是\textbf{R}上的向量空间，我们把$c = a + bi, a, b \in \textbf{R}$，把\textbf{C}看成是\textbf{R}上的向量空间，则\textbf{C}有一个由$\{1, i\}$构成的基，所以\textbf{C}作为\textbf{R}上的向量空间是2维的。
+
+同样，上面给出的$\textbf{Q}(\sqrt{2})$是自身上的1维向量空间，而作为\textbf{Q}上的向量空间时，它有基$\{1, \sqrt{2}\}$，所以是2维的；然而，当我们取$\textbf{Q} = \textbf{R}, \textbf{F} = \textbf{Q}$时，则\textbf{R}是\textbf{Q}上的向量空间，不过诸如基和维数之类的问题就不那么简单了。后文再进一步分析讨论。
+
+\section{域上的多项式}
+\subsection{一些基本事项}
+一元多项式$f(x) = \sum_{i=0}^na_ix^i, a_i \in F, n \in N$应是$F[x]$中的元。若最高项系数$a_n \neq 0, n > 0$，则称$f(n)$是\textbf{n次的}；若$n=0$，而$a_0 \neq 0$，则$f(x) = a_0 $是\textbf{0次的}，即$F$中的非零元是0次多项式；若所有的$a_i$都为0，则$f(x) = 0$是零多项式，它是$F$中的零元，我们不定义它的次数。$f(x)$的次数用$\text{deg\ } f$来表示。
+
+对于$F[x]$中多项式的加法和多项式的数乘，$F[x]$是$F$上的一个向量空间，而$F[x]$中还有多项式的乘法，不难得出$F[x]$是一个整环。
+
+\subsection{多项式的可约性与艾森斯坦定理}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+可约的定义：对于$p(x) \in F[x], \text{deg\ } p \ge 1$，如果不存在分别满足：
+$$
+\text{deg\ }p  > \text{deg\ }f \ge 1 \ \text{和} \ \text{deg\ }p > \text{deg\ }g \ge 1
+$$
+的$f(x), g(x) \in F[x]$，使得$p(x) = f(x) \cdot g(x)$，则称$p(x)$在$F[x]$中（或$F$上）是不可约的，否则是可约的。
+}
+\end{mdframed}
+
+利用因式分解，可将可约的多项式分解成一些次数更低的多项式。不过\textbf{多项式能否因式分解是与所考虑的域有关的}。例如$x^2 - 2 = 0$在\textbf{Q}上是不可约的，但在\textbf{R}上，$x^2 - 2 = (x - \sqrt{2})(x + \sqrt{2})$，又如$x^4 - x^2 - 2$分别作为$\text{Q}[x], \text{R}[x],\text{C}[x]$中的多项式就分别有：$(x^2 - 2)(x^2 + 1), (x-\sqrt{2})(x+\sqrt{2})(x^2+1), (x-\sqrt{2})(x+\sqrt{2})(x-i)(x+i)$
+
+为了今后的应用，我们给出艾森斯坦证明过的如下判据：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{
+艾森斯坦不可约判据：设$f(x) = \sum_{i=1}^na_ix^i \in Z[x]$，即$a_i \in Z, i = 0, 1, 2, \cdots, n$，若存在一个素数$p$，它能整除$a_n$外的所有系数，且$p^2$不能整除$a_0$，那么$f(x)$在\text{Q} 上是不可约的。
+}
+\end{mdframed}
+
+\begin{framed}
+\small{
+例：$f(x) = 2x^5 - 10x + 5$在$Q$上是不可约的，因为存在$p = 5$，满足上述条件（$p=5$能整除除$a_n=2$之外的所有系数$a_4 = 0, a_3 = 0, a_2 = 0, a_1 = 10, a_0 = 5$，并且$p^2 = 25$不能整除$a_0 = 5$）
+
+例：多项式$x^n - 1 = (x-1)(x^{n-1} + \cdots + x + 1) = (x-1)f(x)$，因此它在\text{Q}上是可约的；当$n$是偶数时，因为$f(x) = x^{n-1} + x^{n-2} + \cdots + x + 1 = (x+1)(x^{n-2} + x^{n-4} + \cdots + x^2 + 1)$，所以$f(x)$仍是可约的；当$n$是奇数时，尽管$f(x)$的根都是复数，但是它可能在\textbf{Q} 上仍是可约的。例如，当$n=9$时，$f(x) = x^8 + x^7 + \cdots + x + 1 = (x^2 + x + 1)(x^6 + x^3 + 1)$；但当$n=p$(素数)时，$f(x) = x^{p-1} + x^{p-2} + \cdots + x + 1$在\textbf{Q}上不可约。要直接运用艾森斯坦不可约判据来证明此时$f(x)$在\textbf{Q}上不可约是行不通的。为此，我们利用$f(x)$在\textbf{Q}上的不可约性等价于$f(x+1)$在\textbf{Q}上的不可约性这一点，于是由$x^p - 1 = (x-1) \cdot f(x)$，即
+$$
+f(x) = \frac{x^p - 1}{x - 1}
+$$
+\begin{align*}
+f(x+1) &= \frac{(x+1)^p - 1}{(x+1) - 1} \\
+	&= \frac{x^p + px^{p-1} + \cdots + px}{x} \\
+	&= x^{p-1} + px^{p-2} + \frac{p(p-1)}{2}x^{p-3} + \cdots + p
+\end{align*}
+其中在$(x+1)^p$展开时用到了牛顿二项式公式。所以存在素数$p$满足艾森斯坦不可约判据条件，即$f(x+1)$在\textbf{Q}上是不可约的，所以$f(x)$在\textbf{Q}上是不可约的。
+~\\
+
+\textbf{$n$是偶数时候的证明}：$x^{n-1} + x^{n-2} + x^{n-3} + x^{n-4} + \cdots + x + 1 = (x^{n-1} + x^{n-2} )+ (x^{n-3} + x^{n-4}) + \cdots + (x + 1) = (x+1)x^{n-2} + (x+1)x^{n-4} + \cdots + (x+1) = (x+1)(x^{n-2} + x^{n-4} + \cdots + x^2 + 1)$
+~\\
+
+\textbf{理解：证明$f(x)$在\textbf{Q}上的不可约性等价于$f(x+1)$在\textbf{Q}上的不可约性。}
+
+$f(x) = \sum_{i=1}^na_ix^i, f(x+1) = \sum_{i=1}^na_i(x+1)^i = \sum_{i=1}^nb_ix^i$，所以二者的不可约性等价。
+}
+\end{framed}
+
+\subsection{关于三次方程根的一些定理}
+对于$f(x) \in F[x], F \subset \mathbf{C}$，若存在$a \in \mathbf{C}$使得$f(a) = 0$，则称$a$是\textbf{多项式$f(x)$的一个根}，\textbf{或多项式方程$f(x) = 0$的一个根}。为了以后的应用，我们考虑域$F$上的一般三次方程：
+$$
+ax^3 + bx^2 + cx + d = 0, a, b, c, d \in F, a \neq 0
+$$
+
+给出下面的三个定理：
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+三次方程根相关的三个定理：
+~\\
+
+\textbf{
+定理1：设上述三次方程的根为$a_1, a_2, a_3$，则$a_1 + a_2 + a_3 = -\frac{b}{a} \in F$
+}
+~\\
+
+\textbf{
+定理2：如果$p + q\sqrt{r}$是上述三次方程的一个根，其中$p, q, r \in F, r > 0$，且$\sqrt{r} \notin F$，则$p - q\sqrt{r}$也是方程的一个根
+}
+~\\
+
+\textbf{
+定理3：如果上述三次方程是整系数方程，即$a, b, c, d \in \mathbf{Z}$，且它有有理根$p/q, p, q \in \mathbf{Z}$，且$(p,q) = 1$，那么分子$p$应是$d$的一个因数，而分母应是$a$的一个因数。
+}
+\\
+
+三个定理的解读：
+
+定理1就是韦达定理的根和系数的关系。
+
+定理2可以类比共轭的复数根。正如我们所熟知的，实系数多项式方程，如果有复根$a+bi, b \neq 0$，则它一定有共轭根$a - bi$，即互为共轭的复根是成对出现的。例如 $x^3 - 5x^2 + 5x - 1 = (x-1)(x - 2 - \sqrt{3})(x - 2 + \sqrt{3})$，根$x + \sqrt{3}$与根$x - \sqrt{3}$是成对出现的。
+
+定理3也是熟知的。例如，$12x^3 - 8x^2 - 3x + 2 = 0$，$d = 2, a = 12$，$d$的因子为$\{1, 2\}$, $a$的因子为$\{1, 2, 3, 4, 6, 12\}$，，所以方程的有理根应为$\pm 1,  \pm 2, \pm 1/2, \pm 1/3, \pm 2/3, \pm 1/4, \pm 1/6, \pm 1/12$，验证后可知 $1/2, -1/2, 2/3$是根。
+
+同样，容易验证整系数方程$8x^3 - 6x^2 - 1 = 0$没有有理根。
+\end{mdframed}
+
+在群论中，常感兴趣的是如何决定给一个群$G$的子群；在域论中，感兴趣的是给定一个域后，如何去做出它的扩域。
+
+
 %\printbibliography
 \bibliography{../../ref}
 \bibliographystyle{IEEEtran}
 \end{document}
+
