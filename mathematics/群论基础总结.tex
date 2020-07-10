@@ -520,6 +520,20 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
 }
 \end{mdframed}
 
+\subsection{Normalizers}
+基于Normalizer，可以判断一个群有多接近成为正规子群。
+
+如果$H$是$G$的正规子群，那么对于任意$g \in G$，都有$gH = Hg$；所以想要判断$H$有多接近成为$G$的正规子群，直接的思路是检查有多少$g \in G$，满足$gH = Hg$；
+
+使得$g \in G$满足$gH = Hg$的集合$\{g\}$，叫做 normalizer(normalizer of $H$ in $G$)，记作$N_G(H)$。
+
+首先，对于任意$g \in H$，有$gH = Hg = H$；并且，对于任意$H < G$，有$N_G(H) < G$；
+
+\subsection{共轭性（Conjugacy）和共轭类（conjugacy classes）}
+当$H < G$时，有：$gH = Hg$，也可以写成$gHg^{-1} = H$。取$h$和$g$，称$ghg^{-1} $是$h$与$g$共轭。
+
+待补充。
+
 \subsection{单群}
 
 \section{群上的运算}
@@ -610,11 +624,105 @@ $$
 $$
 
 
-
 \subsection{半直积（semidirect product）}
-\subsection{商（quotient）}
+在数学中，特别是叫做群论的抽象代数领域中，半直积(semidirect product)是从其中一个是正规子群的两个子群形成一个群的特定方法。半直积是直积的推广。半直积是作为集合的笛卡尔积，但带有特定的乘法运算。 (来源于百度百科)
 
-homomorphism; isomorphism
+直积运算，是通过将一个子群的所有节点拷贝到另一个子群的每一个节点中，然后将对应的新节点按原来的方式连接起来得到的；半直积与直积非常类似，区别在于没有要求完全按照原来的模式拷贝节点，允许进行一定的 rewiring 操作。
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+rewiring的定义：
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+	\item The two diagrams must have the same arrangement of nodes
+	\item The diagrams may have their arrows arranged differently
+	\item The algebraic relationship among group elements must be the same in both diagrams ==> 尽管 Cayley 图不同，但是对应相同的乘法表（所以还是同样的群）
+\end{enumerate}
+\end{mdframed}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-C3-rewiring.png}
+    \caption*{注意左右都有$a \cdot a = a^2$，即二者的乘法表是相同的}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-V4-rewiring.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-not-rewiring.png}
+        \caption*{不是 rewiring 的两个例子}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-V4-all-rewiring.png}
+     \caption*{$V4$的所有 rewiring}
+\end{figure}
+
+基于 Rewiring，可以得到$C3$和$C2$的 semiproduct 如下，记作：$C_3 \rtimes C_2$
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-C3-semiproduct-C2.png}
+\end{figure}
+
+
+\subsection{商（quotient）}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+对群$G$按$H$取商（求 $G/H$）的方法：
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+	\item 将群$G$的 Cayley 图按照$H$ 进行整理(Organize a Cayley diagram of $G$ by $H$)
+	\item 将每一个$H$的左陪集压缩成一个点(Collapse each left coset of $H$ into one large node)
+	\item 如果新的图构成群，那么就得到了群群；否则，无法对$G$按$H$取商（If the new diagram is a Cayley diagram of a group, then you have obtained \textbf{the quotient group of $G$ by $H$}, and the new diagram shows the group. If not, then $G$ cannot be divided by $H$）
+\end{enumerate}
+\end{mdframed}
+
+\textbf{$C_6$是$C_3$和$C_2$的直积；$S_3$是$C_3$和$C_2$的半直积，对应的Cayley图如下：}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-C6S6-quotient-C3.png}
+\end{figure}
+
+\textbf{$A_4$是$C_3$和$V_4$的半直积，对应的Cayley图如下：}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-A4-quotient-V4.png}
+\end{figure}
+
+\subsection{商和正规子群的关系}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+如果$H$是$G$的子群（$H < G$），那么当$H \lhd G$时，可以构造商群$\frac{G}{H}$
+\end{mdframed}
+
+一个不能构造商群的例子：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-A4-cannot-quotient-C3.png}
+\end{figure}
+
+从左陪集判断能否构造商群，如果从一个左陪集出发，有多个箭头连到不同的左陪集，则无法构造商群：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Group/Cayley-left-coset-quotient.png}
+\end{figure}
+
+所以，如果能够构造商群，必有：$gH = Hg$，因此$H$是$G$的正规子群。
+
+
+\section{群之间的关系}
+\subsection{同态映射（homomorphism）}
+\subsection{同构映射（isomorphism）}
 
 \section{群的性质}
 
