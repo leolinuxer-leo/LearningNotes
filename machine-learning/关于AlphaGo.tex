@@ -83,7 +83,7 @@
 \begin{itemize}[itemindent=2em]
     \item Rollout Policy：快速落子网络。将很复杂的卷积神经网络去掉就能够得到一个快速走子网络。它与SL policy network的功能一样，两者间的不同是：Rollout policy网络简单，落子更快，准确率较低。
     
-    \item SL Policy Network：策略网络；：用人类棋手里面的对弈记录进行训练，输入为48张图片，以输出为人类棋手的落子为目标，进行训练。
+    \item SL Policy Network：策略网络；用人类棋手里面的对弈记录进行训练，输入为48张图片，以输出为人类棋手的落子为目标，进行训练。
     
     \item RL Policy Network：最开始由SL policy network复制而来，两者开始对弈，在对弈的结果里面我们依据最终的胜负来修正权重。优化之后再更新对手的权重，再接着对弈，两者共同优化。
     
