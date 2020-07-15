@@ -126,9 +126,12 @@ precision是相对你自己的模型预测而言：true positive ／retrieved se
 \subsubsection{F1-score}
 F1-score 就是一个综合考虑precision和recall的metric： 
 
-\begin{center}
-    F1-score = 2 * precision * recall / (precision + recall)
-\end{center}
+\begin{align*}
+F1-score &= \frac{2}{1/precision + 1/recall}\\
+     &= 2 * precision * recall / (precision + recall) 
+\end{align*}
+
+可以看出，F1-score是 precision 和 recall 的调和平均数（调和平均数（harmonic mean）又称倒数平均数，是总体各统计变量倒数的算术平均数的倒数。$H_n = n/\sum_{i=1}^n\frac{1}{x_i} = \frac{n}{\frac{1}{x_1} + \frac{1}{x_2} + \cdots + \frac{1}{x_n}}$）
 
 如果两个模型，一个precision特别高，recall特别低，另一个recall特别高，precision特别低的时候，F1-score可能是差不多的，也不能基于此来作出选择。
 
