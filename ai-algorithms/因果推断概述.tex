@@ -33,7 +33,7 @@
 \usepackage{setspace}%使用间距宏包
 \linespread{1.5}
 
-\title{因果推断概述\cite{Causal_Inference_Simply_Introduction}\cite{Talk_About_Causal_Inference_Part_1}}
+\title{因果推断概述\cite{Causal_Inference_Simply_Introduction}\cite{Talk_About_Causal_Inference_Part_1}\cite{AAAI_2020_Tutorial_Representation_Learning_for_Causal_Inference}}
 \author{leolinuxer}
 %\date{June 2020}
 
@@ -83,28 +83,42 @@
 
 因此，面对这种特殊的问题，我们需要\textbf{从已有的数据}中推断出变量间的因果性。
 
-\section{因果推断推什么}
-\begin{mdframed}[
-linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
-%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
-]
-一些定义：
+\section{因果推断的相关概念}
+\subsection{核心概念}
+\textbf{因果关系（Causality）}：如果其他变量不变，当且仅当T的改变会导致Y的改变时，T 与 Y 有因果关系；(T causes Y if and only if changing T leads to a change in Y，while keeping everything else constant. )\cite{Causal_Inference_and_Stable_Learning}
 
-\textbf{因果关系（Causality）的定义：T causes Y if and only if changing T leads to a change in Y，while keeping everything else constant. \cite{Causal_Inference_and_Stable_Learning}}
+\textbf{因果效应（Causal effect）}：当T导致Y改变时，Y 改变的“幅度”；(Causal effect is defined as the magnitude by which Y is changed by a unit change in T.)
 
-\textbf{因果效应（Causal effect）的定义：Causal effect is defined as the magnitude by which Y is changed by a unit change in T.}
-
-\textbf{结构化因果模型（Structural Causal Model）：A graphical model to describe the causal mechanisms of a system}
+\textbf{结构化因果模型（Structural Causal Model）：}A graphical model to describe the causal mechanisms of a system.
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\textwidth]{fig/Causal_Inference_and_Stable_Learning-Causal-Model.png}
 \end{figure}
-\end{mdframed}
 
+\subsection{相关术语\cite{AAAI_2020_Tutorial_Representation_Learning_for_Causal_Inference}}
+\textbf{confounder（混淆因子）}：Variables that affect both treatment assignment and outcome；（既影响试验方案（？？），也影响结果的变量）
 
-因果推断用的最多的模型有两个。一个是著名的统计学家 Donald Rubin 教授在 1978 年提出的 “潜在结果模型”（potential outcome framework），也称为 Rubin Causal Model（RCM）。另一个是 Judea Pearl 教授在 1995 年提出的因果图模型（Causal Diagram）。这两个模型实际上是等价的。
+例如：在药物试验中，年龄就是一个 confounder，原因是：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 年龄会影响药物的治愈率（Age would affect the recovery rate）；
+    \item 年龄会影响实验方案（？？）的选择（Age would also affect the treatment choice）；
+\end{itemize}
 
-首先，我们需要定义一些符号：
+从下图可以看出来，年龄变量会导致辛普森悖论。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Confounder-Example-In-Medicine.png}
+\end{figure}
+
+\textbf{Selection Bias}：The distribution of the observed group is not representative to the group we are interested in；
+
+Confounder variables affect units' treatment choices, which leads to the
+selection bias; Selection bias makes counterfactual outcome estimation more diﬃcult.
+
+\subsection{相关符号定义}
 \begin{itemize}
 \setlength{\itemsep}{0pt}
 \setlength{\parsep}{0pt}
@@ -114,8 +128,12 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
     \item \textbf{潜在结果（potential outcome）$\{Y_{i0}, Y_{i1}\}$}：对每个用户 $i$，他们对于是否受到干预分别有两个潜在结果 $Y_{i0}$ 和 $Y_{i1}$。例如，$Y_{i0}$ 和 $Y_{i1}$ 分别表示假如一个用户没有被投放游戏广告和被投放时是否会登录游戏。
     
     \item \textbf{观察结果（observed outcome）$Y$}：当一个用户没有受到干预时（$T=0$），我们将会观察到 $Y=Y_{i0}$，当一个用户受到干预时我们将会观察到 $Y=Y_{i1}$。
+    
+    \item \textbf{反事实结果（Counterfactual Outcome）}：假设一个用户没有收到干预的潜在结果；反事实结果无法被观察到；
 \end{itemize}
 
+
+\subsection{因果效应的度量方式}
 在因果分析中，我们通常比较关心以下两种 “因果效应”。为了符号简洁，接下来不再特意标注出代表用户的下标 :
 \begin{itemize}
 \setlength{\itemsep}{0pt}
@@ -126,7 +144,7 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
     \item \textbf{干预组的平均因果效应（Average Treatment Effect on the Treated，简称 ATT）}：$ATE=E[Y_1 - Y_0|T = 1]$。$ATT$ 为干预对受到干预的人的平均因果效应。
 \end{itemize}
 
-以游戏广告投放为例，我们举一个例子如下表，这个例子接下来还会反复使用。假如我们可以同时观测到两个潜在结果（\textbf{尽管这是不可能的}），我们可以算出 
+以游戏广告投放为例，假如我们可以同时观测到两个潜在结果（\textbf{尽管这是不可能的}），我们可以算出 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{fig/CasualInference-Game-Ad-1.png}
@@ -134,6 +152,7 @@ linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerb
 
 当我们尝试直接从观察结果$Y$  统计 $ATE$ 或者 $ATT$ 时，我们就会遇到一个问题：对于每一个用户，我们并不能同时观测到两个潜在结果。这个问题是因果推断的一个核心问题、核心难点。
 
+\subsection{因果推断的核心思想}
 \begin{mdframed}[
 linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
 %backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
@@ -161,7 +180,7 @@ $$
 在日常工作中，并非所有数据分析都有 A/B Test 撑腰。我们往往需要通过观察历史数据完成分析，这类分析称为 “观察性研究”。在观察性研究中，失去了 “随机流量” 的撑腰，现实就没有那么美好了。这时，如果我们直接比较两组用户指标上的差异得到 $\hat{ATT}$，它和真实的 $ATT$ 之间是存在一个非零的 bias 的，我们无法根据  $\hat{ATT}$ 下一个科学可靠的结论。 例如，在之前使用的广告投放的例子中，假设我们直接比较 $T=1$ 和 $T=0$ 两组用户的观测结果 $Y$的差异，会造成投放广告造成登录率从 50\% 下跌到 25\% 的错觉，这并不是真实的 $ATE$ 和 $ATT$。
 
 
-\section{因果效应的可识别性}
+\section{因果效应可识别性的前提假设}
 在观察性研究中，借助什么样的数据可以推出可靠的因果效应（$ATE$ 或 $ATT$）呢？具体来说，假如我们对每个用户有一系列干预前的指标（pre-treatment variables） $X$、有干预 $T$、有观察结果 $Y$，我们能不能推断出 $T$ 对 $Y$ 的因果效应？
 这个问题就是因果推断的可识别性（identifiability）问题。可识别性依赖于几个假设，这些假设通常被称为 causal assumption。下面我们一个一个来看看。
 
@@ -295,6 +314,24 @@ Exact Matching 的一个直观变种是 Distance Matching。我们可以对每�
     \caption*{对用户进行 Matching，Matching 时的度量是：$Distance(X_i, X_j) \le \epsilon$；通过匹配，保证了同组的两个用户的其它特征都是基本相同的}
     \includegraphics[width=0.8\textwidth]{fig/Causal_Inference_and_Stable_Learning-Matching-2.png}
 \end{figure}
+
+\subsection{Re-weighting方法}
+目的是解决实验组和控制组分布不一致的问题。
+
+方法是对采样数据赋予合适的权重，使得实验组和控制组的分布尽可能一致。
+
+一些具体的 re-weighting 方法：略\cite{AAAI_2020_Tutorial_Representation_Learning_for_Causal_Inference}
+
+\subsection{Stratiﬁcation（subclassiﬁcation/blocking）}
+对原始数据进行分组，每个分组内，实验组和对照组尽可能保持一致；
+
+Stratiﬁcation adjusts the selection bias by splitting the entire group into subgroups, where within each subgroup, the treated group and the control group are similar under some measurements.
+
+\subsection{Tree-based Methods}
+Bayesian Additive Regression Trees (BART)
+
+Classiﬁcation And Regression Trees (CART)
+
 
 %\printbibliography
 \bibliography{../ref}

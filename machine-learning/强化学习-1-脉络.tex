@@ -461,29 +461,166 @@ QLearning 公式和 SARSA 相比，就差那么一个 max：
 
 (2)选择能够产生最大 Q 值的动作 At+1。这就是 Qlearning。 Qlearning  能够产生最大 Q 值的动作 At+1 的 Q 值作为 V(St+1) 的替代。
 
-\subsection{QLearning实践\cite{Implement_QLearning}}
-略
+\subsection{QLearning 算法流程\cite{Implement_QLearning}}
+先总结下 QLeanring 的更新流程。 我们将会在任意的state出发：
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 会用 noisy-greedy 的策略选定动作A；
+    \item 在完成动作后，我将会进入新状态$S_{t+1}$；
+    \item 检查 $S_{t+1}$ 中所有动作，看看哪个动作的Q值最大；
+    \item 更新当前动作 A 的 Q 值：
+    $$
+    Q(S,A) \leftarrow Q(S,A) + \alpha [R + \gamma \max_aQ(S', a) - Q(S,A)]
+    $$
+    \item 继续从 S' 出发，进行下一步更新；
+    \item 1-5步我们作为一个EP，进行 N 个EP的迭代。
+\end{enumerate}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/ReinforcementLearning/RL_QLearning_EP.png}
+\end{figure}
+
+在具体实现的时候，有两个方式需要注意：Q-table 和 noisy-greedy。
+
+\subsubsection{Q-table}
+QLearning 算法非常适合用表格的方式进行存储和更新。所以一般我们会在开始时候，先创建一个 Q-tabel，也就是 Q 值表。这个表纵坐标是状态，横坐标是在这个状态下的动作。我们会初始化这个表的值为0。我们的任务就是，通过算法更新，把各个状态下的动作的Q值，填到上面去。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/ReinforcementLearning/RL_QLearning_QTable_Initial.png}
+\end{figure}
+
+\subsubsection{noisy-greedy}
+我们解说过，在选择动作的时候，理论上每次都会使用当前状态下，Q 值最大的动作。这样的选择方式，我们称为“贪婪”(greedy)。
+
+因为我们只选择Q值最大的动作，所以有一些动作没被更新过没有被选择的过的动作，将更新不到。Q值也永远为0。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.4\textwidth]{fig/ReinforcementLearning/RL_QLearning_Noisy_Greedy.png}
+\end{figure}
+
+假设某次智能体经过路径(途中的红色线路)，根据 QLearning 算法更新公式，我们计算得到某动作 Q 值为3。由于其他动作还没执行过，因此他们保持初始值(一般为0)。按照贪婪算法，下一次智能体来到 S 的时候，会选择Q值最大的动作，也就是Q=3。于是红色路径再次被执行，Q值被更新。然后再一次，智能体仍然只会选红色线路。
+
+但事实上，Q值最大的可能是其他的动作，但其他动作没有Q值，只是因为没有被“探索”出来。事实上我们会希望智能体在开始的时候更多随机行走去探索，而后面更多按照Q值去走动。
+
+在每次选择动作的时候，就给我们要选择的动作叠加一个噪音。所谓噪音，就是在原来的值上增加一个随机值。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/ReinforcementLearning/RL_QLearning_Noisy_Greedy_Add_Noise.png}
+\end{figure}
+图中为某状态下，4个可选动作。 其中蓝色部分代表计算出来的Q值，也就是在Qtable上的值。 橙色部分是噪音，通过随机算法随机出来，每一次都会不同。可以看出来，原来蓝色部分 Q 值最大的是动作 4(0.3)。但在加上噪音之后，Q 值最大的是动作2(0.2+0.5)。所以最终智能体会选择动作 2。
+
+所以，我们可以通过噪音来“干扰”智能体的选择，达到让智能体有更多探索的机会。注意！这些噪音只是在选择的时候，临时加上，每次都随机的。只干扰了当前选择，并不会影响真正的Q值。
+
+当我们认为智能体对环境的了解已经足够充分，我们就可以慢慢减少噪音的大小。
+
+在实做中，我们只需要在我们每次游戏后，将会减少产生噪音的方差，这样对干扰仍然有干扰，但这种干扰将会逐渐减少。直到相对于真正的 Q 值没有影响的程度。最终，agent 将会按照自己的策略选择动作。
+
+
+\subsubsection{QLearning 总结}
+Qlearning本质上是 TD(0) 算法，采用网格方式更新 Qtable。
+
+Qlearning算法也有很大的局限性，我们看到，无论现实世界还是游戏世界，很多时候状态都是连续的，像表格这种方式，只能解决状态有限且离散的任务。于是就有了 DQN 算法用深度网络，解决了连续状态的问题。
+
 
 
 \part{深度强化学习}
 \section{DQN}
-\subsection{基础 DQN}
+\subsection{DQN 介绍}
+\subsubsection{DQN 和 QLearning 的关系}
 DQN = Deep learning + Qleanrning。
 
-Qleanrning有一个问题：只能解决格子类型离散型状态问题，对连续型状态束手无策。这是因为Qlearning在实做的时候用的是Q表格(Qtable)。表格这玩意儿注定就只能存离散的东西。但我们刚才说的神经网络，正好就能解决这个问题，因为神经网络是个函数。可以处理连续型的问题。两者一拍即合！
+Qleanrning有一个问题：只能解决格子类型离散型状态问题，对连续型状态束手无策。这是因为 Qlearning 在实做的时候用的是Q表格(Qtable)。但是神经网络，正好就能解决这个问题，因为神经网络是个函数。可以处理连续型的问题。
 
-有一个问题，是我们用万能的神经网络的时候，需要解决的。就是更新的目标是什么？网络应该向什么地方优化。其实，如果你对之前的Qlearning理解够深的话，就知道，我们更新用的是下一状态的Q值+奖励，作为更新的目标。如下图。
+
+在Qlearning中，我们有一个Qtable，记录着在每一个状态下，各个动作的Q值。\textbf{Qtable的作用是当我们输入状态S，我们通过查表返回能够获得最大Q值的动作A。也就是我们需要找一个S-A的对应关系}。这个 S-A 的对应关系。可以用一个函数F表示：F(S) = A。这样我们就可以不用查表了，而且还有个好处，函数允许连续状态的表示。
+
+这时候，深度神经网络就可以派上用场了。它的作用是：输入一个状态S，输出每个动作的Q值是多少。
+
+\textcolor{red}{所以 Qlearning 和 DQN 并没有根本的区别。只是DQN用神经网络，也就是一个函数替代了原来Qtable而已。}
+
+\subsubsection{神经网络的优化目标}
+有监督学习的数据集中，有标签好的数据，就是神经网络要优化的目标。
+
+在 Qlearning 中，我们用下一状态 $S_{t+1}$的最大Q值替代$S_{t+1}$的 V值。$V(S_{t+1})$加上状态转移产生的奖励R。就是Q(S,a) 的更新目标。也就是说用的是下一状态的Q值+奖励，作为更新的目标。如下图：
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.4\textwidth]{fig/ReinforcementLearning/RL_DQN_Example.png}
+    \includegraphics[width=1\textwidth]{fig/ReinforcementLearning/RL_DQN_Example.png}
 \end{figure}
+
+假设我们需要更新当前状态$S_t$下的某动作A的Q值：Q(S,A)，我们可以这样做： 1. ; 2. ； 3.  4. 5. 
+
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 执行A，往前一步，到达$S_{t+1}$；
+    \item 把$S_{t+1}$输入Q网络，计算$S_{t+1}$下所有动作的Q值；
+    \item 获得最大的Q值加上奖励R作为更新目标；
+    \item 计算损失： Q(S,A)相当于有监督学习中的logits；$\max Q(S_{t+1}) + R$ 相当于有监督学习中的lables；用mse函数，得出两者的loss；
+    \item 用loss更新Q网络。
+\end{enumerate}
+
+\textbf{也就是，我们用Q网络估算出来的两个相邻状态的Q值，他们之间的距离，就是一个r的距离。}
+
+即 DQN 的更新公式如下(和 QLearning 的更新公式是一样的)：
+$$
+Q(S,A) \leftarrow Q(S,A) + \alpha[R + \gamma Q(S', a) - Q(S,A)]
+$$
+
+\subsubsection{DQN总结}
+(1)DQN就是Qlearning扔掉Qtable，换上深度神经网络。
+
+(2)我们知道，解决连续型问题，如果表格不能表示，就用函数，而最好的函数就是深度神经网络。
+
+(3)和有监督学习不同，深度强化学习中，我们需要自己找更新目标。通常在马尔科夫链体系下，两个相邻状态状态差一个奖励 r 经常能被利用。
+
+\subsection{番外：强化学习的两个训练技巧}
+\subsubsection{经验回放(Experience replay)}
+在强化学习中，有一个问题始终绕不过。训练网络数据采集总是太慢。当然这个慢是对比网络训练的速度。在强化学习中，网络训练经过GPU的加速，比起游戏来时快很多的。所以训练的瓶颈一般在\textbf{智能体跟环境互动的过程中}。
+
+如果我们能把互动过程中的数据，都存起来，当数据最够多的时候，再训练网络，那么就快很多了。经验回放(Experience replay)就是实现这样的过程:
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 我们把每一步的s，选择的a，进入新的状态s'，获得的奖励r，新状态是否为终止状态，这些数据都全部存在一个叫回放缓存的地方(replay buffer)；
+    \item 当智能体与环境互动期间，就会不断产生这样一条一条数据。 数据1： 数据2： 数据3： ....；
+    \item 当数据量足够，例如达到我们设定一个batch的大小，我们便从中抽出一个batch大小的数据，把这笔数据一起放入网络进行训练；
+    \item 训练之后我们继续进行游戏，继续把新产生的数据添加到回放缓存里；
+    \item 就这样，我们每次都随机抽出一个batch大小的数据训练智能体。这样，以前产生的数据同样也能用来训练数据了, 效率自然更高。
+\end{itemize}
+
+\subsubsection{固定Q目标(Fixed Q-targets)}
+DQN的目标: $\gamma * \max Q(s') + r$
+ 
+目标本身就包含一个Q网络，这样没有问题吗？理论上是没有问题的，但这样会造成Q网络的学习效率比较低，而且不稳定。如果把训练神经网络比喻成射击游戏，在target中有Q网络的话，就相当于在射击一个移动靶，因为每次射击一次，靶就会挪动一次。相比起固定的靶，无疑加上了训练的难度。
+
+那怎么解决这个问题呢？既然现在是移动靶，那么我们就把它弄成是固定的靶，先停止10秒。10后挪动靶再打新的靶。这就是Fixed Q-targets的思路。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/ReinforcementLearning/RL_QLearning_Fix_Target.png}
+\end{figure}
+
+在实做的时候，其实和原来的DQN一样，唯一不同点是，我们用两个Q网络：
+
+一个是原来的Q网络，用于估算Q(s)；另外一个叫targetQ网络, targetQ自己并不会更新，也就是它在更新的过程中是固定的，用于计算更新目标。
+
+$y = r + \gamma * \max(target Q(s'))$
+
+我们进行N次更新后，就把新Q的参数赋值给旧Q。
+
 
 \subsection{DQN的变种}
 \subsubsection{Double DQN}
 Double DQN 主要是为了解决一个问题：DQN对Q的估值通常会过大。直观地说，你可以这样认为： 我们用的是下一状态中，Q值最大的作为当前状态的估算。下一状态的Q值，以下下状态的最大Q值作为估算...这就有点像大话骰,这个Q值越传播就越大。那怎么办？用两个网络对Q进行预估，取最小的那个。就相当于，你们尽管吹牛，大的我不要，我要小的。当然，你会说这都可以？答案就是在试验当中，有奇效。这就是DoubleDQN的想法。
 
+恰好，如果我们用上Fixed Q-targets，就是有两个Q网络了。
+
 \subsubsection{Dueling DQN}
-略
+DuelingDQN也是一个比较容易实现的DQN变种，它和DQN的唯一差别，就是Network构造的不同。这种结构上的不同，可以让dueling DQN更快地学习到东西。
 
 \section{策略梯度(PG)}
 我们现在是把Q值和V值往死里算呀，但实际上，我们并不需要Q值呀，我们需要的是能获得最多的奖励总和呀。既然现在我们发明出宇宙最强无敌的Magic函数——神经网络。那我们直接用神经网络magic(s)=a不行吗？恭喜你，这就是PG的基本思想。PG用的是MC的G值来更新网络。也就是说，PG会让智能体一直走到最后。然后通过回溯计算G值。

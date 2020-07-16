@@ -211,6 +211,19 @@ $$
 
 可以看到最后一层反向传播时，所求的梯度中都含有 $\sigma'(z)$。经过上面的分析，当神经元输出接近1时候，Sigmoid的导数$\sigma'(z)$ 变很小，这样 $\frac{\partial J}{\partial w}$ 、 $\frac{\partial J}{\partial b}$ 很小，这就导致了MSE均方误差+Sigmoid激活函数使得神经网络反向传播的起始位置——输出层神经元学习率缓慢。
 
+\subsubsection{为什么 LR 模型要使用 sigmoid 函数}
+（来源：\url{链接：https://www.zhihu.com/question/35322351/answer/67193153}
+
+概述：熵越大不确定度越大。所以可以想象到，均匀分布熵最大，因为基本新数据是任何值的概率都均等。
+
+而我们现在关心的是，给定某些假设之后，熵最大的分布。也就是说这个分布应该在满足我假设的前提下越均匀越好。比如大家熟知的正态分布，正是假设已知mean和variance后熵最大的分布。
+
+回过来看logistic regression，这里假设了什么呢？首先，我们在建模预测 $Y|X$，并认为 $Y|X$ 服从bernoulli distribution，所以我们只需要知道 $P(Y|X)$；其次我们需要一个线性模型，所以 $P(Y|X) = f(wx)$。接下来我们就只需要知道 $f$ 是什么就行了。而我们可以通过最大熵原则推出的这个 $f$，就是sigmoid。
+
+bernoulli的 exponential family 形式，就是 $1/ (1 + e^{-z})$。
+
+也就是说，sigmoid 函数是在伯努利分布和广义线性模型的假设下推导而来；逻辑回归也是一种广义线性模型。逻辑回归跟最大熵模型没有本质区别。逻辑回归是最大熵对应类别为二类时的特殊情况，也就是当逻辑回归类别扩展到多类别时，就是最大熵模型。
+
 \subsection{交叉熵损失(Cross Entropy，CE)\cite{Commonly_Loss_Functions}}
 交叉熵多用于分类的损失函数；
 
