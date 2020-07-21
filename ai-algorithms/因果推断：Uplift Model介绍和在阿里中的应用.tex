@@ -323,39 +323,133 @@ $$
 \end{figure}
 
 \subsection{Evaluation metrics}
-有了以上三种常见uplift的建模方法，我们需要对uplift模型进行评估，因为uplift评估最大的难点在于我们并没有单个用户uplift的ground truth，因此传统的评估指标像AUC是无法直接使用的。
+响应模型可以通过一个测试数据集来计算precision，recall和AUC，但是因为增益模型中不可能同时观察到同一用户在不同干预策略下的响应，所以uplift评估最大的难点在于我们并没有单个用户uplift的ground truth，传统的评估指标像AUC是无法直接使用的。
 
-\subsubsection{AUUC曲线}
-解决的一个思路是通过构造镜像人群的方式来间接拿到uplift的ground truth，比如说经典的\textbf{AUUC}的指标就是这样去计算的，假设现在有两个满足CIA条件假设的样本组，我们可以对两群人分别预估他们的uplift score，之后将人群按照uplift score进行降序排列，通过score分数这一桥梁，可以把两组人群进行镜像人群的对齐，之后分别截取分数最高的比如10\%的用户出来，计算这一部分人转化率的差异，这个差异就可以近似地认为是分数最高的这群人真实的uplift，类似地，我们可以计算前20\%，40\%一直到100\%的点上面的值，连线就能得到uplift curve。理论上如果模型对uplift的识别比较准确，我们预测uplift比较高的区间段，真实的uplift也较高，uplift curve就会呈现上凸的形式，我们也可以计算曲线下的面积度量不同模型的表现差异。
+增益模型通常都是通过划分十分位数（decile）来对齐实验组和对照组数据，间接评估，而不是在一个测试集上直接评估。
 
-\subsubsection{Qini指标}
-除了上述AUUC曲线，我们下面再介绍一种评估指标，然后介绍如何将这个指标引入Transformed Outcome method。
+\subsubsection{uplift 柱状图}
+测试集上，实验组和对照组的用户分别按照uplift由高到低排序，划分为十等份，即十分位（decile），分别是top 10\%用户，top 20\%用户……top 100\%用户。分别对实验组和对照组中每个十分位内的用户求$E[Y^T|X^T]$和$E[Y^C|X^C]$，即预测分数的均值，然后相减，作为这个十分位bin内的uplift，绘制柱状图，如下图（这个图是由低到高排序，排序反了）：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/CasualInference-Uplift_Evaluate_Bar.png}
+\end{figure}
+这种方法只能定性分析，无法计算出一个具体的值来整体评价模型的好坏。
 
-最典型的评估指标是Qini curve：
+\subsubsection{Qini指标和AUUC曲线}
+我们下面再介绍一种评估指标，然后介绍如何将这个指标引入Transformed Outcome method。
+
+最典型的评估指标是Qini curve。 在uplift bars的基础上绘制曲线，类似AUC来评价模型的表现，这条曲线称为Qini curve，计算每个百分比的Qini系数，最后将这些Qini系数连接起来，得到一条曲线。：
 $$
 Qini = \frac{n_{t,1}(\phi)}{N_t} - \frac{n_{c,1}(\phi)}{N_c}
 $$
 
-$n_{t,1}(\phi)$和$n_{c,1}(\phi)$分别代表着对照组和控制组中outcome为1的人数，分数$\phi$表示观察人群占目标人群的比值，$N_t$ 和 $N_c$表示实验组和对照组的总人数（独立于$\phi$），因为$N_t$ 和 $N_c$其实并不独立于$\phi$，也就是实验组和对照组的均衡不是随机的，而是$\phi$的一个函数，所以Qini curve会自然的膨胀。
+$n_{t,1}(\phi)$和$n_{c,1}(\phi)$分别代表着对照组和控制组中outcome为1的人数，分数$\phi$表示观察人群占目标人群的比值（也就是说，$\phi$ 是按照uplift score由高到低排序的用户数量占实验组或对照组用户数量的比例，如$ \phi = 0.1$，表示实验组或对照组中前10\%的用户），$N_t$ 和 $N_c$表示实验组和对照组的总人数（独立于$\phi$）。
 
-为了纠正这一点，引入了以下两版曲线：
+如下图，横轴等于0.2时，对应的纵轴大概是0.0032（uplift score），表示当uplift score等于0.0032时，可以覆盖前20\%的用户数量，从图上看，这部分用户就是persuadable用户。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/CasualInference-Uplift_Evaluate_Qini_Curve.png}
+\end{figure}
+
+图中虚线是随机的base曲线，Qini曲线与随机random曲线之间的面积作为评价模型的指标，面积越大越好，面积越大，表示模型结果远超过随机选择的结果，与AUC类似，这个指标称为AUUC（Area Under Uplift Curve）。
+
+\subsubsection{累积增益曲线（Cumulative Gain curve）}
+因为$N_t$ 和 $N_c$其实并不独立于$\phi$，也就是实验组和对照组的均衡不是随机的，而是$\phi$的一个函数，所以Qini curve会自然的膨胀。为了纠正这一点，引入了以下两版曲线：
 $$
-General \ cumulative \ gains \ curve =  (\frac{n_{t,1}(\phi)}{n_t(\phi)} - \frac{n_{c,1}(\phi)}{n_c(\phi)})\phi
+G(\phi) =  (\frac{n_{t,1}(\phi)}{n_t(\phi)} - \frac{n_{c,1}(\phi)}{n_c(\phi)})(n_t(\phi) + n_c(\phi))
 $$
 
-其中$n_t(\phi)$ 和$n_c(\phi)$分别代表了实验组和对照组中观察人群的比例。
+各符号含义与Qini系数符号含义相同。其中 $n_t(\phi)$ 表示在 $\phi$ 百分比下，实验组（treatment）的用户数量，$n_c(\phi)$ 是在 $\phi$ 百分比下，对照组（control）的用户数量。与Qini系数相比，累积增益的分母是百分比 $\phi$ 下的实验组或对照组人数，并乘以 $n_t(\phi) + n_c(\phi)$ 作为全局调整系数，避免实验组和对照组用户数量不平衡导致的指标失真问题。
 
-首先，我们实现了传统的cumulative gain chart (Gutierrez and Gerardy 2016)。其中$\phi$近似为：
+可以将累积增益曲线与random line之间的面积作为评价模型表现的指标。
+
+\subsection{Uplift 总结}
+增益模型实际上是一大类模型框架，本质上可以用传统响应模型或其他机器学习模型嵌入增益模型的框架，但是预测结果并不是一个概率，模型评价方式也有变化。
+
+\subsubsection{训练样本收集}
+增益模型建模强依赖于AB实验，数据要求很高。建模时要求实验组和对照组样本数量一样（实践中不一定有这个严格要求）。而且实验组和对照组的样本特征分布要一致，例如，训练数据不能是实验组预测后的结果、对照组随机选择的结果这样的组合，因为这样不满足干预策略与用户特征相互独立的假设（$P(G | \boldsymbol{X}) = P(G$）。故实验组中还需要预留一部分随机选择的用户，与对照组中的用户作为模型迭代的数据，或者实验组与对照组都先经过某个策略或模型的筛选。
+
+\subsubsection{多维度建模与个性化广告推送}
+上述所有模型都是针对 $G=T$ 或者 $G=C$，即干预策略只有一种，对于发券，相当于一个treatment只有一种折扣，对于广告push，一个treatment也只能有一种内容。而treatment可以用多种维度，如不同渠道发放不同折扣的优惠券，不同场景推送不同内容的push。传统的response model以转化为多分类问题解决，但uplift modeling难以简单转化为多分类问题。
+
+此外，个性化广告推送也依赖长期和短期的用户行为特征构建。不同营销场景下的用户特征可以共用，可以构建统一的线上线下特征平台。
+
+
+\section{Python Uplift Modeling工具包：Pylift}
+Pylift是uplift建模的Python工具包。Pylift在sklearn的基础上针对uplift modeling对各模型做了一些优化，同时集成了一套uplift评价指标体系。所以Pylift内核还是sklearn，在sklearn外面封装了一套API，针对树模型做了uplift优化，可以通过Pylift实现直接的uplift modeling.
+
+
+\section{优惠券发放的 Demo}
+\subsection{Demo 简介}
+这里有一个优惠券发放的例子 。这是一次优惠券发放活动，对用户以短信方式发放5折优惠券，本次活动实验组（treatement，短信方式发送5折优惠券），对照组（不发券）37701名用户，注意到实验组和对照组不满足 $P(T) = P(C) = \frac{1}{2}$ 的条件。
+
+这个例子还有一点特别，这其实是在\textbf{一个预测模型上再做一次uplift modeling}。本身实验组和对照组的数据是通过一个 XGB 模型预测出来的用户，该模型预测用户领取优惠券后是否会下单。根据模型预测结果，筛选一批高于某个阈值的用户，分成实验组和对照组。因此这次AB结果本身可以看出这个预测模型的uplift score。
+
+这个预测模型的AB实验中，实验组转化率是2.69\%，对照组转化率是2.28\%，两组的转化率远高于以往运营随机筛选或根据条件筛选用户的转化率。但是，注意到这个预测模型的uplift score只有0.41\$（2.69\%-2.28\%）。说明预测模型筛选出来的用户本身就有下单意愿，并不一定是因为发放优惠券而下单，所以实验组中的用户 persuadable 的比例应该不是很高。
+
+在一个预测模型上再做uplift modeling相当于是在下单意愿高的用户中再筛选persuadable用户，其实实践上没有太大必要。但是作为一个例子，数据还是比较完美的，而且实验组和对照都通过同一个预测模型筛选而来，然后再随机分组，是满足uplift modeling条件的。
+
+\subsection{几种模型的示例}
+\subsubsection{差分响应模型}
+实验组和对照组分别建模，使用 lightGBM 模型，分别取80\%数据为训练集，20\%数据为测试集。两个模型在测试集上的表现如下（未调参）：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Uplift_Model_Demo_Table.png}
+\end{figure}
+
+方便起见，将实验组和对照组20\%的测试数据合并作为整个uplift model的测试集，流程如下。使用的数据集是经过了response model预测后的结果，相当于先筛选了一批下单概率高的用户，因为实验组和对照组用户都来自于同一个response model，可以认为两组用户特征分布式相同的。实际应用时，要注意实验组和对照组的用户特征分布是否一致。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Uplift_Model_Demo2.png}
+\end{figure}
+
+对uplift分数 $\hat{\tau}(X)$ 排序，得到uplift bar，如下图所示。横轴是测试集中每个用户uplift的十分位数（decile），共10个bin；纵轴是每个bin的uplift均值。由于uplift排序是从低到高，因此这个uplift bar看起来是反的（正常应该是从高到底排）。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/CasualInference-Uplift_Model_Demo3.png}
+\end{figure}
+
+\subsubsection{Class Transformation Method}
+训练和测试过程如下图所示。从实验组和对照组筛选出 $Z=1$ 的用户作为正样本，其余的作为负样本。同样使用lightGBM模型（未调参）。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Uplift_Model_Demo4.png}
+\end{figure}
+
+\subsubsection{传统响应模型}
+为了对比，这里生成了一份传统响应模型的结果。注意这个对比其实没有什么意义，因为这些数据本身就是一个响应模型预测的结果，再预测一次的意义不大。
+
+响应模型使用LightGBM，正样本是下单用户，负样本是未下单用户，处理流程如下。将实验组（treatment group）切分为训练集和测试集，训练集用于训练预测模型，之后用该模型预测实验组的测试集作为 $P^T$，预测整个对照组的数据作为 $P^C$，然后计算uplift score。注意到这里实验组的测试集数量是远远少于对照组数量的，所以两边的数据量不均衡。这种方法计算出来的uplift score是模拟分数。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Uplift_Model_Demo5.png}
+\end{figure}
+
+\subsection{模型评估}
+Qini曲线图如下。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Uplift_Model_Demo6.png}
+\end{figure}
+
+Adjusted Qini是为了避免实验组和对照组数据不均衡而导致Qini系数失真而设计的。计算方式如下：
 $$
-\frac{n_t(\phi) + n_c(\phi)}{N_t + N_c}
+AQini = \frac{n_{t,1}(\phi)}{N_t} - \frac{n_{c,1}(\phi)n_t(\phi)}{n_c(\phi)N_t}
 $$
 
-这是对uplift的无偏估计。
+Adjusted Qini曲线如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Uplift_Model_Demo7.png}
+\end{figure}
 
-我们同时也包含了adjusted Qini curve，其中$\phi$ 为：
-$$
-\frac{n_t(\phi)}{N_t}
-$$
+累积增益曲线如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/CasualInference-Uplift_Model_Demo8.png}
+\end{figure}
+
+在Qini曲线下，差分响应模型的总体效果要好一些。而在累积增益曲线下，Class Transformation模型的总体效果要好一些。实验组和对照组数据不平衡的情况下，Qini系数可能有偏差，但本次对比的实验数据两组用户数量是接近的，这个问题还在研究中。
 
 
 \section{Uplift Model在淘票票智能票补中的应用}
@@ -427,6 +521,7 @@ $B$为红包预算上限；
 模型在线上应用的框架图，如上图所示，黄色区域是基于uplift model的实时预测的模块，当一条用户的请求过来的时候，我们会实时去数据库中取用户的特征以及影片的特征，同时结合当前的环境特征预测用户在当前状态下真实的敏感度，基于这个敏感度可以进行后续分发的面额决策等。
 
 \textbf{技术思考与后续规划}
+
 之后智能营销的发展态势是营销手段会越来越复杂，玩法也会越来越多，比如之前我们发放的更多是平台的通用券，后面也会发一些和影片相关的影片券或者影院券，这意味treatment的维度是在不断增长的，除了红包的金额之外还需要考虑不同的红包类型，这会给算法带来两个方面的挑战，一是我们需要对问题的建模形式做一个升级，除了之前单一维度的建模之外，我们可能还要考虑多维度的建模，同时维度的剧增会对样本的量级要求越来越高，样本的稀疏性问题会更加严重，针对这个问题我们有两个可能的解法：
 
 (1) 可以采用多任务学习的方式，联合其他场景一起建模缓解单场景样本的压力，同时也可以通过人为构造无偏样本的方式增加整体的样本量。当然除了技术侧，整个营销上面还有非常多很有意思的研究方向，比如之前更多考虑的是单个营销场景，但其实多个场景下怎么去建模和刻画他们之间的相互影响也是非常有意思的课题；

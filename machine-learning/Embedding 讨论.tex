@@ -78,23 +78,136 @@ $$
 
 \textbf{我们用 $w_t$ 去预测 $w_{t+j}$ ，但其实这二者的向量表达并不在一个向量空间内。}
 
-就像上面的条件概率公式写的一样，\textbf{$v'_w$ 和 $v_w$ 分别是词w的输出向量表达和输入向量表达}(？？why ？？)。那什么是输入向量表达和输出向量表达呢？我们画一个word2vec的神经网络架构图就明白了。
+就像上面的条件概率公式写的一样，\textbf{$v'_w$ 和 $v_w$ 分别是词w的输出向量表达和输入向量表达}。那什么是输入向量表达和输出向量表达呢？我们画一个word2vec的神经网络架构图就明白了。
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{fig/Word2Vec_Algorithm_Structure.png}
 \end{figure}
 
 根据 $p(w_{t+j}|w_t)$ 的定义，我们可以把两个vector的乘积再套上一个softmax的形式转换成上面的神经网络架构（需要非常注意的一点是hidden layer的激活函数，大家要思考一下，到底是sigmoid函数还是普通的线性函数，为什么？）。在训练过程中我们就可以通过梯度下降的方式求解模型参数了。那么上文所说的输入向量表达就是input layer到hidden layer的权重矩阵$W_{V\times N}$ ，而输出向量表达就是hidden layer到output layer的权重矩阵$W'_{N\times V}$ 。
+\begin{framed}
+如果从输入层到隐层的计算实际上就是one-hot到word embedding的映射的话，隐层没必要用非线性函数，把分布词向量再非线性映射一下感觉没意义。
+
+隐层的激活函数是线性的，相当于没做任何处理（这也是 Word2vec 简化之前语言模型的独到之处）。当模型训练完后，最后得到的其实是神经网络的权重【输入层到隐层、隐层到输出层】，这就是生成的词向量，词向量的维度等于隐层的节点数。注意，由输入层到隐层的网络权重（输入向量）以及隐层到输出层的网络权重（输出向量）均可以作为词向量，一般我们用“输入向量”。
+
+需要注意的是，这个词向量的维度（与隐含层节点数一致）一般情况下要远远小于词语总数 V 的大小，所以 Word2vec 本质上是一种降维操作—把词语从 one-hot encoder 形式的表示降维到 Word2vec 形式的表示。
+
+来源：\url{https://zhuanlan.zhihu.com/p/82712501}
+\end{framed}
 
 \textbf{那么到底什么是我们通常意义上所说的词向量 $v_w$ 呢？}
 
-其实就是我们上面所说的输入向量矩阵 $W_{V\times N}$ 中每一行对应的权重向量。于是这个权重矩阵自然转换成了word2vec的lookup table。
+其实就是我们上面所说的输入向量矩阵 $W_{V\times N}$ 中每一行对应的权重向量。于是这个权重矩阵自然转换成了word2vec的lookup table。也就是说，在获得输入向量矩阵$W_{V\times N}$之后，其中每一行对应的权重向量，就是通常意义上的“词向量”。例如，输入向量是10000个词组成的 one-hot 向量，隐层维度是300维，那么输入层到隐层的权重矩阵为 10000 X 300 维。在转换为词向量查找表后，每行的权重即成了对应词的 Embedding 向量。
 \begin{figure}[H]
     \centering
     \includegraphics[width=.6\textwidth]{fig/Word2Vec_Lookup_Table.png}
 \end{figure}
 
-当然在训练word2vec的过程中还有很多工程技巧，比如用negative sampling或Hierarchical Softmax减少词汇空间过大带来的计算量，对高频词汇进行降采样避免对于这些低信息词汇的无谓计算等。在具体实现的时候最好参考Google的原文 Distributed Representations of Words and Phrases and their Compositionality
+当然在训练word2vec的过程中还有很多工程技巧，比如用negative sampling（负采样）或Hierarchical Softmax减少词汇空间过大带来的计算量，对高频词汇进行降采样避免对于这些低信息词汇的无谓计算等。在具体实现的时候最好参考Google的原文 Distributed Representations of Words and Phrases and their Compositionality
+
+\subsubsection{Skip-gram和CBOW更一般的情形\cite{Embedding_Common_Methods_In_Reference_Systems}}
+当 y 有多个词时，Skip-gram 的网络结构如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Embedding_Common_Scenario_Skip_Gram.jpg}
+\end{figure}
+
+CBOW更一般的情形：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Embedding_Common_Scenario_CBOW.jpg}
+\end{figure}
+
+\subsection{模型细节和训练的tricks\cite{Embedding_Common_Methods_In_Reference_Systems}\cite{Understand_Skip_Gram_Model_in_Word2Vec}}
+\subsubsection{如何构建训练集？}
+基于成对的单词来对神经网络进行训练，训练样本是 ( input word, output word ) 这样的单词对(采集自原始的句子)，input word和output word都是one-hot编码的向量, 最终模型的输出是一个概率分布.
+
+假设我们拥有10000个单词的词汇表，我们如果想嵌入300维的词向量，那么我们的输入-隐层权重矩阵和隐层-输出层的权重矩阵都会有 10000 x 300 = 300万个权重，在如此庞大的神经网络中进行梯度下降是相当慢的。更糟糕的是，你需要大量的训练数据来调整这些权重并且避免过拟合。百万数量级的权重矩阵和亿万数量级的训练样本意味着训练这个模型将会是个灾难。
+
+解决方案：
+
+(1). 将常见的单词组合（word pairs）或者词组作为单个“words”来处理。
+
+(2). 对高频次单词进行抽样来减少训练样本的个数。基本思想：对于我们在训练原始文本中遇到的每一个单词，它们都有一定概率被我们从文本中删掉，而这个被删除的概率与单词的频率有关。
+
+(3). 对优化目标采用“negative sampling(负采样)”方法，这样每个训练样本的训练只会更新一小部分的模型权重，从而降低计算负担。
+
+\subsubsection{隐层}
+上面我们提到，input word和output word都会被我们进行one-hot编码。仔细想一下，我们的输入被one-hot编码以后大多数维度上都是0（实际上仅有一个位置为1），所以这个向量相当稀疏，那么会造成什么结果呢。如果我们将一个1 x 10000的向量和10000 x 300的矩阵相乘，它会消耗相当大的计算资源，为了高效计算，它仅仅会选择矩阵中对应的向量中维度值为1的索引行（这句话很绕），看图就明白。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Embedding_Hidden_Layer_Compute_Trick.png}
+\end{figure}
+
+我们来看一下上图中的矩阵运算，左边分别是1 x 5和5 x 3的矩阵，结果应该是1 x 3的矩阵，按照矩阵乘法的规则，结果的第一行第一列元素为$ 0 \times 17 + 0 \times 23 + 0 \times 4 + 1 \times 10 + 0 \times 11 = 10$，同理可得其余两个元素为12，19。如果10000个维度的矩阵采用这样的计算方式是十分低效的。
+
+为了有效地进行计算，这种稀疏状态下不会进行矩阵乘法计算，可以看到矩阵的计算的结果实际上是矩阵对应的向量中值为1的索引，上面的例子中，左边向量中取值为1的对应维度为3（下标从0开始），那么计算结果就是矩阵的第3行（下标从0开始）—— [10, 12, 19]，这样模型中的隐层权重矩阵便成了一个”查找表“（lookup table），进行矩阵计算时，直接去查输入向量中取值为1的维度下对应的那些权重值。隐层的输出就是每个输入单词的“嵌入词向量”。
+
+\subsubsection{输出层}
+经过神经网络隐层的计算，输入的词会从一个1 x 10000的向量变成1 x 300的向量，再被输入到输出层。输出层是一个softmax回归分类器，它的每个结点将会输出一个0-1之间的值（概率），这些所有输出层神经元结点的概率之和为1。
+
+下面是一个例子，训练样本为 (input word: “ants”， output word: “car”) 的计算示意图。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Embedding_Output_Compute_Example.png}
+\end{figure}
+
+\subsubsection{对高频词抽样}
+对于“the”这种常用高频单词，原始的处理方式会存在下面两个问题：
+
+(1). 当我们得到成对的单词训练样本时，("fox", "the") 这样的训练样本并不会给我们提供关于“fox”更多的语义信息，因为“the”在每个单词的上下文中几乎都会出现。
+
+(2). 由于在文本中“the”这样的常用词出现概率很大，因此我们将会有大量的（”the“，...）这样的训练样本，而这些样本数量远远超过了我们学习“the”这个词向量所需的训练样本数。
+
+Word2Vec通过“抽样”模式来解决这种高频词问题。它的基本思想如下：对于我们在训练原始文本中遇到的每一个单词，它们都有一定概率被我们从文本中删掉，而这个被删除的概率与单词的频率有关。
+
+如果我们设置窗口大小$span = 10$（即$skip_window = 5$），并且从我们的文本中删除所有的“the”，那么会有下面的结果：
+
+(1). 由于我们删除了文本中所有的“the”，那么在我们的训练样本中，“the”这个词永远也不会出现在我们的上下文窗口中。
+
+(2). 当“the”作为input word时，我们的训练样本数至少会减少10个。
+
+\begin{framed}
+这句话应该这么理解，假如我们的文本中仅出现了一个“the”，那么当这个“the”作为input word时，我们设置span=10，此时会得到10个训练样本 ("the", ...) ，如果删掉这个“the”，我们就会减少10个训练样本。实际中我们的文本中不止一个“the”，因此当“the”作为input word的时候，至少会减少10个训练样本。
+\end{framed}
+
+上面提到的这两个影响结果实际上就帮助我们解决了高频词带来的问题。
+
+\textbf{抽样率}
+
+word2vec的C语言代码实现了一个计算在词汇表中保留某个词概率的公式。
+
+$w_i$是一个单词，$Z(w_i)$是$w_i$这个单词在所有语料中出现的频次。举个栗子，如果单词“peanut”在10亿规模大小的语料中出现了1000次，那么$Z("peanut") = 1000 / 1000000000 = 1e-6$。
+
+在代码中还有一个参数叫“sample”，这个参数代表一个阈值，默认值为0.001（在gensim包中的Word2Vec类说明中，这个参数默认为0.001，文档中对这个参数的解释为“ threshold for configuring which higher-frequency words are randomly downsampled”）。这个值越小意味着这个单词被保留下来的概率越小（即有越大的概率被我们删除）。
+
+$P(w_i)$代表着保留某个单词的概率：
+$$
+P(w_i) = (\sqrt{\frac{Z(w_i)}{0.001} + 1}) \times \frac{0.001}{Z(w_i)}
+$$
+
+
+
+\subsubsection{负采样（Negative Sampling）介绍}
+当我们用训练样本 ( input word: "fox"，output word: "quick") 来训练我们的神经网络时，“ fox”和“quick”都是经过one-hot编码的。如果我们的vocabulary大小为10000时，在输出层，我们期望对应“quick”单词的那个神经元结点输出1，其余9999个都应该输出0。在这里，这9999个我们期望输出为0的神经元结点所对应的单词我们称为“negative” word。
+
+当使用负采样时，我们将随机选择一小部分的negative words（比如选5个negative words）来更新对应的权重。我们也会对我们的“positive” word进行权重更新（在我们上面的例子中，这个单词指的是”quick“）。\textbf{也就是说，负采样每次让一个训练样本仅仅更新一小部分的权重，这样就会降低梯度下降过程中的计算量。}
+
+回忆一下我们的隐层-输出层拥有300 x 10000的权重矩阵。如果使用了负采样的方法我们仅仅去更新我们的positive word-“quick”的和我们选择的其他5个negative words的结点对应的权重，共计6个输出神经元，相当于每次只更新300 * 6 = 1800个权重。对于3百万的权重来说，相当于只计算了0.06\%的权重，这样计算效率就大幅度提高。
+
+\textbf{如何选择negative words？}
+我们使用“一元模型分布（unigram distribution）”来选择“negative words”。要注意的一点是，一个单词被选作negative sample的概率跟它出现的频次有关，出现频次越高的单词越容易被选作negative words。
+
+在word2vec的C语言实现中，你可以看到对于这个概率的实现公式。每个单词被选为“negative words”的概率计算公式与其出现的频次有关。
+$$
+P(w_i) = \frac{f(w_i)^{3/4}}{\sum_{j=0}^n(f(w_j)^{3/4})}
+$$
+
+每个单词被赋予一个权重，即$f(w_i)$， 它代表着单词出现的频次。公式中开3/4的根号完全是基于经验的，论文中提到这个公式的效果要比其它公式更加出色。
+
+负采样的C语言实现非常的有趣。unigram table有一个包含了一亿个元素的数组，这个数组是由词汇表中每个单词的索引号填充的，并且这个数组中有重复，也就是说有些单词会出现多次。那么每个单词的索引在这个数组中出现的次数该如何决定呢，有公式$P(w_i) \times table_size$，也就是说计算出的负采样概率 $\times $ 1亿=单词在表中出现的次数。
+
+有了这张表以后，每次去我们进行负采样时，只需要在0-1亿范围内生成一个随机数，然后选择表中索引号为这个随机数的那个单词作为我们的negative word即可。一个单词的负采样概率越大，那么它在这个表中出现的次数就越多，它被选中的概率就越大。
 
 \subsection{从word2vec到item2vec}
 在word2vec诞生之后，embedding的思想迅速从NLP领域扩散到几乎所有机器学习的领域，我们既然可以对一个序列中的词进行embedding，那自然可以对用户购买序列中的一个商品，用户观看序列中的一个电影进行embedding。而广告、推荐、搜索等领域用户数据的稀疏性几乎必然要求在构建DNN之前对user和item进行embedding后才能进行有效的训练。
@@ -104,16 +217,68 @@ $$
 \frac{1}{K}\sum_{i=1}^K\sum_{j \neq i}^K \log{p(w_j|w_i)}
 $$
 
-具体可以参考item2vec的原文 Item2Vec:Neural Item Embedding for Collaborative Filtering
+具体可以参考item2vec的原文 Item2Vec:Neural Item Embedding for Collaborative Filtering。
 
-但embedding的应用又远不止于此，事实上，由于我们也可以把输出矩阵的列向量当作item embedding，这大大解放了我们可以用复杂网络生成embedding的能力。读过我专栏上一篇文章 YouTube深度学习推荐系统的十大工程问题 的同学肯定知道，YouTube在serve其candidate generation model的时候，只将最后softmax层的输出矩阵的列向量当作item embedding vector，而将softmax之前一层的值当作user embedding vector。在线上serving时不用部署整个模型，而是只存储user vector和item vector，再用最近邻索引进行快速搜索，这无疑是非常实用的embedding工程经验，也证明了我们可以用复杂网络生成user和item的embedding。
+仔细对比 Item2Vec 和 Word2Vec 优化目标的区别，可以看出，Item2Vec 摒弃了时间窗口的概念，认为序列中任意两个物品都相关；因此在 Item2Vec 的目标函数中可以看出，其是两两物品的对数概率的和，而不仅是时间窗口内物品的对数概率的和。
+
+但embedding的应用又远不止于此，事实上，由于我们也可以把输出矩阵的列向量当作item embedding，这大大解放了我们可以用复杂网络生成embedding的能力。读过我专栏上一篇文章 YouTube深度学习推荐系统的十大工程问题 的同学肯定知道，YouTube在serve其candidate generation model的时候，\textbf{只将最后softmax层的输出矩阵的列向量当作item embedding vector，而将softmax之前一层的值当作user embedding vector}。在线上serving时不用部署整个模型，而是只存储user vector和item vector，再用最近邻索引进行快速搜索，这无疑是非常实用的embedding工程经验，也证明了我们可以用复杂网络生成user和item的embedding。
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{fig/Embedding_In_Youtube_2.jpg}
 \end{figure}
 
+\begin{framed}
+理解：
+
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 这个DNN输入的特征是<user, context>类的特征；
+    \item 根据用户每次刷新的状态去输入到网络中得到的最后一层的向量作为user vector，可以做到实时反馈，每次最新的浏览点击都能反馈到输入层进而得到不同的user vector。
+    \item video vector则是Softmax中video与最后一层的w作为这个video的vector；
+    \item 通过user\_vec与item\_vec的内积最大索引就能快速得到结果；
+    \item (但是在整体候选集动辄达到几百万量级的互联网场景下，即使是遍历内积运算这种 $O(n)$ 级别的操作，也会消耗大量计算时间，导致线上推断过程的延迟，因此在工程上会使用针对相似 Embedding 的快速索引方法，如 FAISS。)
+\end{itemize}
+
+自己的理解：
+
+相当于说，最后一层softmax 的输入是 $In = 1 \times n$，softmax 层的权重矩阵是$W_{n\times m}$，softmax 的输出层 $Out = 1 \times m$（对应着 $m$ 个 video）。由于输出向量的每一维对应对应了一个 video，该维对应的 softmax 层列向量就是 item\_embedding。如果输入$In$与某个 video 的相似概率最大，那么意味着 $In$与 $W$对应列的内积和最大。
+
+所以将输入层$In$作为 user\_embedding\_vector，该 vector 是可以实时根据用户的线上行为进行更新的；权重矩阵$W$是预先训练好的，将权重矩阵 $W$的对应列，作为对应 video 的 item\_embedding\_vector；线上召回的时候，使用FAISS等方式可以进行快速召回。
+\end{framed}
+
 KDD 2018 best paper Real-time Personalization using Embeddings for Search Ranking at Airbnb 也介绍了Airbnb的embedding最佳实践。
+
+\subsection{Embedding 的快速搜索——局部敏感哈希(LSH)}
+\subsubsection{快速 Embedding 最近邻搜索}
+传统的 Embedding 相似度的计算方法是 Embedding 向量间的内积运算。这就意味着为了筛选某个用户的候选物品，需要对候选集合中的所有物品进行遍历。在 $k$ 维的 Embedding 空间中，物品总数为$n$，那么遍历计算用户和物品向量相似度的时间复杂度是$O(km)$。
+
+换一个角度思考这个问题，由于用户和物品的 Embedding 同处于一个向量空间内，所以召回与用户向量最相似的物品 Embedding 向量的过程其实是一个\textbf{在向量空间内搜索最近邻}的过程。这可以通过建立 KD 树的方式实现，时间复杂度可以降低到$O(log_2n)$。但是一方面，KD 树的结构，而且在进行最近邻搜索时还要进行回溯，确保最近邻的结果，导致搜索过程较复杂；另一方面，$O(log_2n)$的时间复杂度并不是完全理想的状态。
+
+另一种时间复杂度更低、操作更简便的方法就是快速 Embedding 向量最近邻搜索方法——局部敏感哈希（Locality Sensitive Hashing, LSH）。
+
+\subsubsection{局部敏感哈希的基本原理}
+局部敏感哈希的基本原理是让相邻的点落入同一个“桶”，这样在最近邻搜索时，仅需要在一个桶内，或相邻的几个桶内的元素中进行搜索即可。如果保持桶中的元素个数在一个常数附近，就可以把最近邻搜索的时间复杂度降低到常数级别。
+
+首先明确一个概念，如果将高维空间中的点向低维空间进行映射，其欧式相对距离还能否保持？定性的结论是：\textbf{在欧式空间中，将高维空间的点映射到低维空间，原本相近的点在低维空间中肯定依然相近，但原本远离的点则有一定概率变成相近的点}。
+
+利用低维空间可以保留高维空间相近距离关系的性质，就可以构造局部敏感哈希的“桶”。对于 Embedding 向量来说，也可以用内积操作构建局部敏感哈希桶。假设$v$是高维空间中的$k$维向量，$x$是随机生成的$k$维映射向量。那么\textbf{内积操作可以将$v$映射到一维空间，称为一个数值：}
+$$
+h(v) = \mathbf{v} \cdot \mathbf{x}
+$$
+
+即使一维空间也会部分保存高维空间的近似距离信息，因此，可以使用如下哈希函数$h(v)$进行分桶：
+$$
+h^{\mathbf{x},b}(\mathbf{v}) = \large\lfloor\frac{\mathbf{v}\cdot \mathbf{x} + b}{w}\large\rfloor
+$$
+
+其中，$\lfloor,\rfloor$是向下取整符号，$w$是分桶宽度，$b$是0到$w$间的一个均匀分布随机变量，避免分桶边界固化。
+
+映射操作损失了部分距离信息，如果仅采用一个哈希函数进行分桶，则必然存在相近点误判的情况，有效的解决方法是采用$m$个哈希函数同时进行分桶。同时掉进$m$个哈希函数的同一个桶的两点，是相似点的概率将大大增加。通过分桶找到相邻点的候选集合后，就可以在有限的候选集合中通过遍历找到目标点真正的$K$近邻。
+
+上述是采用欧式空间中内积操作的局部敏感哈希使用方法；如果是将余弦相似度作为距离标准，它衡量的是两个向量间夹角的大小，所以可以使用固定间隔的超平面将向量空间分割成不同的哈希桶。同理，其他距离也可以定义对应的哈希函数。
 
 \section{Embedding在深度推荐系统中的3大应用方向
 \cite{Three_Application_Of_Embedding_In_Reference_System}}
@@ -166,13 +331,15 @@ KDD 2018 best paper Real-time Personalization using Embeddings for Search Rankin
 
 FNN利用了FM训练得到的物品向量，作为Embedding层的初始化权重，从而加快了整个网络的收敛速度。在实际工程中，直接采用FM的物品向量作为Embedding特征向量输入到后续深度学习网络也是可行的办法。
 
-再延伸一点讲，Embedding的本质是建立高维向量到低维向量的映射，而“映射”的方法并不局限于神经网络，实质上可以是任何异构模型，这也是Embedding预训练的另一大优势，就是可以采用任何传统降维方法，机器学习模型，深度学习网络完成embedding的生成。
+在 FNN 模型的原始实现中，整个梯度下降过程还是会更新 Embedding 的权重，如果希望进一步加快网络的收敛速度，还可以采用固定 Embedding 层权重，仅更新上层神经网络权重的方法，这是更彻底的 Embedding 预训练方法。
+
+再延伸一点讲，\textbf{Embedding的本质是建立高维向量到低维向量的映射，而“映射”的方法并不局限于神经网络}，实质上可以是任何异构模型，这也是Embedding预训练的另一大优势，就是可以采用任何传统降维方法，机器学习模型，深度学习网络完成embedding的生成。
 
 典型的例子是2013年Facebook提出的著名的GBDT+LR的模型，其中GBDT的部分本质上也是完成了一次特征转换，可以看作是利用GBDT模型完成Embedding预训练之后，将Embedding输入单层神经网络进行CTR预估的过程。
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{fig/Embedding_GBDT_LR.png}
+    \includegraphics[width=.6\textwidth]{fig/Embedding_GBDT_LR.png}
 \end{figure}
 
 2015年以来，随着大量Graph Embedding技术的发展，Embedding本身的表达能力进一步增强，而且能够将各类特征全部融合进Embedding之中，这使Embedding本身成为非常有价值的特征。这些特点都使Embedding预训练成为更被青睐的技术途径。
@@ -218,7 +385,7 @@ word2vec和由其衍生出的item2vec是embedding技术的基础性方法，但�
 早期影响力较大的graph embedding方法是2014年提出的DeepWalk，它的主要思想是在由物品组成的图结构上进行\textbf{随机游走，产生大量物品序列}，然后将这些物品序列作为训练样本输入word2vec进行训练，得到物品的embedding。图3用图示的方法展现了DeepWalk的过程。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.6\textwidth]{fig/Graph_Embedding_Deep_Walk_Example.png}
+    \includegraphics[width=1\textwidth]{fig/Graph_Embedding_Deep_Walk_Example.png}
 \end{figure}
 
 如图3，整个DeepWalk的算法流程可以分为四步：
@@ -243,7 +410,7 @@ word2vec和由其衍生出的item2vec是embedding技术的基础性方法，但�
 如果物品相关图是无相无权重图，那么跳转概率将是上面公式的一个特例，即权重Mij将为常数1，且N+(vi)应是节点vi所有“边”的集合，而不是所有“出边”的集合。
 
 \subsection{DeepWalk的进一步改进——Node2vec}
-2016年，斯坦福大学在DeepWalk的基础上更进一步，通过调整随机游走权重的方法使graph embedding的结果在网络的同质性（homophily）和结构性（structural equivalence）中进行权衡权衡。
+2016年，斯坦福大学在DeepWalk的基础上更进一步，通过调整随机游走权重的方法使graph embedding的结果在网络的\textbf{同质性（homophily）和结构性（structural equivalence）}中进行权衡权衡。
 
 具体来讲，网络的“同质性”指的是距离相近节点的embedding应该尽量近似，如图4，节点u与其相连的节点s1、s2、s3、s4的embedding表达应该是接近的，这就是“同质性“的体现。
 \begin{figure}[H]
@@ -251,14 +418,39 @@ word2vec和由其衍生出的item2vec是embedding技术的基础性方法，但�
     \includegraphics[width=.6\textwidth]{fig/Graph_Embedding_BFS_DFS.png}
 \end{figure}
 
-为了使Graph Embedding的结果能够表达网络的同质性，在随机游走的过程中，需要让游走的过程更倾向于宽度优先搜索（BFS），因为BFS更喜欢游走到跟当前节点有直接连接的节点上，因此就会有更多同质性信息包含到生成的样本序列中，从而被embedding表达；另一方面，为了抓住网络的结构性，就需要随机游走更倾向于深度优先搜索（DFS），因为DFS会更倾向于通过多次跳转，游走到远方的节点上，使得生成的样本序列包含更多网络的整体结构信息。（通过 
-@张备
- 同学的提醒，这里其实是写反了，BFS应该反映了结构性，DFS反而反应了同质性，大家可以深度思考一下这是为什么，欢迎在评论区讨论）
+为了使Graph Embedding的结果能够表达网络的同质性，在随机游走的过程中，需要让游走的过程更倾向于宽度优先搜索（BFS），因为BFS更喜欢游走到跟当前节点有直接连接的节点上，因此就会有更多同质性信息包含到生成的样本序列中，从而被embedding表达；另一方面，为了抓住网络的结构性，就需要随机游走更倾向于深度优先搜索（DFS），因为DFS会更倾向于通过多次跳转，游走到远方的节点上，使得生成的样本序列包含更多网络的整体结构信息。
+
+\begin{framed}
+\textbf{这种想法是与论文原文的解释相反的，恰恰是BFS更多抓住了网络的结构性，而DFS更能体现网络的同质性}。
+
+对于宽度优先搜索（BFS）来说，其搜索往往是在当前节点（这里以节点u为例）的邻域进行的，特别是在node2vec中，由于存在所谓的“返回概率”，所以即使从u搜索到了s1，也有很大概率从s1再返回u，所以BFS产生的序列往往是在u附近的节点间进行来回的震荡，这就相当于对u周围的网络结构进行了一次\textbf{微观扫描（microscope view）}。
+
+那么这个微观扫描当然更容易得到微观结构的观察，所以BFS就更容易使 embedding 结果更多反应网络的“结构性”。这里我需要纠正一下大家对“结构性”的理解，正如上面所说的一样，这里的“结构”更多的指的是微观结构，而不是大范围内，甚至整个网络范围内的宏观结构，而是一阶、二阶范围内的微观结构。
+
+再举个例子理解一下，比如对于节点u和节点s9这两个节点来说，节点u是局部网络的中心节点，节点s9是一个十分边缘的节点。那么在对这个网络进行多次BFS随机游走的过程中，节点u肯定会被多次遍历到，而且会与s1-s4等更多节点发生联系，而边缘节点s9无论从遍历次数，还是从邻接点的丰富程度来说都远不及节点u，因此两者的embedding自然区别很大。
+
+如果用DFS进行遍历，由于遍历存在更大的不确定性，因此s9有更大的可能被包含在更多的序列中，并跟更多的节点发生联系，这就减弱了局部结构性的信息。类似于平滑了结构性的信息，自然是不如BFS更能反应“微观结构”了。
+
+另一方面，为什么说DFS更能反应“同质性”呢？
+
+这里还要对“同质性”也进行一个纠正，这里的“同质性”不是指一阶、二阶这类非常局限的同质性，而是在相对较广范围内的，能够发现一个社区、一个群、一个聚集类别的“同质性”。要发现这类同质性，当然需要使用DFS进行更广范围内的探索。如果仅用BFS在微观范围内探索，如何发现一个社区的边界在哪里呢？
+
+所以，\textbf{DFS相当于对网络结构进行了一次宏观扫描（macroscope view）}，只有在宏观的视角，才能发现大的集团、社区的聚集性，和集团内部节点的“同质性”。
+
+论文中最后通过实验的方式验证了DFS和BFS对于“同质性”和“结构性”的挖掘结果。颜色接近的节点代表其embedding的相似性更强。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Graph_Embedding_BFS_DFS_Diff.jpg}
+\end{figure}
+
+上图是node2vec更倾向于DFS的结果，可以看到各聚类的内部节点相似，这是网络“同质性”的体现；而图2下图中，结构类似节点的embedding更为相似，这是“结构性”的体现。
+\end{framed}
 
 那么在node2vec算法中，是怎样控制BFS和DFS的倾向性的呢？主要是通过节点间的跳转概率。图5显示了node2vec算法从节点t跳转到节点v后，下一步从节点v跳转到周围各点的跳转概率。
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.6\textwidth]{fig/Graph_Embedding_Node2Vec_Trans_Prob.png}
+    \includegraphics[width=.4\textwidth]{fig/Graph_Embedding_Node2Vec_Trans_Prob.png}
 \end{figure}
 
 形式化来讲，从节点v跳转到下一个节点x的概率为
@@ -275,12 +467,6 @@ word2vec和由其衍生出的item2vec是embedding技术的基础性方法，但�
 
 其中，dtx指的是节点t到节点x的距离，参数p和q共同控制着随机游走的倾向性。参数p被称为返回参数（return parameter），p越小，随机游走回节点t的可能性越大，node2vec就更注重表达网络的同质性，参数q被称为进出参数（in-out parameter），q越小，则随机游走到远方节点的可能性越大，node2vec更注重表达网络的结构性，反之，当前节点更可能在附近节点游走。
 
-node2vec这种灵活表达同质性和结构性的特点也得到了实验的证实。图6的上图就是node2vec更注重同质性的体现，可以看到距离相近的节点颜色更为接近，而图6下图则是结构特点相近的节点的颜色更为接近。
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.6\textwidth]{fig/Graph_Embedding_Node2Vec_Result_Example.jpg}
-\end{figure}
-
 node2vec所体现的网络的同质性和结构性在推荐系统中也是可以被很直观的解释的。同质性相同的物品很可能是同品类、同属性、或者经常被一同购买的物品，而结构性相同的物品则是各品类的爆款、各品类的最佳凑单商品等拥有类似趋势或者结构性属性的物品。毫无疑问，二者在推荐系统中都是非常重要的特征表达。由于node2vec的这种灵活性，以及发掘不同特征的能力，甚至可以把不同node2vec生成的embedding融合共同输入后续深度学习网络，以保留物品的不同特征信息。
 
 \subsection{阿里的Graph Embedding方法EGES}
@@ -288,15 +474,15 @@ node2vec所体现的网络的同质性和结构性在推荐系统中也是可以
 
 如果单纯使用用户行为生成的物品相关图，固然可以生成物品的embedding，但是如果遇到新加入的物品，或者没有过多互动信息的长尾物品，推荐系统将出现严重的冷启动问题。为了使“冷启动”的商品获得“合理”的初始Embedding，阿里团队通过引入了更多补充信息来丰富Embedding信息的来源，从而使没有历史行为记录的商品获得Embedding。
 
-生成Graph embedding的第一步是生成物品关系图，通过用户行为序列可以生成物品相关图，利用相同属性、相同类别等信息，也可以通过这些相似性建立物品之间的边，从而生成基于内容的knowledge graph。而基于knowledge graph生成的物品向量可以被称为补充信息（side information）embedding向量，当然，根据补充信息类别的不同，可以有多个side information embedding向量。
+生成Graph embedding的第一步是生成物品关系图，通过用户行为序列可以生成物品相关图，利用相同属性、相同类别等信息，也可以通过这些相似性建立物品之间的边，从而生成\textbf{基于内容的knowledge graph}。而基于knowledge graph生成的物品向量可以被称为补充信息（side information）embedding向量，当然，根据补充信息类别的不同，可以有多个side information embedding向量。
 
-那么如何融合一个物品的多个embedding向量，使之形成物品最后的embedding呢？最简单的方法是在深度神经网络中加入average pooling层将不同embedding平均起来，阿里在此基础上进行了加强，对每个embedding加上了权重，如图7所示，对每类特征对应的Embedding向量，分别赋予了权重a0，a1…an。图中的Hidden Representation层就是对不同Embedding进行加权平均操作的层，得到加权平均后的Embedding向量后，再直接输入softmax层，这样通过梯度反向传播，就可以求的每个embedding的权重ai(i=0…n)。
+那么如何融合一个物品的多个embedding向量，使之形成物品最后的embedding呢？最简单的方法是在深度神经网络中加入average pooling层将不同embedding平均起来，阿里在此基础上进行了加强，\textbf{对每个embedding加上了权重}（类似于 DIN 模型的注意力机制），如下图所示，对每类特征对应的Embedding向量，分别赋予了权重$a_0，a_1…a_n$。图中的Hidden Representation层就是对不同Embedding进行加权平均操作的层，得到加权平均后的Embedding向量后，再直接输入softmax层，这样通过梯度反向传播，就可以求的每个embedding的权重$a_i(i=0, \cdots, n)$。
 \begin{figure}[H]
     \centering
     \includegraphics[width=.6\textwidth]{fig/Graph_Embedding_In_Ali.jpg}
 \end{figure}
 
-在实际的模型中，阿里采用了 $e^{a_j}$ 而不是aj作为相应embedding的权重，一是避免权重为0，二是因为$e^{a_j}$ 在梯度下降过程中有良好的数学性质。
+在实际的模型中，阿里采用了 $e^{a_j}$ 而不是$a_j$作为相应embedding的权重，一是避免权重为0，二是因为$e^{a_j}$ 在梯度下降过程中有良好的数学性质。
 
 阿里的EGES并没有过于复杂的理论创新，但给出一个工程性的结合多种Embedding的方法，降低了某类Embedding缺失造成的冷启动问题，是实用性极强的Embedding方法。
 

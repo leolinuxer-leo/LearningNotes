@@ -36,8 +36,18 @@
 %\author{leolinuxer }
 %\date{June 2020}
 
+\title{模型效果的评估方法}
+\author{leolinuxer}
+%\date{June 2020}
+
 \begin{document}
-%\maketitle
+\maketitle
+\tableofcontents
+
+\section{评估目标的设定原则\cite{Deep_Learning_Recommender_System}}
+以 YouTube 的推荐系统为例，推荐系统的终极优化目标应该包括两个维度：一个维度是用户体验的优化，另一个维度是满足公司的商业利益。对于 YouTube 公司而言，其优化用户体验结果的最直接体现就是用户观看时长的增加。而YouTube作为一家以广告位主要收入来源的公司，其商业利益也建立在用户观看时长的增长之上，因为总用户观看时长与广告的总曝光机会成正比。
+
+所以，YouTube 推荐系统的优化目标就是用户观看时长，而不是传统系统看中的“点击率”。其大致推荐流程是：先通过构建深度学习模型，预测用户观看某候选视频的时长，再按照预测时长进行候选视频的排序，行成最终的推荐列表。
 
 \section{Confusion Matrix}
 Confusion Matrix 矩阵如下表所示：
@@ -71,7 +81,7 @@ $$ FNR = \frac{FN}{TP+FN}$$
 假阳性率(False Positice Rate，FPR)，误诊率( = 1 - 特异度)：
 $$ FPR = \frac{FP}{FP+TN}$$
 
-\section{ROC 和 AUC \cite{ROC-AUC}}
+\section{主要评价指标 \cite{ROC-AUC}}
 \subsection{ROC}
 对于分类器，或者说分类算法，评价指标主要有precision，recall，F-score等，以及这里要讨论的ROC和AUC。
 
@@ -107,6 +117,42 @@ AUC (Area Under Curve) 被定义为ROC曲线下的面积，显然这个面积的
 
 在上图中，(a)和(c)为ROC曲线，(b)和(d)为Precision-Recall曲线。(a)和(b)展示的是分类其在原始测试集（正负样本分布平衡）的结果，(c)和(d)是将测试集中负样本的数量增加到原来的10倍后，分类器的结果。可以明显的看出，ROC曲线基本保持原貌，而Precision-Recall曲线则变化较大。
 
+\subsection{平均精度均值（mAP, Mean Average Precision）}
+平均精度均值是对平均精度（Average Precision）的再次平均。
+
+要计算 mAP 必须先绘出各类别 PR 曲线，计算出 AP。假定推荐系统对某一用户测试集的排序结果如下表所示：
+\begin{table}[h]
+\begin{center}  
+\begin{tabular}{|l|l|l|l|l|l|l|}  
+\hline  
+ 推荐序列 & N = 1 & N= 2 & N=3 & N= 4 & N= 5 & N= 6 \\ \hline  
+ 真实标签 & 1 & 0 & 0 & 1 & 1 & 1 \\  \hline
+\end{tabular}  
+\end{center}
+\end{table}
+
+其中，1 代表正样本，0 代表负样本。
+
+在排序模型中，通常没有一个确定的阈值把预测结果直接判定为正样本或负样本，而是采用 TopN 排序结果的精确率（precision@N）和召回率(recall@N)来衡量排序模型的性能，即认为模型排序的 TopN 的结果就是模型判定的正样本，然后计算 precision@N 和 recall@N。
+
+接下来，计算上述序列中每个位置上的 precision@N：
+\begin{table}[h]
+\begin{center}  
+\begin{tabular}{|l|l|l|l|l|l|l|}  
+\hline  
+ 推荐序列 & N = 1 & N= 2 & N=3 & N= 4 & N= 5 & N= 6 \\ \hline  
+ 真实标签 & 1 & 0 & 0 & 1 & 1 & 1 \\  \hline
+ precision@N & 1/1 & 1/2 & 1/3 & 2/4 & 3/5 & 4/6 \\  \hline
+\end{tabular}  
+\end{center}
+\end{table}
+
+AP 的计算只取正样本处的 precision 进行平均，即 AP = (1/1 + 2/4 + 3/5 + 4/6) = 0.6917，那么什么是 mAP 呢？
+
+如果推荐系统对测试集中的每个用户都进行样本排序，那么每个用户都会计算出一个 AP 值，然后再对所有用户的 AP 值进行平均，就得到了 mAP。
+
+值得注意的是，mAP 的计算方法和 P-R 曲线、ROC 曲线的计算方法完全不同，因为 mAP 需要对每个用户的样本进行分用户排序，而 P-R 曲线和 ROC 曲线均是对全量测试样本进行排序。
+
 \subsection{精确率、准召率、F1 值 各自的优缺点\cite{Compare_P_R_F1_ROC_AUC}}
 
 \subsubsection{精确率 Accuracy}
@@ -134,6 +180,24 @@ F1-score &= \frac{2}{1/precision + 1/recall}\\
 可以看出，F1-score是 precision 和 recall 的调和平均数（调和平均数（harmonic mean）又称倒数平均数，是总体各统计变量倒数的算术平均数的倒数。$H_n = n/\sum_{i=1}^n\frac{1}{x_i} = \frac{n}{\frac{1}{x_1} + \frac{1}{x_2} + \cdots + \frac{1}{x_n}}$）
 
 如果两个模型，一个precision特别高，recall特别低，另一个recall特别高，precision特别低的时候，F1-score可能是差不多的，也不能基于此来作出选择。
+
+\section{离线评估的主要方法\cite{Deep_Learning_Recommender_System}}
+\subsection{Holdout 检验}
+将原始样本随机划分为测试集和验证集两部分；比如，可以将样本按照70\%-30\%的比例随机分成两部分，70\%的样本用于模型的训练，30\%的样本用于模型的评估
+
+Holdout 检验的缺点：在验证集上计算出来的评估指标与训练集和验证集的划分有很大关系，如果仅仅进行少量 holdout 检验，则得到的结论存在较大的随机性。为了消除这种随机性，“交叉检验”的思想被提出。
+
+\subsection{交叉检验}
+\subsubsection{k-fold 交叉检验}
+先将全部样本划分为$k$个大小相等的样本子集；依次遍历这$k$个子集，每次都把当前子集作为验证集，其余所有子集作为训练集，进行模型的训练和评估；最后将所有$k$次的评估指标的平均值作为最终的评估指标。在实际实验中，$k$经常取10。
+
+\subsubsection{留一验证}
+每次留下一个样本作为验证集，其余所有样本作为训练集。样本总数为$n$，依次遍历所有$n$个样本，进行$n$次验证，再讲评估指标求平均得到最终各指标。在样本总数较多的情况下，留一验证法的时间开销极大。事实上，留一验证是留$p$验证的特例。留$p$验证是指每次留下$p$个样本作为验证集，而从$n$个元素中选择$p$个元素有$C_n^p$中可能，因此它的时间开销远远大于留一验证，因此很少在实际工程中应用。
+
+\subsubsection{自助法（bootstrap）}
+不管是 holdout 检验还是交叉检验，都是基于划分样本机和验证集的方式进行模型评估的。然而，当样本规模比较小时，将样本机进行划分会让训练集进一步减小，这可能会影响模型的训练效果。
+
+bootstrap 法能在一定程度上维持训练集样本的规模。是基于自助采样法的验证方法：对于总数为$n$的样本集合，进行$n$次有放回的随机抽样，得到大小为$n$的训练集。在$n$次采样过程中，有的样本会被重复采样，有的样本没有被抽出过，将这些没有被抽出的样本作为验证集进行模型验证，就是自助法的验证过程。
 
 %\printbibliography
 \bibliography{../ref}
