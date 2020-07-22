@@ -280,84 +280,6 @@ $$
 
 上述是采用欧式空间中内积操作的局部敏感哈希使用方法；如果是将余弦相似度作为距离标准，它衡量的是两个向量间夹角的大小，所以可以使用固定间隔的超平面将向量空间分割成不同的哈希桶。同理，其他距离也可以定义对应的哈希函数。
 
-\section{Embedding在深度推荐系统中的3大应用方向
-\cite{Three_Application_Of_Embedding_In_Reference_System}}
-
-在深度学习推荐系统中，Embedding有三个主要的应用方向：
-\begin{itemize}
-\setlength{\itemsep}{0pt}
-\setlength{\parsep}{0pt}
-\setlength{\parskip}{0pt}
-    \item 在深度学习网络中作为Embedding层，完成从高维稀疏特征向量到低维稠密特征向量的转换；
-    \item 作为预训练的Embedding特征向量，与其他特征向量连接后一同输入深度学习网络进行训练；
-    \item 通过计算用户和物品的Embedding相似度，Embedding可以直接作为推荐系统或计算广告系统的召回层或者召回方法之一；
-\end{itemize}
-
-\subsection{深度学习网络中的Embedding层}
-由于高维稀疏特征向量天然不适合多层复杂神经网络的训练，因此如果使用深度学习模型处理高维稀疏特征向量，几乎都会在输入层到全连接层之间加入Embedding层完成高维稀疏特征向量到低维稠密特征向量的转换。典型的例子是微软的Deep Crossing模型和Google的Wide\&Deep模型的深度部分。
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.8\textwidth]{fig/Microsoft_Deep_Crossing_Strucure.png}
-\end{figure}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.8\textwidth]{fig/Wide_Deep_Structure.png}
-\end{figure}
-
-图1中可以清晰的看到Deep Crossing模型中的Embedding层将每一个Feature转换成稠密向量，图2Wide\&Deep模型中Deep部分的Dense Embeddings层同样将稀疏特征向量进行转换。广义来说，Embedding层的结构可以比较复杂，只要完成高维向量的降维就可以了，但一般为了节省训练时间，深度神经网络中的Embedding层是一个高维向量向低维向量的直接映射（如图3）。
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.5\textwidth]{fig/Embedding_From_One_Hot_Example.png}
-\end{figure}
-
-一般来说，推荐系统的输入向量中包含大量稀疏的 one hot 特征，图3展示了典型的稀疏向量向稠密embedding向量的最简单的embedding层结构。
-
-用矩阵的形式表达Embedding层，本质上是求解一个 m（输入高维稀疏向量的维度） x n（输出稠密向量的维度）维的权重矩阵的过程。如果输入向量是 one-hot 特征向量的话，权重矩阵中的列向量即为相应维度one-hot特征的embedding向量。
-
-将Embedding层与整个深度学习网络整合后一同进行训练是理论上最优的选择，因为上层梯度可以直接反向传播到输入层，模型整体是自洽和统一的。但这样做的缺点同样显而易见的，由于Embedding层输入向量的维度甚大，Embedding层的加入会拖慢整个神经网络的收敛速度。
-
-\begin{framed}
-这里可以做一个简单的计算。假设输入层维度是100,000，embedding输出维度是32，上层再加5层32维的全连接层，最后输出层维度是10，那么输出层到embedding层的参数数量是32*100,000= 3,200,000，其余所有层的参数总数是 （32*32）*4+32*10=4416。那么embedding层的权重总数占比是 3,200,000 / (3,200,000 + 4416) = 99.86\%。
-\end{framed}
-
-也就是说embedding层的权重占据了整个网络权重的绝大部分。那么训练过程可想而知，大部分的训练时间和计算开销都被Embedding层所占据。正因为这个原因，Embedding层往往采用预训练的方式完成。
-
-\subsection{Embedding的预训练方法}
-通过上面对Embedding层的介绍，同学们肯定已经知道Embedding层的训练开销是巨大的。为了解决这个问题，Embedding的训练往往独立于深度学习网络进行。在得到稀疏特征的稠密表达之后，再与其他特征一起输入神经网络进行训练。典型的采用Embedding预训练方法的模型是FNN（如图4）。
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.8\textwidth]{fig/FNN_Structure.png}
-\end{figure}
-
-FNN利用了FM训练得到的物品向量，作为Embedding层的初始化权重，从而加快了整个网络的收敛速度。在实际工程中，直接采用FM的物品向量作为Embedding特征向量输入到后续深度学习网络也是可行的办法。
-
-在 FNN 模型的原始实现中，整个梯度下降过程还是会更新 Embedding 的权重，如果希望进一步加快网络的收敛速度，还可以采用固定 Embedding 层权重，仅更新上层神经网络权重的方法，这是更彻底的 Embedding 预训练方法。
-
-再延伸一点讲，\textbf{Embedding的本质是建立高维向量到低维向量的映射，而“映射”的方法并不局限于神经网络}，实质上可以是任何异构模型，这也是Embedding预训练的另一大优势，就是可以采用任何传统降维方法，机器学习模型，深度学习网络完成embedding的生成。
-
-典型的例子是2013年Facebook提出的著名的GBDT+LR的模型，其中GBDT的部分本质上也是完成了一次特征转换，可以看作是利用GBDT模型完成Embedding预训练之后，将Embedding输入单层神经网络进行CTR预估的过程。
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.6\textwidth]{fig/Embedding_GBDT_LR.png}
-\end{figure}
-
-2015年以来，随着大量Graph Embedding技术的发展，Embedding本身的表达能力进一步增强，而且能够将各类特征全部融合进Embedding之中，这使Embedding本身成为非常有价值的特征。这些特点都使Embedding预训练成为更被青睐的技术途径。
-
-诚然，将Embedding过程与深度网络的训练过程割裂，必然会损失一定的信息，但训练过程的独立也带来了训练灵活性的提升。举例来说，由于物品或用户的Embedding天然是比较稳定的（因为用户的兴趣、物品的属性不可能在几天内发生巨大的变化），Embedding的训练频率其实不需要很高，甚至可以降低到周的级别，但上层神经网络为了尽快抓住最新的正样本信息，往往需要高频训练甚至实时训练。使用不同的训练频率更新Embedding模型和神经网络模型，是训练开销和模型效果二者之间权衡后的最优方案。
-
-\subsection{embedding作为推荐系统或计算广告系统的召回层}
-随着Embedding技术的进步，Embedding自身的表达能力也逐步增强，利用Embedding向量的相似性，直接将Embedding作为推荐系统召回层的方案越来越多的被采用。其中Youtube推荐系统召回层的解决方案是典型的做法。
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=1\textwidth]{fig/Embedding_In_Youtube.jpg}
-\end{figure}
-
-我曾经在文章《重读Youtube深度学习推荐系统论文，字字珠玑，惊为神文》中介绍过了Youtube利用深度学习网络生成Video Embedding和User Embedding的方法。利用最终的Softmax层的权重矩阵，每个Video对应的列向量就是其Item Embedding，而Softmax前一层的输出就是User Embedding。在模型部署过程中，没有必要部署整个深度学习网络来完成从原始特征向量到最终输出的预测过程，只需要将User Embedding和Item Embedding存储到线上内存数据库，通过内积运算再排序的方法就可以得到item的排名。这大大加快了召回层的召回效率。
-
-\subsection{总结}
-事实上，除了上述的三种主要的Embedding应用方向，业界对于Embedding的创新性研究不仅没有停止，而且有愈演愈烈之势，阿里的EGES，Pinterest的GNN应用，Airbnb基于Embedding的搜索模型等大量表达能力非常强的Embedding方法的诞生，使Embedding本身就已经成为了优秀的CTR模型和推荐系统模型。作为计算广告和推荐系统领域的从业者，无论如何强调Embedding的重要性都不过分。
-
 \section{深度学习中的Graph Embedding方法
 \cite{Graph_Embedding_In_Deep_Learning}}
 \begin{itemize}
@@ -486,6 +408,85 @@ node2vec所体现的网络的同质性和结构性在推荐系统中也是可以
 
 阿里的EGES并没有过于复杂的理论创新，但给出一个工程性的结合多种Embedding的方法，降低了某类Embedding缺失造成的冷启动问题，是实用性极强的Embedding方法。
 
+
+\section{Embedding在深度推荐系统中的3大应用方向
+\cite{Three_Application_Of_Embedding_In_Reference_System}}
+
+在深度学习推荐系统中，Embedding有三个主要的应用方向：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 在深度学习网络中作为Embedding层，完成从高维稀疏特征向量到低维稠密特征向量的转换；
+    \item 作为预训练的Embedding特征向量，与其他特征向量连接后一同输入深度学习网络进行训练；
+    \item 通过计算用户和物品的Embedding相似度，Embedding可以直接作为推荐系统或计算广告系统的召回层或者召回方法之一；
+\end{itemize}
+
+\subsection{深度学习网络中的Embedding层}
+由于高维稀疏特征向量天然不适合多层复杂神经网络的训练，因此如果使用深度学习模型处理高维稀疏特征向量，几乎都会在输入层到全连接层之间加入Embedding层完成高维稀疏特征向量到低维稠密特征向量的转换。典型的例子是微软的Deep Crossing模型和Google的Wide\&Deep模型的深度部分。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Microsoft_Deep_Crossing_Strucure.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Wide_Deep_Structure.png}
+\end{figure}
+
+图1中可以清晰的看到Deep Crossing模型中的Embedding层将每一个Feature转换成稠密向量，图2Wide\&Deep模型中Deep部分的Dense Embeddings层同样将稀疏特征向量进行转换。广义来说，Embedding层的结构可以比较复杂，只要完成高维向量的降维就可以了，但一般为了节省训练时间，深度神经网络中的Embedding层是一个高维向量向低维向量的直接映射（如图3）。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.5\textwidth]{fig/Embedding_From_One_Hot_Example.png}
+\end{figure}
+
+一般来说，推荐系统的输入向量中包含大量稀疏的 one hot 特征，图3展示了典型的稀疏向量向稠密embedding向量的最简单的embedding层结构。
+
+用矩阵的形式表达Embedding层，本质上是求解一个 m（输入高维稀疏向量的维度） x n（输出稠密向量的维度）维的权重矩阵的过程。如果输入向量是 one-hot 特征向量的话，权重矩阵中的列向量即为相应维度one-hot特征的embedding向量。
+
+将Embedding层与整个深度学习网络整合后一同进行训练是理论上最优的选择，因为上层梯度可以直接反向传播到输入层，模型整体是自洽和统一的。但这样做的缺点同样显而易见的，由于Embedding层输入向量的维度甚大，Embedding层的加入会拖慢整个神经网络的收敛速度。
+
+\begin{framed}
+这里可以做一个简单的计算。假设输入层维度是100,000，embedding输出维度是32，上层再加5层32维的全连接层，最后输出层维度是10，那么输出层到embedding层的参数数量是32*100,000= 3,200,000，其余所有层的参数总数是 （32*32）*4+32*10=4416。那么embedding层的权重总数占比是 3,200,000 / (3,200,000 + 4416) = 99.86\%。
+\end{framed}
+
+也就是说embedding层的权重占据了整个网络权重的绝大部分。那么训练过程可想而知，大部分的训练时间和计算开销都被Embedding层所占据。正因为这个原因，Embedding层往往采用预训练的方式完成。
+
+\subsection{Embedding的预训练方法}
+通过上面对Embedding层的介绍，同学们肯定已经知道Embedding层的训练开销是巨大的。为了解决这个问题，Embedding的训练往往独立于深度学习网络进行。在得到稀疏特征的稠密表达之后，再与其他特征一起输入神经网络进行训练。典型的采用Embedding预训练方法的模型是FNN（如图4）。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/FNN_Structure.png}
+\end{figure}
+
+FNN利用了FM训练得到的物品向量，作为Embedding层的初始化权重，从而加快了整个网络的收敛速度。在实际工程中，直接采用FM的物品向量作为Embedding特征向量输入到后续深度学习网络也是可行的办法。
+
+在 FNN 模型的原始实现中，整个梯度下降过程还是会更新 Embedding 的权重，如果希望进一步加快网络的收敛速度，还可以采用固定 Embedding 层权重，仅更新上层神经网络权重的方法，这是更彻底的 Embedding 预训练方法。
+
+再延伸一点讲，\textbf{Embedding的本质是建立高维向量到低维向量的映射，而“映射”的方法并不局限于神经网络}，实质上可以是任何异构模型，这也是Embedding预训练的另一大优势，就是可以采用任何传统降维方法，机器学习模型，深度学习网络完成embedding的生成。
+
+典型的例子是2013年Facebook提出的著名的GBDT+LR的模型，其中GBDT的部分本质上也是完成了一次特征转换，可以看作是利用GBDT模型完成Embedding预训练之后，将Embedding输入单层神经网络进行CTR预估的过程。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Embedding_GBDT_LR.png}
+\end{figure}
+
+2015年以来，随着大量Graph Embedding技术的发展，Embedding本身的表达能力进一步增强，而且能够将各类特征全部融合进Embedding之中，这使Embedding本身成为非常有价值的特征。这些特点都使Embedding预训练成为更被青睐的技术途径。
+
+诚然，将Embedding过程与深度网络的训练过程割裂，必然会损失一定的信息，但训练过程的独立也带来了训练灵活性的提升。举例来说，由于物品或用户的Embedding天然是比较稳定的（因为用户的兴趣、物品的属性不可能在几天内发生巨大的变化），Embedding的训练频率其实不需要很高，甚至可以降低到周的级别，但上层神经网络为了尽快抓住最新的正样本信息，往往需要高频训练甚至实时训练。使用不同的训练频率更新Embedding模型和神经网络模型，是训练开销和模型效果二者之间权衡后的最优方案。
+
+\subsection{embedding作为推荐系统或计算广告系统的召回层}
+随着Embedding技术的进步，Embedding自身的表达能力也逐步增强，利用Embedding向量的相似性，直接将Embedding作为推荐系统召回层的方案越来越多的被采用。其中Youtube推荐系统召回层的解决方案是典型的做法。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Embedding_In_Youtube.jpg}
+\end{figure}
+
+我曾经在文章《重读Youtube深度学习推荐系统论文，字字珠玑，惊为神文》中介绍过了Youtube利用深度学习网络生成Video Embedding和User Embedding的方法。利用最终的Softmax层的权重矩阵，每个Video对应的列向量就是其Item Embedding，而Softmax前一层的输出就是User Embedding。在模型部署过程中，没有必要部署整个深度学习网络来完成从原始特征向量到最终输出的预测过程，只需要将User Embedding和Item Embedding存储到线上内存数据库，通过内积运算再排序的方法就可以得到item的排名。这大大加快了召回层的召回效率。
+
+\subsection{总结}
+事实上，除了上述的三种主要的Embedding应用方向，业界对于Embedding的创新性研究不仅没有停止，而且有愈演愈烈之势，阿里的EGES，Pinterest的GNN应用，Airbnb基于Embedding的搜索模型等大量表达能力非常强的Embedding方法的诞生，使Embedding本身就已经成为了优秀的CTR模型和推荐系统模型。作为计算广告和推荐系统领域的从业者，无论如何强调Embedding的重要性都不过分。
+
 \part{Embedding 在工业场景的应用}
 \section{Embedding 在 Airbnb 搜索排序中的应用
 \cite{Embedding_In_Realtime_Search_In_Airbnb}\cite{How_Airbnb_Solve_Sparse_Problem_In_Embedding}}
@@ -566,7 +567,7 @@ $$
     \includegraphics[width=1\textwidth]{fig/Airbnb_Click_Objetive2.png}
 \end{figure}
 
-其中最后一项的lb就是代表着booked listing，因为booking是一个正样本行为，这一项前也是有负号的。
+其中最后一项的$l_b$就是代表着booked listing，因为booking是一个正样本行为，这一项前也是有负号的。
 
 需要注意的是最后一项前是没有sigma符号的，前面的sigma符号是因为滑动窗口中的中心listing与所有滑动窗口中的其他listing都相关，最后一项没有sigma符号直观理解是因为booked listing只有一个，所以central listing只与这一个listing有关。
 
@@ -576,7 +577,7 @@ $$
     \includegraphics[width=1\textwidth]{fig/Airbnb_Click_Objetive3.png}
 \end{figure}
 
-其中Db代表了所有booked session中所有滑动窗口中central listing和booked listing的pair集合。
+其中$D_b$代表了所有booked session中所有滑动窗口中central listing和booked listing的pair集合。
 
 下面这一项就比较容易理解了，为了更好的发现同一市场（marketplace）内部listing的差异性，Airbnb加入了另一组negative sample，就是在central listing同一市场的listing集合中进行随机抽样，获得一组新的negative samples。同理，我们可以用跟之前negative sample同样的形式加入到objective中。
 \begin{figure}[H]
@@ -584,7 +585,7 @@ $$
     \includegraphics[width=1\textwidth]{fig/Airbnb_Click_Objetive4.png}
 \end{figure}
 
-其中Dmn就是新的同一地区的negative samples的集合。
+其中$D_{m_n}$就是新的同一地区的negative samples的集合。
 
 至此，lisitng embedding的objective就定义完成了，embedding的训练过程就是word2vec negative sampling模型的标准训练过程，这里不再详述。
 
@@ -664,6 +665,7 @@ instead of listing l , the center item that needs to be updated is either user\_
 
 到此我介绍完了airbnb所有的embedding方法，这里我要强调的是，airbnb并没有直接把embedding similarity直接得到搜索结果，而是基于embedding得到不同的user-listing pair feature，然后输入搜索排序模型，得到最终的排序结果。下面我们来看一看airbnb的搜索排序模型和feature。
 
+\subsection{搜索排序模型和 feature}
 \textbf{airbnb采用的搜索排序模型是一个pairwise的支持Lambda Rank的GBDT模型}。该模型已经由airbnb的工程师开源，感兴趣的同学可以去学习一下（github地址：https://github.com/yarny/gbdt）。
 
 我们关注的重点回到特征工程上来，airbnb基于embedding生成了哪些feature呢？这些feature又是如何驱动搜索结果的“实时”个性化呢？
