@@ -184,12 +184,12 @@ $$
     \item 初始化：先对每个臂都试过一遍
     \item 按照公式计算每个臂的分数，选择分数最大的臂作为选择
     $$
-    	\bar{x}_j(t) + \sqrt{\frac{2\ln{t}}{T_{j,t}}}
+    	\text{UCB}(j) = \bar{x}_j(t) + \sqrt{\frac{2\ln{t}}{T_{j,t}}}
     $$
     \item 观察选择结果，更新$t$和 $T_{j,t}$
 \end{enumerate}
 
-其中，$t$为目前试验次数，  $\bar{x}_j(t)$是这个臂到目前的收益均值，$T_{j,t}$ 为这个臂被试次数。加号后面本质上就是均值的标准差。
+其中，$t$为目前试验次数，  $\bar{x}_j(t)$是这个臂到目前的收益均值，$T_{j,t}$ 为这个臂被试次数。$\sqrt{\frac{2\ln{t}}{T_{j,t}}}$就是所谓的置信区间宽度，代表探索的分值。$\bar{x}_j(t) $和 $\sqrt{\frac{2\ln{t}}{T_{j,t}}}$相加就是老虎机 $j$ 的置信区间上界。加号后面本质上就是均值的标准差。
 
 \textcolor{red}{UCB的总体思想其实是：均值越大，标准差越小，被选中的概率会越来越大。}即它总认为探索之后的结果会比现在好，所以除了要选择收益均值最大的臂，还要看它被探索的次数。为了使得每个老虎机被探索的机会次数相当，当某个老虎机的$T_{j,t}$ 越大时（即等式右边的值会越小），给它的机会会越小。
 
@@ -215,6 +215,37 @@ UCB算法的特点：
     \item 优点：返回的结果是固定的
     \item 缺点：计算较慢
 \end{itemize}
+
+\begin{framed}
+\textbf{UCB 公式的由来\cite{Deep_Learning_Recommender_System}}
+
+UCB 公式是基于霍夫丁（Hoeffding Inequality）不等式推导而来的
+
+假设有 $N$ 个范围在 0 到 1 的独立有界随机变量，$X_1, X_2, \cdots, X_n$，那么这 $n$ 个随机变量的经验期望为：
+$$
+\bar{X} = \frac{X_1 + X_2 + \cdots X_n}{n}
+$$
+
+满足下面的霍夫丁不等式：
+$$
+P(\bar{X} - E[\bar{X}] \ge \varepsilon) \le e^{-2n\varepsilon^2}
+$$
+
+接下来，令 
+$$
+\varepsilon = \sqrt{\frac{2\ln{t}}{T_{j,t}}}
+$$
+
+并代入霍夫丁不等式，就有：
+$$
+P(\bar{X} - E[\bar{X}] \ge \sqrt{\frac{2\ln{t}}{T_{j,t}}}) \le t^{-4}
+$$
+(霍夫丁不等式中的$n$就是 UCB 中的$T_{j,t}$)
+
+也就是说，如果选择 UCB 的上界是 $\sqrt{\frac{2\ln{t}}{T_{j,t}}}$ 的形式，那么 \textbf{$X$ 的均值与 $X$ 的实际期望的差距在上界之外的概率非常小}，小于 $t^{-4}$，这就说明采用 UCB 的上界形式是严格且合理的。
+
+总结来说，就是 \textbf{UCB 的上界形式相当于老虎机收益期望的严格的置信区间}。
+\end{framed}
 
 \subsection{Thompson sampling算法}
 主要思想是：

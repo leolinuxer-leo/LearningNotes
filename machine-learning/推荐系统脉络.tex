@@ -416,17 +416,48 @@ Google 2017年发表的Deep\&Cross Network（DCN）同样是对Wide\&Deep的进�
 
 论文：[NFM] Neural Factorization Machines for Sparse Predictive Analytics (NUS 2017)
 
-\section{AFM（2017年）——引入Attention机制的FM}
+\section{注意力机制在推荐模型中的应用}
+\subsection{AFM（2017年）——引入Attention机制的FM}
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{fig/AFM_Structure.jpg}
 \end{figure}
 
-AFM的全称是Attentional Factorization Machines，通过前面的介绍我们很清楚的知道，FM其实就是经典的Wide\&Deep结构，其中Wide部分是FM的一阶部分，Deep部分是FM的二阶部分，而AFM顾名思义，就是引入Attention机制的FM，具体到模型结构上，AFM其实是对FM的二阶部分的每个交叉特征赋予了权重，这个权重控制了交叉特征对最后结果的影响，也就非常类似于NLP领域的注意力机制（Attention Mechanism）。为了训练Attention权重，AFM加入了Attention Net，利用Attention Net训练好Attention权重后，再反向作用于FM二阶交叉特征之上，使FM获得根据样本特点调整特征权重的能力。
+AFM的全称是Attentional Factorization Machines。AFM 模型可以被认为是之前介绍的 NFM 模型的延续。在 NFM 模型中，不同域的特征 Embedding 向量经过特征交叉池化层的交叉，将各交叉特征向量进行加和，输入最后由多层神经网络组成的输出层。问题的关键在于加和池化（Sum Pooling）操作，它相当于一视同仁地对待所有交叉特征，不考虑不同特征对结果的影响程度，事实上小结了大量有价值的信息。这里注意力机制就派上了用场，它基于假设——\textbf{不同的交叉特征对于结果的影响程度不同}。
+
+通过前面的介绍我们很清楚的知道，FM其实就是经典的Wide\&Deep结构，其中Wide部分是FM的一阶部分，Deep部分是FM的二阶部分，而AFM顾名思义，就是引入Attention机制的FM。
+所以，AFM其实是对FM的二阶部分的每个交叉特征赋予了权重，这个权重控制了交叉特征对最后结果的影响，也就非常类似于NLP领域的注意力机制（Attention Mechanism）。
+
+具体到模型结构上，AFM 模型引入注意力机制是通过在特征交叉层和最终的输出层之间加入注意力网络（Attention Net）实现的。注意力网络的作用是为每一个交叉特征提供权重，也就是注意力得分。
+
+AFM利用Attention Net训练好Attention权重后，再反向作用于FM二阶交叉特征之上，使FM获得根据样本特点调整特征权重的能力。
+
+同 NFM 一样，AFM 的特征交叉过程也使用了元素积操作，如下：
+$$
+f_{\text{PI}}(\varepsilon) = \{(v_i \odot v_j) x_i x_j\}_{(i,j) \in R_x}
+$$
+
+AFM 加入注意力得分后的池化过程为：
+$$
+f_{\text{Att}}(f_{\text{PI}}(\varepsilon)) = \sum_{(i,j) \in R_x}a_{ij}(v_i \odot v_j) x_ix_j
+$$
+
+对注意力得分 $a_{ij}$ 来说，最简单的方法就是用一个权重参数来表示，但为了防止交叉特征数据稀疏问题带来的权重参数难以收敛，AFM 模型使用了一个在两两特征交叉层（Pair-wise Interaction Layer）和池化层之间的注意力网络来生成注意力得分。
+
+该注意力网络的结构是一个简单的单全连接层加 softmax 输出层的结构，如下：
+$$
+a'_{ij} = h^T \text{ReLU} (W(v_i \odot v_j)x_ix_j + b)
+$$
+$$
+a_{ij} = \frac{\exp(a'_{ij})}{\sum_{(i,j) \in R_x}\exp(a'_{ij})}
+$$
+
+其中要学习的模型参数就是特征交叉层到注意力网络全连接层
+的权重矩阵 $W$，偏置向量 $b$，以及全连接层到 softmax 输出层的权重向量 $h$。注意力网络将与整个模型一起参与梯度反向传播的学习过程，得到最终的权重参数。
 
 论文：[AFM] Attentional Factorization Machines - Learning the Weight of Feature Interactions via Attention Networks (ZJU 2017)
 
-\section{阿里DIN（2018年）——阿里加入Attention机制的深度学习网络}
+\subsection{阿里DIN（2018年）——阿里加入Attention机制的深度学习网络}
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{fig/Ali_DIN_Structure.jpg}
@@ -435,6 +466,11 @@ AFM的全称是Attentional Factorization Machines，通过前面的介绍我们�
 AFM在FM中加入了Attention机制，2018年，阿里巴巴正式提出了融合了Attention机制的深度学习模型——Deep Interest Network。与AFM将Attention与FM结合不同的是，DIN将Attention机制作用于深度神经网络，在模型的embedding layer和concatenate layer之间加入了attention unit，使模型能够根据候选商品的不同，调整不同特征的权重。
 
 论文：[DIN] Deep Interest Network for Click-Through Rate Prediction (Alibaba 2018)
+
+后面有 DIN 模型的详细介绍。
+
+\subsection{注意力机制对推荐系统的启发}
+\textbf{注意力机制在数学形式上只是将过去的平均操作或加和操作换成了加权平均操作或者加权和操作}。这一机制对深度学习推荐系统的启发是重大的，因为注意力得分的引入反映了人类天生的注意力机制特点。对这一机制的模拟，使得推荐系统更加接近用户真实的思考过程，从而达到提升推荐系统效果的目的。
 
 \section{阿里DIEN（2018年）——DIN的“进化”}
 \begin{figure}[H]
