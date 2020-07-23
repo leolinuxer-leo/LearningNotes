@@ -43,8 +43,14 @@
 \maketitle
 \tableofcontents
 
-\part{推荐系统的概念}
-\section{前深度学习时代CTR预估模型的演化之路}
+\part{推荐系统的基本概念}
+\section{推荐系统的系统架构}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Deep_Learning_Refenrence_System_Architecture.jpg}
+\end{figure}
+
+\part{前深度学习时代CTR预估模型的演化之路}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{fig/Traditional_CTR_Model_Evolution.jpg}
@@ -61,10 +67,23 @@
     \item 向上阿里基于\textbf{样本分组}的思路增加模型的非线性，提出了LS-PLM（MLR）模型。
 \end{itemize}
 
-\subsection{LR——CTR模型的核心和基础}
+\section{协同过滤——经典的推荐算法}
+论文：Amazon.com Recommenders Item-to-Item Collaborative Filtering
+
+\subsection{协同过滤的基本流程}
+
+\subsection{用户相似度计算}
+
+\subsection{最终结果的排序}
+
+\subsection{ItemCF}
+
+\section{矩阵分解算法——协同过滤的进化}
+
+\section{LR——CTR模型的核心和基础}
 位于正中央的是当之无愧的Logistic Regression。仍记得2012年我刚进入计算广告这个行业的时候，各大中小公司的主流CTR模型无一例外全都是LR模型。LR模型的流行是有三方面原因的，一是数学形式和含义上的支撑；二是人类的直觉和可解释性的原因；三是工程化的需要。
 
-\subsubsection{逻辑回归的数学基础}
+\subsection{逻辑回归的数学基础}
 逻辑回归作为广义线性模型的一种，\textbf{它的假设是因变量 $y$ 服从伯努利分布}。那么在点击率预估这个问题上，“点击”这个事件是否发生就是模型的因变量 $y$。而用户是否点击广告这个问题是一个经典的掷偏心硬币问题，因此CTR模型的因变量显然应该服从伯努利分布。所以采用LR作为CTR 模型是符合“点击”这一事件的物理意义的。
 
 与之相比较，线性回归（Linear Regression）作为广义线性模型的另一个特例，其\textbf{假设是因变量 $y$ 服从高斯分布}，这明显不是点击这类二分类问题的数学假设。
@@ -76,18 +95,24 @@ $$
 
 其中 $x$ 是输入向量，$\theta$ 是我们要学习的参数向量。结合CTR模型的问题来说，$x$ 就是输入的特征向量，$h(x)$ 就是我们最终希望得到的点击率。
 
-\subsubsection{人类的直觉和可解释性}
+\subsection{LR 的训练方法}
+常见训练方法是梯度下降法、牛顿法、拟牛顿法等。
+
+\subsection{人类的直觉和可解释性}
 直观来讲，LR模型目标函数的形式就是各特征的加权和，再施以sigmoid函数。忽略其数学基础（虽然这是其模型成立的本质支撑），仅靠人类的直觉认知也可以一定程度上得出使用LR作为CTR模型的合理性。
 
 使用各特征的加权和是为了综合不同特征对CTR的影响，而由于不同特征的重要程度不一样，所以为不同特征指定不同的权重来代表不同特征的重要程度。最后要套上sigmoid函数，正是希望其值能够映射到0-1之间，使其符合CTR的物理意义。
 
 LR如此符合人类的直觉认知显然有其他的好处，就是模型具有极强的可解释性，算法工程师们可以轻易的解释哪些特征比较重要，在CTR模型的预测有偏差的时候，也可以轻易找到哪些因素影响了最后的结果，如果你有跟运营、产品一起工作的经验的话，更会知道可解释性强是一个模型多么优秀的“品质”。
 
-\subsubsection{工程化的需要}
+\subsection{工程化的需要}
 在互联网公司每天动辄TB级别的数据面前，模型的训练开销就异常重要了。在GPU尚未流行开来的2012年之前，LR模型也凭借其易于并行化、模型简单、训练开销小等特点占据着工程领域的主流。囿于工程团队的限制，即使其他复杂模型的效果有所提升，在没有明显beat LR之前，公司也不会贸然加大计算资源的投入升级CTR模型，这是LR持续流行的另一重要原因。
 
+\section{从 POLY2 到FM/FFM——自动特征交叉的解决方案}
 \subsection{POLY2——特征交叉的开始}
 但LR的表达能力毕竟是非常初级的。由于LR仅使用单一特征，无法利用高维信息，在“辛普森悖论”现象的存在下，只用单一特征进行判断，甚至会得出错误的结论。
+
+在辛普森悖论中，分组实验相当于使用性别+视频id 的组合特征计算点击率，而汇总实验则使用视频 id 这一单一特征计算点击率。\textbf{汇总实验对高维特征进行了合并，损失了大量的有效信息，因此无法正确刻画数据模式}。
 
 针对这个问题，当时的算法工程师们经常采用手动组合特征，再通过各种分析手段筛选特征的方法。但这个方法无疑是残忍的，完全不符合“懒惰是程序员的美德”这一金科玉律。更遗憾的是，人类的经验往往有局限性，程序员的时间和精力也无法支撑其找到最优的特征组合。因此采用 PLOY2模型进行特征的“暴力”组合成为了可行的选择。
 $$
@@ -98,7 +123,7 @@ $$
 
 但POLY2这一模型同时存在着两个巨大的缺陷：(1) 由于在处理互联网数据时，经常采用one-hot的方法处理id类数据，致使特征向量极度稀疏，POLY2进行无选择的特征交叉使原本就非常稀疏的特征向量更加稀疏，使得大部分交叉特征的权重缺乏有效的数据进行训练，无法收敛；(2) 权重参数的数量由 $n$ 直接上升到 $n^2$，极大增加了训练复杂度。
 
-\subsubsection{FM——隐向量特征交叉}
+\subsection{FM——隐向量特征交叉}
 为了解决POLY2模型的缺陷，2010年德国康斯坦茨大学的Steffen Rendle提出了FM（Factorization Machine）。
 $$
 \phi_{\text{FM}}(\mathbf{w}, \mathbf{x}) = \sum_{j_1=1}^n\sum_{j_2 = j_1 + 1}^n (\mathbf{w}_{j_1} \cdot \mathbf{w}_{j_2})x_{j_1}x_{j_2}
@@ -112,7 +137,7 @@ $$
 
 工程方面，FM同样可以用梯度下降进行学习的特点使其不失实时性和灵活性。相比之后深度学习模型复杂的网络结构，FM比较容易实现的inference过程也使其没有serving的难题。因此FM在2012-2014年前后逐渐成为业界CTR模型的重要选择。
 
-\subsubsection{FFM——引入特征域概念}
+\subsection{FFM——引入特征域概念}
 2015年，基于FM提出的FFM（Field-aware Factorization Machine ，简称FFM）在多项CTR预估大赛中一举夺魁，并随后被Criteo、美团等公司深度应用在CTR预估，推荐系统领域。相比FM模型，FFM模型主要引入了Field-aware这一概念，使模型的表达能力更强。
 $$
 \phi_{\text{FFM}}(\mathbf{w}, \mathbf{x}) = \sum_{j_1=1}^n\sum_{j_2 = j_1 + 1}^n (\mathbf{w}_{j_1, f_2} \cdot \mathbf{w}_{j_2, f_1})x_{j_1}x_{j_2}
@@ -157,10 +182,12 @@ FFM 模型引入了特征域这一概念，在做特征交叉时，每个特征�
     \includegraphics[width=1\textwidth]{fig/CTR_Comparison_FFM.png}
 \end{figure}
 
-\subsection{GBDT+LR——特征工程模型化的开端}
+\section{GBDT+LR——特征工程模型化的开端}
 FFM模型采用引入特征域的方式增强了模型的表达能力，但无论如何，FFM只能够做二阶的特征交叉，如果要继续提高特征交叉的维度，不可避免的会发生组合爆炸和计算复杂度过高的情况。那么有没有其他的方法可以有效的处理高维特征组合和筛选的问题？2014年，Facebook提出了基于GBDT+LR组合模型的解决方案。
 
+\subsection{GBDT+LR组合模型的结构}
 简而言之，Facebook提出了一种利用GBDT自动进行特征筛选和组合，进而生成新的离散特征向量，再把该特征向量当作LR模型输入，预估CTR的模型结构。
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=.6\textwidth]{fig/Facebook_GBDT_LR_Feature.jpg}
@@ -168,15 +195,51 @@ FFM模型采用引入特征域的方式增强了模型的表达能力，但无�
 
 大家知道，GBDT 是由多棵回归树组成的树林，后一棵树利用前面树林的结果与真实结果的残差做为拟合目标。每棵树生成的过程是一棵标准的回归树生成过程，因此每个节点的分裂是一个自然的特征选择的过程，而多层节点的结构自然进行了有效的特征组合，也就非常高效的解决了过去非常棘手的特征选择和特征组合的问题。
 
+需要强调的是，用 GBDT 构建特征工程，利用 LR 预估 CTR 这两步是独立训练的，所以不存在如何将 LR 的梯度回传到 GBDT 这类复杂的问题。
+
+\begin{framed}
+GBDT 模型简介：
+
+GBDT 的基本结构是决策树组成的树林，学习的方式是梯度提升。
+
+具体来说，GBDT 作为集成模型，预测的方式是把所有子树的结果加起来：
+$$
+D(x) = d_{\text{tree}_1(x)} + d_{\text{tree}_2(x)} + \cdots
+$$
+
+GBDT 通过逐一生成决策子树的方式生成整个树林，生成新子树的过程是利用样本标签值与当前树林预测值之间的残差，构建新的子树。
+
+假设当前已经生成了 3 棵子树，则当前的预测值为：
+$$
+D(x) = d_{\text{tree}_1(x)} + d_{\text{tree}_2(x)} + d_{\text{tree}_3(x)}
+$$
+
+GBDT 期望的是构建第 4 棵子树，使当前树林的预测结果 $D(x)$ 与第 4 棵子树的预测结果 $d_{\text{tree}_4(x)}$ 之和，能进一步逼近理论上的拟合函数 $f(x)$，即：
+$$
+D(x) + d_{\text{tree}_4(x)} = f(x)
+$$
+
+所以第 4 棵子树生成的过程是以目标拟合函数和已有树林预测结果的残差 $R(x)$ 为目标的：
+$$
+R(x) = f(x) - D(x)
+$$
+
+理论上，如果可以无限生成决策树，那么 GBDT 可以无限逼近由所有训练集样本组成的目标拟合函数，从而达到减小预测误差的目的。
+\end{framed}
+
+\subsection{GBDT 进行特征转换的过程}
+
 利用训练集训练好 GBDT 模型之后，就可以利用该模型完成从原始特征向量到新的离散型特征向量的转化。具体过程是这样的，一个训练样本在输入 GBDT 的某一子树后，会根据每个节点的规则最终落入某一叶子节点，那么我们把该叶子节点置为1，其他叶子节点置为0，所有叶子节点组成的向量即形成了该棵树的特征向量，把GBDT所有子树的特征向量连接起来，即形成了后续LR输入的特征向量。
 
 由于决策树的结构特点，事实上，\textbf{决策树的深度就决定了特征交叉的维度}。如果决策树的深度为4，通过三次节点分裂，最终的叶节点实际上是进行了3阶特征组合后的结果，如此强的特征组合能力显然是FM系的模型不具备的。但由于GBDT容易产生过拟合，以及GBDT这种特征转换方式实际上丢失了大量特征的数值信息，因此我们不能简单说GBDT由于特征交叉的能力更强，效果就比FFM好，在模型的选择和调试上，永远都是多种因素综合作用的结果。
 
 GBDT+LR比FM重要的意义在于，\textbf{它大大推进了特征工程模型化这一重要趋势}，某种意义上来说，之后深度学习的各类网络结构，以及embedding技术的应用，都是这一趋势的延续。
 
-\subsection{FTRL——天下武功，唯快不破}
+\section{FTRL——天下武功，唯快不破}
+\subsection{FTRL 简介}
 FTRL的全称是Follow-the-regularized-Leader，是一种在线实时训练模型的方法，Google在2010年提出了FTRL的思路，2013年实现了FTRL的工程化，之后快速成为online learning的主流方法。与模型演化图中的其他模型不同，FTRL本质上是模型的训练方法。虽然Google的工程化方案是针对LR模型的，但理论上FTRL可以应用在FM，NN等任何通过梯度下降训练的模型上。
 
+\subsection{Online Learning 下的稀疏性问题和解法}
 为了更清楚的认识FTRL，这里对梯度下降方法做一个简要的介绍，从训练样本的规模角度来说，梯度下降可以分为：batch，mini-batch，SGD（随机梯度下降）三种，batch方法每次都使用全量训练样本计算本次迭代的梯度方向，mini-batch使用一小部分样本进行迭代，而SGD每次只利用一个样本计算梯度。对于online learning来说，为了进行实时得将最新产生的样本反馈到模型中，SGD无疑是最合适的训练方式。
 
 但\textbf{SGD对于互利网广告和推荐的场景来说，有比较大的缺陷，就是难以产生稀疏解}。为什么稀疏解对于CTR模型如此重要呢？
@@ -184,12 +247,14 @@ FTRL的全称是Follow-the-regularized-Leader，是一种在线实时训练模�
 之前我们已经多次强调，由于one hot等id类特征处理方法导致广告和推荐场景下的样本特征向量极度稀疏，维度极高，动辄达到百万、千万量级。为了不割裂特征选择和模型训练两个步骤，如果能够在保证精度的前提下尽可能多的让模型的参数权重为0，那么我们就可以自动过滤掉这些权重为0的特征，生成一个“轻量级”的模型。“轻量级”的模型不仅会使样本部署的成本大大降低，而且可以极大降低模型inference的计算延迟。这就是模型稀疏性的重要之处。
 
 而SGD由于每次迭代只选取一个样本，梯度下降的方向虽然总体朝向全局最优解，但微观上的运动的过程呈现布朗运动的形式，这就导致SGD会使几乎所有特征的权重非零。即使加入L1正则化项，由于CPU浮点运算的结果很难精确的得到0的结果，也不会完全解决SGD稀疏性差的问题。就是在这样的前提下，\textbf{FTRL几乎完美地解决了模型精度和模型稀疏性兼顾的训练问题}。
+
+\subsection{FTRL 的演化过程}
+但FTRL的提出也并不是一蹴而就的。如下图所示，FTRL的提出经历了下面几个关键的过程：
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{fig/FTRL_Evolution.jpg}
+    \includegraphics[width=.6\textwidth]{fig/FTRL_Evolution.jpg}
 \end{figure}
 
-但FTRL的提出也并不是一蹴而就的。如上图所示，FTRL的提出经历了下面几个关键的过程：
 \begin{itemize}
 \setlength{\itemsep}{0pt}
 \setlength{\parsep}{0pt}
@@ -201,12 +266,13 @@ FTRL的全称是Follow-the-regularized-Leader，是一种在线实时训练模�
     \item Google\textbf{综合FOBOS在精度上的优势和RDA在稀疏性上的优势}，将二者的形式进行了进一步统一，提出并应用FTRL，使FOBOS和RDA均成为了FTRL在特定条件下的特殊形式。
 \end{itemize}
 
-\subsection{LS-PLM——阿里曾经的主流CTR模型}
+\section{LS-PLM——阿里曾经的主流CTR模型}
 下面我们从样本pattern本身来入手，介绍阿里的的LS-PLM（Large Scale Piece-wise Linear Model），它的另一个更广为人知的名字是MLR（Mixed Logistic Regression）。MLR模型虽然在2017年才公之于众，但其早在2012年就是阿里主流的CTR模型，并且在深度学习模型提出之前长时间应用于阿里的各类广告场景。
 
+\subsection{LS-PLM 模型的主要结构}
 本质上，MLR可以看做是对LR的自然推广，它在LR的基础上采用分而治之的思路，先对样本进行分片，再在样本分片中应用LR进行CTR预估。在LR的基础上加入聚类的思想，其动机其实来源于对计算广告领域样本特点的观察 。
 
-举例来说，如果CTR模型要预估的是女性受众点击女装广告的CTR，显然我们并不希望把男性用户点击数码类产品的样本数据也考虑进来，因为这样的样本不仅对于女性购买女装这样的广告场景毫无相关性，甚至会在模型训练过程中扰乱相关特征的权重。为了让CTR模型对不同用户群体，不用用户场景更有针对性，其实理想的方法是先对全量样本进行聚类，再对每个分类施以LR模型进行CTR预估。MLR的实现思路就是由该动机产生的。
+举例来说，如果CTR模型要预估的是女性受众点击女装广告的CTR，显然我们并不希望把男性用户点击数码类产品的样本数据也考虑进来，因为这样的样本不仅对于女性购买女装这样的广告场景毫无相关性，甚至会在模型训练过程中扰乱相关特征的权重。为了让CTR模型对不同用户群体，不用用户场景更有针对性，其实理想的方法是\textbf{先对全量样本进行聚类，再对每个分类施以LR模型进行CTR预估}。MLR的实现思路就是由该动机产生的。
 $$
 f(x) = \sum_{i=1}^m\pi_i(x) \cdot \eta_i(x) = \sum_{i=1}^m \frac{e^{\mu_i \cdot x}}{\sum_{j=1}^m e^{\mu_j\cdot x}} \cdot \frac{1}{1+e^{-w_i\cdot x}}
 $$
@@ -215,22 +281,28 @@ MLR目标函数的数学形式如上式，首先用聚类函数 $\pi$ 对样本�
 
 其中超参数分片数 $m$ 可以较好地平衡模型的拟合与推广能力。当 $m=1$ 时MLR就退化为普通的LR，$m$ 越大模型的拟合能力越强，但是模型参数规模随 $m$ 线性增长，相应所需的训练样本也随之增长。在实践中，阿里给出了 $m$ 的经验值为12。
 
-MLR算法适合于工业级的广告、推荐等大规模稀疏数据场景问题。主要是由于表达能力强、稀疏性高等两个优势
+\subsection{LS-PLM 模型的特点}
+MLR算法适合于工业级的广告、推荐等大规模稀疏数据场景问题。主要是由于表达能力强、稀疏性高等两个优势。
 
 (1). \textbf{端到端的非线性学习}：从模型端自动挖掘数据中蕴藏的非线性模式，省去了大量的人工特征设计，这使得MLR算法可以端到端地完成训练，在不同场景中的迁移和应用非常轻松。
 
 (2). \textbf{稀疏性}：MLR 在建模时引入了L1和L2,1范数，可以使得最终训练出来的模型具有较高的稀疏度，模型的学习和在线预测性能更好。
 
+\subsection{从深度学习的角度重新审视 LS-PLM 模型}
 如果我们用深度学习的眼光来看待MLR这个模型，其在结构上已经很接近由输入层、单隐层、输出层组成的神经网络。所以某种意义上说，MLR也在用自己的方式逐渐逼近深度学习的大门了。
 
-\subsection{深度学习CTR模型的前夜}
+LS-PLM 模型可以看做一个加入了注意力(Attention)机制的三层神经网络模型，其中输入层是样本的特征向量；中间层是由 $m$ 个神经元组成的隐层，其中 $m$ 是分片的个数；对于一个 CTR 预估问题而，LS-PLM 的最后一层是由单一神经元组成的输出层。
+
+那么，注意力机制又是在哪里应用的呢？其实是在隐层和输出层之间，神经元之前的权重是由分片函数得出的注意力得分来确定的。也就是说，样本属于哪个分片的概率就是其注意力得分。
+
+\section{总结——深度学习CTR模型的前夜}
 2010年FM被提出，特征交叉的概念被引入CTR模型；2012年MLR在阿里大规模应用，其结构十分接近三层神经网络；2014年Facebook用GBDT处理特征，揭开了特征工程模型化的篇章。这些概念都将在深度学习CTR模型中继续应用，持续发光。
 
 另一边，Alex Krizhevsky 2012年提出了引爆整个深度学习浪潮的AlexNet，深度学习的大幕正式拉开，其应用逐渐从图像扩展到语音，再到NLP领域，推荐和广告也必然会紧随其后，投入深度学习的大潮之中。
 
 2016年，随着FNN，Deep\&Wide，Deep crossing等一大批优秀的CTR模型框架的提出，深度学习CTR模型逐渐席卷了推荐和广告领域，成为新一代CTR模型当之无愧的主流。
 
-\section{深度学习推荐模型的演化趋势}
+\part{深度学习推荐模型的演化趋势}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{fig/Deep_Learning_Reference_System_Evolution.jpg}
@@ -250,14 +322,273 @@ MLR算法适合于工业级的广告、推荐等大规模稀疏数据场景问�
     \item ……
 \end{itemize}
 
-\section{推荐系统的系统架构}
+\section{AutoRec——单隐层神经网络推荐模型}
+
+\section{微软Deep Crossing（2016年）——深度学习CTR模型的base model}
+论文：[Deep Crossing] Deep Crossing - Web-Scale Modeling without Manually Crafted Combinatorial Features (Microsoft 2016)
+
+\subsection{DeepCrossing 模型的应用场景}
+微软于2016年提出的Deep Crossing可以说是深度学习CTR模型的最典型和基础性的模型。如图1的模型结构图所示，它涵盖了深度CTR模型最典型的要素，即通过加入embedding层将稀疏特征转化为低维稠密特征，用stacking layer，或者叫做concat layer将分段的特征向量连接起来，再通过多层神经网络完成特征的组合、转换，最终用scoring layer完成CTR的计算。跟经典DNN有所不同的是，Deep crossing采用的multilayer perceptron是由残差网络组成的，这无疑得益于MSRA著名研究员何恺明提出的著名的152层ResNet。
+
+DeepCrossing 模型的应用场景是微软搜索引擎 Bing 中的搜索广告推荐场景，用户在搜索引擎中输入搜索词之后，搜索引擎除了会返回相关结果，还会返回与搜索词相关的广告。
+
+DeepCrossing 使用的特征包括：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item one-hot/multi-hot 类特征：用户搜索词(query)、广告关键词（keyword）、广告标题(title)、落地页(landing page)、匹配类型(match type)等；
+    \item 数值类特征（计数型特征 counting feature）：点击率、预估点击率等；
+    \item 需要进一步处理的特征：广告计划(campaign)、曝光样例(impression)、点击样例(click)等；
+\end{itemize}
+
+\subsection{DeepCrossing 模型的网络结构}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{fig/Deep_Learning_Refenrence_System_Architecture.jpg}
+    \includegraphics[width=.6\textwidth]{fig/Microsoft_Deep_Crossing_Strucure.png}
 \end{figure}
+
+Embedding 层：将稀疏的类别性特征转换为稠密的 Embedding 向量。
+
+Stacking 层：作用比较简单，是把不同的 Embedding 向量和数值型特征拼接在一起，形成新的包含全部特征的特征向量，该层通常也被成为连接（concatenate ）层。
+
+Multiple Residual Units 层：该层的主要结构是多层感知机，采用了多层残差网络（Multi-Layer Residual Network）作为 MLP 的具体实现。
+
+Scoring 层：该层为输出层，为了拟合优化目标而存在。对于 CTR 这类二分类问题，往往采用逻辑回归模型，对于多分类问题，通常采用 softmax 模型。
+
+\section{FNN（2016年）——用FM的隐向量完成Embedding初始化}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/FNN_Structure.png}
+\end{figure}
+
+FNN 相比 Deep Crossing 的创新在于\textbf{使用 FM 的隐层向量作为 user 和 item 的 Embedding}，从而避免了完全从随机状态训练Embedding。由于 id 类特征大量采用 one-hot 的编码方式，导致其维度极大，向量极稀疏，所以 Embedding 层与输入层的连接极多，梯度下降的效率很低，这大大增加了模型的训练时间和 Embedding 的不稳定性，使用 pre-train 的方法完成 Embedding 层的训练，无疑是降低深度学习模型复杂度和训练不稳定性的有效工程经验。
+
+论文：[FNN] Deep Learning over Multi-field Categorical Data (UCL 2016)
+
+\section{PNN (2016年)——丰富特征交叉的方式}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/PNN_Structure.jpg}
+\end{figure}
+
+PNN的全称是Product-based Neural Network，\textbf{PNN的关键在于在embedding层和全连接层之间加入了Product layer}。传统的DNN是直接通过多层全连接层完成特征的交叉和组合的，但这样的方式缺乏一定的“针对性”。首先全连接层并没有针对不同特征域之间进行交叉；其次，全连接层的操作也并不是直接针对特征交叉设计的。但在实际问题中，特征交叉的重要性不言而喻，比如年龄与性别的交叉是非常重要的分组特征，包含了大量高价值的信息，我们急需深度学习网络能够有针对性的结构能够表征这些信息。因此PNN通过加入Product layer完成了针对性的特征交叉，其product操作在不同特征域之间进行特征组合。并定义了inner product，outer product等多种product的操作捕捉不同的交叉信息，增强模型表征不同数据模式的能力 。
+
+论文：[PNN] Product-based Neural Networks for User Response Prediction (SJTU 2016)
+
+\section{Google Wide\&Deep（2016年）——记忆能力和泛化能力的综合权衡}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Wide_Deep_Structure.png}
+\end{figure}
+
+Google Wide\&Deep模型的主要思路正如其名，把单输入层的Wide部分和经过多层感知机的Deep部分连接起来，一起输入最终的输出层。其中Wide部分的主要作用是让模型具有记忆性（Memorization），单层的Wide部分善于处理大量稀疏的id类特征，便于让模型直接“记住”用户的大量历史信息；Deep部分的主要作用是让模型具有“泛化性”（Generalization），利用DNN表达能力强的特点，挖掘藏在特征后面的数据模式。最终利用LR输出层将Wide部分和Deep部分组合起来，形成统一的模型。Wide\&Deep对之后模型的影响在于——大量深度学习模型采用了两部分甚至多部分组合的形式，利用不同网络结构挖掘不同的信息后进行组合，充分利用和结合了不同网络结构的特点。
+
+论文：[Wide\&Deep] Wide \& Deep Learning for Recommender Systems (Google 2016)
+
+\section{华为 DeepFM (2017年)——用FM代替Wide部分}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Huawei_DeepFM_Structure.png}
+\end{figure}
+
+在Wide\&Deep之后，诸多模型延续了双网络组合的结构，DeepFM就是其中之一。DeepFM对Wide\&Deep的改进之处在于，它用FM替换掉了原来的Wide部分，加强了浅层网络部分特征组合的能力。事实上，由于FM本身就是由一阶部分和二阶部分组成的，DeepFM相当于同时组合了原Wide部分+二阶特征交叉部分+Deep部分三种结构，无疑进一步增强了模型的表达能力。
+
+论文：[DeepFM] A Factorization-Machine based Neural Network for CTR Prediction (HIT-Huawei 2017)
+
+\section{Google Deep\&Cross（2017年）——使用Cross网络代替Wide部分}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Google_Deep_Cross_Network_Structure.jpg}
+\end{figure}
+
+Google 2017年发表的Deep\&Cross Network（DCN）同样是对Wide\&Deep的进一步改进，主要的思路使用Cross网络替代了原来的Wide部分。其中设计Cross网络的基本动机是为了增加特征之间的交互力度，使用多层cross layer对输入向量进行特征交叉。单层cross layer的基本操作是将cross layer的输入向量xl与原始的输入向量x0进行交叉，并加入bias向量和原始xl输入向量。DCN本质上还是对Wide\&Deep Wide部分表达能力不足的问题进行改进，与DeepFM的思路非常类似。
+
+论文：[DCN] Deep \& Cross Network for Ad Click Predictions (Stanford 2017)
+
+\section{NFM（2017年）——对Deep部分的改进}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/NFM_Structure.jpg}
+\end{figure}
+
+相对于DeepFM和DCN对于Wide\&Deep Wide部分的改进，NFM可以看作是对Deep部分的改进。NFM的全称是Neural Factorization Machines，\textbf{如果我们从深度学习网络架构的角度看待FM，FM也可以看作是由单层LR与二阶特征交叉组成的Wide\&Deep的架构，与经典W\&D的不同之处仅在于Deep部分变成了二阶隐向量相乘的形式}。再进一步，NFM从修改FM二阶部分的角度出发，用一个带Bi-interaction Pooling层的DNN替换了FM的特征交叉部分，形成了独特的Wide\&Deep架构。其中Bi-interaction Pooling可以看作是不同特征embedding的element-wise product的形式。这也是NFM相比Google Wide\&Deep的创新之处。
+
+论文：[NFM] Neural Factorization Machines for Sparse Predictive Analytics (NUS 2017)
+
+\section{AFM（2017年）——引入Attention机制的FM}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/AFM_Structure.jpg}
+\end{figure}
+
+AFM的全称是Attentional Factorization Machines，通过前面的介绍我们很清楚的知道，FM其实就是经典的Wide\&Deep结构，其中Wide部分是FM的一阶部分，Deep部分是FM的二阶部分，而AFM顾名思义，就是引入Attention机制的FM，具体到模型结构上，AFM其实是对FM的二阶部分的每个交叉特征赋予了权重，这个权重控制了交叉特征对最后结果的影响，也就非常类似于NLP领域的注意力机制（Attention Mechanism）。为了训练Attention权重，AFM加入了Attention Net，利用Attention Net训练好Attention权重后，再反向作用于FM二阶交叉特征之上，使FM获得根据样本特点调整特征权重的能力。
+
+论文：[AFM] Attentional Factorization Machines - Learning the Weight of Feature Interactions via Attention Networks (ZJU 2017)
+
+\section{阿里DIN（2018年）——阿里加入Attention机制的深度学习网络}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Ali_DIN_Structure.jpg}
+\end{figure}
+
+AFM在FM中加入了Attention机制，2018年，阿里巴巴正式提出了融合了Attention机制的深度学习模型——Deep Interest Network。与AFM将Attention与FM结合不同的是，DIN将Attention机制作用于深度神经网络，在模型的embedding layer和concatenate layer之间加入了attention unit，使模型能够根据候选商品的不同，调整不同特征的权重。
+
+论文：[DIN] Deep Interest Network for Click-Through Rate Prediction (Alibaba 2018)
+
+\section{阿里DIEN（2018年）——DIN的“进化”}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Ali_DIEN_Structure.jpg}
+\end{figure}
+
+DIEN的全称为Deep Interest Evolution Network，它不仅是对DIN的进一步“进化”，更重要的是\textbf{DIEN通过引入序列模型 AUGRU模拟了用户兴趣进化的过程}。具体来讲模型的主要特点是在Embedding layer和Concatenate layer之间加入了生成兴趣的Interest Extractor Layer和模拟兴趣演化的Interest Evolving layer。其中Interest Extractor Layer使用了DIN的结构抽取了每一个时间片内用户的兴趣，Interest Evolving layer则利用序列模型AUGRU的结构将不同时间的用户兴趣串联起来，形成兴趣进化的链条。最终再把当前时刻的“兴趣向量”输入上层的多层全连接网络，与其他特征一起进行最终的CTR预估。
+
+论文：[DIEN] Deep Interest Evolution Network for Click-Through Rate Prediction (Alibaba 2019)
+
+\section{总结—— CTR模型的深度学习时代}
+结合自己的工作经验，关于深度学习模型我想再分享两点内容：
+
+1. \textbf{没有银弹}。从来没有一个深度学习模型能够在所有数据集上都表现最优，特别是推荐、广告领域，各家的数据集，数据pattern、业务领域差异巨大，不存在能够解决一切问题的“银弹”模型。比如，阿里的DIEN对于数据质量、用户整个life cycle行为完整性的要求很高，如果在某些DSP场景下运用这个模型，预计不会收到良好的效果。再比如Google 的Deep\&Cross，我们也要考虑自己的数据集需不需要如此复杂的特征交叉方式，在一些百万量级的数据集上，也许浅层神经网络的表现更好。
+
+2. \textbf{算法工程师永远要在理想和现实间做trade off}。有一种思想要避免，就是我为了要上某个模型就要强转团队的技术栈，强买某些硬件设备。模型的更新过程一定是迭代的，一定是从简单到复杂的，一定是你证明了某个模型是work的，然后在此基础上做改进的。这也是我们要熟悉所有模型演化关系的原因。
 
 
 \part{推荐系统的工业化应用}
+\section{推荐系统的「 实时性」\cite{Real_Time_Requirement_Of_Recommender_System}\cite{Real_Time_Requirement_Of_Model_Update}}
+推荐系统的实时性是至关重要的，主要体现在下面两个方面：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item \textbf{推荐系统的更新速度越快，越能够反应用户最近的用户习惯，越能够给用户进行越有时效性的推荐。}
+    \item \textbf{推荐系统更新的越快，模型更容易发现最新流行的数据pattern，越能够让模型反应找到最新的流行趋势。}
+\end{itemize}
+
+这两个方面的原因也直接与影响推荐系统实时性的两大要素有关：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item \textbf{推荐系统「 特征」的实时性；}
+    \item \textbf{推荐系统「 模型」的实时性。}
+\end{itemize}
+
+\subsection{推荐系统“特征”的实时性}
+\subsubsection{特征实时性的重要性}
+推荐系统特征的实时性指的是系统“实时”地收集推荐系统模型所需的输入特征，使推荐系统能够总是使用最新的特征进行预测和推荐。
+
+\begin{framed}
+举例来说，现在开发一个短视频推荐系统，某用户完整地看完了一个长度为10分钟的“羽毛球教学”视频上。那么毫无疑问该用户对于“羽毛球”这个主题是感兴趣的。系统希望在用户下次翻页的时候就继续推荐“羽毛球”相关的视频。但是由于系统特征的实时性不强，用户的观看历史无法实时反馈给推荐系统，导致推荐系统在得知该用户看过“羽毛球教学”这个视频的时候，已经半个小时之后了，此时用户已经离开该应用了。这就是一个推荐系统实时性差导致推荐失败的例子。
+\end{framed}
+
+诚然，用户在下次开启该应用的时候，推荐系统可以利用上次的用户行为历史推荐“羽毛球”相关的视频，但该推荐系统毫无疑问丧失了最可能增加用户粘度的、增加用户留存度的时机。
+
+那么如何增强“特征”的实时性呢？这里我简略画了一张推荐系统的主流技术架构图（图2），来说明影响“特征”实时性的三个主要阶段 。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Recommender_System_Data_Stream_Architecture.png}
+    \caption*{图2 推荐系统数据流的技术架构图}
+\end{figure}
+
+\subsubsection{客户端实时特征}
+客户端是最接近用户的环节，在经典的推荐系统中，经常利用客户端收集时间、地点、推荐场景等上下文特征，然后让这些特征随http请求一起到达服务器端，参与模型预测。但是客户端对于实时性的重要性，经常被忽视的一点是客户端还是能够实时收集session内用户行为的地方。
+
+拿新闻类app来说，用户在同一session中，三分钟之内分别点击并阅读了三篇文章。这三篇文章对于用户的推荐结果来说是至关重要的，因为它们代表了用户的即时兴趣。如果采用传统的流计算平台，甚至分布式批处理计算平台，由于系统延迟问题，大概率无法在3分钟之内就把session内部的行为历史存储到特征数据库（比如redis）中，这就使这位用户的推荐结果不会马上受到session内部行为的影响。
+
+如果\textbf{客户端能够缓存session内部的行为，作为与上下文特征同样的实时特征传给推荐服务器}，那么推荐模型就能够实时得到session内部行为特征，进行实时的推荐。这就是利用客户端实时特征进行实时推荐的优势所在。
+
+\subsubsection{流处理平台的准实时特征处理}
+随着storm，spark streaming，特别是flink等一批非常优秀的流处理平台的日益成熟。利用流处理平台进行准实时的特征处理已经成为了当前推荐系统的标配。
+
+所谓流处理平台，是将日志以流的形式进行mini batch处理的准实时计算平台。由于每次需要等待并处理一小批日志，流处理平台并非完全实时的平台，但优势是能够进行一些简单的统计类特征的计算，比如一个物品在该时间窗口内的曝光次数，点击次数，一个用户在该时间窗口内的点击话题分布等等。
+
+流处理平台计算出的特征可以立马存入特征数据库供推荐系统模型使用，虽然无法实时的根据用户行为改变用户结果，但分钟级别的延迟基本可以保证用户的推荐结果准实时地受到之前行为的影响。
+
+\subsubsection{分布式批处理平台的全量特征处理}
+随着数据最终到达以HDFS为主的分布式存储系统。Spark等分布式计算平台终于能够进行全量特征的计算和抽取。在这个阶段着重进行的还有多个数据源的数据join和以及延迟信号的合并。
+
+比如用户的曝光、点击、转化数据往往是在不同时间到达HDFS的，有些游戏类应用的转化数据的延迟甚至高达几个小时，因此也只有在这一阶段才能够进行全量特征以及相应label的抽取和合并。也只有在全量特征准备好之后，才能够进行更高阶的特征组合的工作。这往往是无法在客户端和流处理平台平台上进行的。
+
+分布式批处理平台的计算结果的主要用处有两个：(1) 模型训练和离线评估；(2) 特征保存入特征数据库，供推荐模型inference使用。
+
+当然，由于数据从产生到完全进入HDFS，再加上spark的计算延迟，这一过程的总延迟往往达到小时级别，已经无法进行所谓的“实时”推荐。更多的是对用户下次登陆时进行更好的推荐。
+
+\subsubsection{再谈推荐系统特征实时性的重要性}
+在构建推荐系统时，推荐系统的实时性往往是容易被我们忽视的因素。我们一味聚焦在一些离线指标上，希望在离线指标中发现改进模型结构的线索，殊不知线上特征实时性的改动就会产生原强于模型结构的影响。
+
+但特征实时性再强，影响的范围也仅限于当前用户，要想快速抓住系统级别的全局的数据变化和新产生的数据pattern，就必须加强“模型”的实时性。
+
+\begin{framed}
+在使用抖音时，随着你划过不同的短视频，你的兴趣快速收敛，几乎是实时地被抖音的推荐引擎捕捉，这是如何做到的？在刷知乎的timeline时，随着你点击不同的答案，知乎的推荐也是几乎实时的改变着推荐列表，比如你点击了我的这篇文章，在你下次更新知乎timeline时，立马会有更多推荐系统相关文章出现，这是如何做到的？
+
+知乎和抖音这种体验，在信息流里都是基本操作。实现这个大概需要几点：
+
+1、用户行为反馈实时回传；
+
+2、根据用户实时行为有特定的实时召回源，比如同上次点击/本session内所有点击平均相似度最接近的N个内容；
+
+3、保证实时召回源的内容可以排出去（如果有价值的话），这里需要通过rank模型相关特征保障：如果有召回源相关特征（match类特征）基本上已经可以做到，也就是如果实时召回的内容真的有价值，那么这个召回源召回的内容在排序时权重自然高，体现在该召回源的match类特征上；
+
+4、另外还可以试试跟abb那样，增加每个待排序内容同用户近期点击的内容、近期没点击内容的相似度特征，abb的实践看这两个特征也很强；
+
+5、使用产品策略也可以做到实时推荐，比如用户当前产生了点击，互动行为，或者打开了一条push，那么我们可以根据这条物料的标签，发博者信息等，立即返回相关的推荐物料（标签相似，发博者相似），一般是两三条强插到下一次刷新中。 数据显示这种策略推荐的物料互动率，点击率是普通物料的两三倍以上。
+\end{framed}
+
+\subsection{推荐系统模型更新的「实时性」}
+\subsubsection{推荐系统“模型”的实时性}
+与“特征”的实时性相比，\textbf{推荐系统模型的实时性往往是从更全局的角度考虑问题}。特征的实时性力图用更准确的特征描述一个人，从而让推荐系统给出更符合这个人的推荐结果。而模型的实时性则是希望更快的抓住全局层面的新的数据模式，发现新的趋势和相关性。
+
+\begin{framed}
+举例来说，拿某电商网站双十一的大量促销活动来说。特征的实时性会根据用户最近的行为更快的发现用户可能感兴趣的商品，但绝对不会发现用户相似人群最新的偏好，商品之间最新的相关性信息，新活动的趋势信息等。
+\end{framed}
+
+要发现这类全局性的数据变化，就需要更快地更新模型。而影响模型的实时性最重要的因素就是模型的训练方式（如图1）。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Model_Time_Delay_And_Training_Method.png}
+    \caption*{图1 模型的实时性与训练方式}
+\end{figure}
+
+\subsubsection{全量更新}
+模型训练最常用的方式就是全量更新。模型会利用某时间段内的所有训练样本进行重新训练，再用训练好的新模型替代“过时”的模型。
+
+但全量更新需要训练的样本量大，因此所需训练时间较长；而且全量更新往往在离线的大数据平台上进行，如spark+tensorflow，因此数据的延迟也较长，这都导致了全量更新是“实时性”最差的模型更新方式。
+
+事实上，对于已经训练好的模型，可以仅对新加入的增量样本进行学习就可以了，这就是所谓的增量更新。
+
+\subsubsection{增量更新（Incremental Learning）}
+\textbf{增量更新仅将新加入的样本喂入模型进行增量学习}。从技术上来说，深度学习模型往往采用随机梯度下降（SGD）以及其变种进行学习，模型对增量样本的学习相当于在原有样本的基础上继续输入增量样本进行梯度下降。因此在深度学习模型的基础上，由全量更新改为增量更新的难度并不大。
+
+但工程上的任何事情都是tradeoff，永远不存在完美的解决方案，增量更新也不例外。由于仅利用增量样本进行学习，因此模型在多个epoch之后也是收敛到新样本的最优点，而很难收敛到原所有样本+增量样本 的全局最优点。
+
+因此在实际的推荐系统中，往往\textbf{采用增量更新与全局更新相结合的方式}，在进行几轮增量更新后，在业务量较小的时间窗口进行全局更新，纠正模型在增量更新过程后中积累的误差。在“实时性”和“全局最优”中间进行取舍和权衡。
+
+\subsubsection{在线学习（online learning）}
+“在线学习“是“增量更新”的进一步改进，“增量更新”是在获得一批新样本时进行增量更新，而在线学习是在每次获得一个新样本的时候就实时更新模型。在线学习在技术上也可以通过SGD类的方式实现。但如果使用general的SGD方法，在线学习会导致一个很严重的问题，就是模型的稀疏性很差，打开过多“碎片化”的不重要特征。
+
+我们关注模型的“稀疏性”某种意义上也是工程上的考虑，比如在一个输入向量达到几百万维的模型中，如果模型的稀疏性好的话，可以在模型效果不受影响的前提下，仅让极小一部分维度的输入向量的对应权重非零，也就是说在模型上线的时候，模型的体积是很小的，这无疑有利于整个模型serving的过程。无论是存储模型所需的内存空间，以及线上inference的速度都会因为模型的稀疏性收益。
+
+如果使用SGD的方式进行模型更新，相比batch的方式，容易产生大量小权重的特征，这就增大了模型部署和更新的难度。那么为了在在线学习过程中兼顾训练效果和模型稀疏性，有大量相关的研究，最著名的包括微软的RDA，google的FOBOS和最著名的FTRL等 。
+
+\subsubsection{模型局部更新}
+提高模型实时性的另外一个改进方向是进行模型的局部更新，大致的思路是\textbf{降低训练效率低的部分的更新频率，提高训练效率高的部分的更新频率}。这种方式比较有代表性的是facebook的GBDT+LR模型。
+
+该模型利用GBDT进行自动化的特征工程，利用LR拟合优化目标。由于GBDT是串行的依次训练每一颗树，因此训练效率不高，更新的周期较长，如果每次都同时训练GBDT+LR整个模型，那么GBDT的低效问题将拖慢LR的更新速度。因此为了兼顾GBDT的特征处理能力和LR快速拟合优化目标的能力，Facebook采取的部署方法时每天训练一次GBDT模型，固定GBDT模型后，准实时的训练LR模型以快速捕捉数据整体的变化。那么通过模型的局部更新，做到了GBDT和LR能力的权衡。
+
+模型局部更新的做法也较多采用在Embedding层+神经网络的深度学习模型（例如图3的W\&D模型）中，因为Embedding层负责将高维稀疏输入向量转换为稠密embedding向量，因此Embedding层一层的参数往往占深度学习模型90\%以上。因此Embedding层的更新会拖累模型整体的更新速度，因此业界也往往采用embedding层单独训练甚至预训练，embedding层以上的模型部分高频更新的策略。
+
+\subsubsection{客户端模型实时更新}
+在前面章节中介绍“特征”实时性的部分，提到了客户端“实时特征”的方法。既然客户端是最接近用户的部分，实时性最强，那么能否在客户端就根据当前用户的行为历史更新模型呢？
+
+客户端模型实时更新在业界也是仍处于探索阶段的方法。难点在于分布在每个客户端模型的更新与服务器端模型的更新的协同问题。也许可以采用类似parameter server架构的模型更新策略，但本质上，\textbf{模型的更新不会对用户的推荐产生十分显著的影响，采用客户端模型实时更新的必要性也不是非常大}。这里想介绍的其实是一种简化的客户端模型更新策略，用户embedding的实时更新。
+
+user embedding实时更新的逻辑和动机是，在深度学习推荐系统中，模型往往要接受用户embedding和物品embedding两个关键的特征向量。对于物品embedding的更新来说，往往需要全局的数据，因此只能在服务器端进行整体的更新；而对用户embedding来说，则更多依赖于用户自身的数据。那么把用户embedding的更新过程移植到客户端来做，就能够实时地把用户最近的行为数据反应到用户的embedding中来，从而通过实时改变用户embedding的方式完成实时推荐。
+
+这里用一个最简单的例子来说明该过程。例如用户embedding由用户点击过的物品embedding进行平均得到，那么客户端是最先得到用户最新点击物品信息的，那么就可以实时更新用户embedding，在下次推荐时，将更新后的用户embedding传给服务器端，让服务器端根据最新的用户embedding返回实时推荐内容。
+
+当然，用户embedding的生成过程可以使用更复杂的网络和embedding方法进行生成，如果能与整个网络解耦合，并单独部署到客户端，同样可以进行实时更新。
+
 \section{Facebook的经典CTR预估模型}
 论文：Practical Lessons from Predicting Clicks on Ads at Facebook
 
@@ -323,7 +654,7 @@ uniform subsampling是对所有样本进行无差别的随机抽样，为选取�
     \centering
     \includegraphics[width=.6\textwidth]{fig/Facebook_DownSample.jpg}
 \end{figure}
-可以看到当采样率是10%时，相比全量数据训练的模型，仅损失了不到1%的效果。
+可以看到当采样率是10\%时，相比全量数据训练的模型，仅损失了不到1\%的效果。
 
 另一种方法 negative down sampling 保留全量正样本，对负样本进行降采样。除了提高训练效率外，负采样还直接解决了正负样本不均衡的问题，facebook经验性的选择了从0.0001到0.1的一组负采样频率，试验效果如下：
 \begin{figure}[H]
@@ -539,14 +870,15 @@ YouTube为什么不采取类似RNN的Sequence model，而是完全摒弃了用�
 因为在第7问中，我们已经知道模型采用了expected watch time per impression作为优化目标，所以如果简单使用LR就无法引入正样本的watch time信息。因此采用weighted LR，将watch time作为正样本的weight，在线上serving中使用e(Wx+b)做预测可以直接得到expected watch time的近似，完美。
 
 \subsection{详细解读输出层采用 weighted logistic regression}
-
+\subsubsection{传统套路}
 对于传统的深度学习架构，输出层往往采用LR或者Softmax，在线上预测过程中，也是原封不动的照搬LR或者softmax的经典形式来计算点击率（广义地说，应该是正样本概率）。
 
-而YouTube这一模型的神奇之处在于，输出层没有使用LR，而是采用了Weighted LR，模型serving没有采用sigmoid函数的形式，而是使用了
-$e^{Wx+b}$这一指数形式。按照原文说法，这样做预测的就是用户观看时长？？
+而YouTube这一模型的神奇之处在于，\textbf{输出层没有使用LR，而是采用了Weighted LR，模型serving没有采用sigmoid函数的形式，而是使用了
+$e^{Wx+b}$这一指数形式}。按照原文说法，这样做预测的就是用户观看时长？？
 
 搞清楚这件事情并不是一件容易的事情，我们要从逻辑回归的本质意义上开始。
 
+\subsubsection{逻辑回归溯源和 Odds}
 几乎所有算法工程师的第一堂课就是逻辑回归，也肯定知道逻辑回归的数学形式就是一个线性回归套sigmoid函数：
 $$
 h_\theta(x) = \frac{1}{1+e^{-\theta^Tx}}
@@ -554,7 +886,7 @@ $$
 
 但为什么选择sigmoid函数？难道仅仅是sigmoid函数能把值域映射到0-1之间，符合概率的物理意义这么简单吗？
 
-为解释这个问题，首先我们需要定义一个新的变量——Odds，中文可以叫发生比或者机会比。
+为解释这个问题，首先我们需要定义一个新的变量——\textbf{Odds}，中文可以叫发生比或者机会比。
 $$
 Odds = \frac{p}{1-p}
 $$
@@ -571,23 +903,38 @@ $$
  \ln(\frac{p}{1-p}) = \theta^Tx \Rightarrow \frac{p}{1-p} = e^{\theta^Tx} \Rightarrow p = \frac{1}{1+e^{-\theta^Tx}} \Rightarrow p = sigmoid(\theta^Tx)
 $$
 
+在短视频的CTR预估\cite{Understand_Weighted_LR}，一般的，点击发生的概率就是发生点击的视频个数/总共曝光的视频个数，假设发生点击的视频个数为 $M$，总共曝光的视频个数为 $N$，则 $p$ 为：
+$$
+p = \frac{M}{N}
+$$
+
+可得Odds为：
+$$
+Odds = \frac{M/N}{(N-M)/N} = \frac{M/N}{1-M/N} 
+$$
+
 到这里大家应该已经完全明白了LR的推导过程了。
 
 那么再对$\ln(Odds) = \theta^Tx$这个等式做一个小小的转换，两边取自然底数：
 $$
-\ln(Odds) = \theta^Tx \Rightarrow Odds = e^{\theta^Tx} = YouTubeServingFunction
+\ln(Odds) = \theta^Tx \Rightarrow Odds = e^{\theta^Tx} = \text{YouTubeServingFunction}
 $$
 
 大家看到了吗，\textbf{Youtube的Serving函数$e^{Wx+b}$计算的不是别的，正是Odds}！
 
 但我们还没有到达终点，因为Youtube要预测的明明是用户观看时长，怎么就成了Odds了？
 
+\subsubsection{Weight LR}
 这就要提到YouTube采用的独特的训练方式Weighted LR，这里的Weight，对于正样本$i$来说就是观看时长$T_i$，对于负样本来说，则指定了单位权重1。
 
 Weighted LR的特点是，正样本权重$w$的加入会让正样本发生的几率变成原来的$w$倍，也就是说样本i的Odds变成了下面的式子：
 $$
-Odds(i) = \frac{w_ip}{1-w_ip}
+Odds(i) = \frac{w_i * M/N}{ 1 - w_i*M/N} = \frac{w_i*p}{1 - w_i*p}
 $$
+
+\begin{framed}
+注意：这里 $N$ 的物理含有与之前的 $N$ 已经不同了，之前代表的是总共曝光的视频个数，这里代表的是总共曝光的视频的权重和，但这并不影响后面的推导。
+\end{framed}
 
 由于在视频推荐场景中，用户打开一个视频的概率p往往是一个很小的值，因此上式可以继续简化：
 $$
@@ -598,6 +945,19 @@ $$
 
 因此，YouTube采用$e^{Wx+b}$ 这一指数形式预测的就是曝光这个视频时，用户观看这个视频的时长的期望！利用该指标排序后再进行推荐，是完全符合YouTube的推荐场景和以观看时长为优化目标的设定的。
 
+\begin{framed}
+那为什么不直接预测观看视频的期望时长呢？一个明显的好处就是，分类的问题一般都比回归问题易于求解，且预测准确率更高。另外，这里使用Weighted LR给我们的启示就是：具体算法一定要根据具体业务场景选择，深刻理解业务的通用性和特殊性，往往比技术更重要。
+\end{framed}
+
+\begin{framed}
+接下来的问题就是训练了，训练Weighted LR一般来说有两种办法：
+
+(1). 将正样本按照weight做重复sampling，然后输入模型进行训练；
+
+(2). 在训练的梯度下降过程中，通过改变梯度的weight来得到Weighted LR。
+
+一般采用第二种方法，原因是减少了处理的样本数，减少了读样本时间和更新梯度的次数。
+\end{framed}
 
 \textbf{再简要总结一下YouTube Ranking Model的Serving过程要点}
 
@@ -606,6 +966,21 @@ $$
 (2) Weighted LR使用用户观看时长作为权重，使得对应的Odds表示的就是用户观看时长的期望；
 
 (3) Model Serving过程中$e^{Wx+b}$计算的正是观看时长的期望。
+
+\subsubsection{推广}
+在上面推导的过程中，一个很特殊的业务场景在于在视频推荐场景中，用户打开一个视频的概率 $p$ 往往是一个很小的值，所以进行了简化。那么，当我们的业务中，概率 $p$ 并不可以忽略，那么我们将如何优化呢？
+
+在之前的场景中，负样本的权重为1，正样本的权重为$w_i$，实际上Odds为：
+$$
+Odds(i) = \frac{\sum_iw_i * M_i/N}{\sum_i Neg_i/N} = \frac{\sum_{i=1}^{N_{pos}}w_i}{\sum_{i=1}^{N_{neg}}1} = \frac{\sum_{i=1}^{N_{pos}}w_i}{N_{neg}}
+$$
+
+上面是因为 $p$ 概率足够小，也就是 $N_{pos}$ 相对 $N_{neg}$ 相对很小，所以上面可以近似为：
+$$
+\frac{\sum_{i=1}^{N_{pos}}w_i}{N_{neg}} = \frac{\sum_{i=1}^{N_{pos}}w_i}{N_{neg} + N_{pos}} = \frac{\sum_{i=1}^{N_{pos}}w_i}{N}
+$$
+
+当我们的场景中，概率 $p$（在推荐中即ctr）达到20\%甚至更高，直接忽略近似会boost click，那么我们就要在分母项补上$N_{pos}$的值。显然，我们可以在负样本中随机采样$N_{pos}$的样本进行填充，即可达到我们的目的。
 
 \section{阿里深度兴趣网络（DIN）}
 \subsection{用户场景}

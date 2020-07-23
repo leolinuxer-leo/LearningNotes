@@ -49,7 +49,8 @@
 
 所以，YouTube 推荐系统的优化目标就是用户观看时长，而不是传统系统看中的“点击率”。其大致推荐流程是：先通过构建深度学习模型，预测用户观看某候选视频的时长，再按照预测时长进行候选视频的排序，行成最终的推荐列表。
 
-\section{Confusion Matrix}
+\section{各种率的定义}
+\subsection{Confusion Matrix}
 Confusion Matrix 矩阵如下表所示：
 
 \begin{table}[h]
@@ -64,7 +65,7 @@ False &	False Negative(假阴性) & True Negative(真阴性）\\  \hline
 \caption{Confusion Matrix} 
 \end{table}
 
-\section{各种率的定义}
+\subsection{各种指标率}
 正确率（Precision）：
 $$Precision = \frac{TP}{TP+FP}$$
 
@@ -181,6 +182,226 @@ F1-score &= \frac{2}{1/precision + 1/recall}\\
 
 如果两个模型，一个precision特别高，recall特别低，另一个recall特别高，precision特别低的时候，F1-score可能是差不多的，也不能基于此来作出选择。
 
+\section{假设检验/P-Value和置信区间\cite{P_Value_In_Statistics_Hypothesis}\cite{How_To_Understand_95_Confidential}}
+\subsection{假设检验}
+你说你的硬币是公平的，也就是“花”和“字”出现的概率是差不多的。然后，你想和我打赌，作为一个资深的理智赌徒，我怎能听信你的一面之词，我提出要检查下你的硬币到底是不是公平的，万一是两面“花”怎么办？你神色紧张，死活不让我检查，后来我们提出了折衷的方案，抛几次硬币，看看结果是不是公平的。总共扔了两次，都是“花”朝上，虽然几率是 $0.5 \times 0.5 = 0.25$ ，但是也正常，继续扔；总共扔了四次，也都是“花”朝上，几率是$0.5^4 = 0.0625$ ，感觉有点不正常，但是万一是运气呢？继续扔。总共扔了十次，也都是“花”朝上，那我就认为很可能你这枚硬币不是公平的。
+
+这就是\textbf{假设检验}：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 你提出假设：说你的硬币是公平的；
+    \item 我提出要检验你的假设：扔十次，看实验的结果是不是和你的假设相符；
+\end{itemize}
+
+\subsection{P 值}
+为了完成假设检验，需要先定义一个概念：P值。根据上面的描述，这里假设检验的思路就是：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 假设：硬币是公平的；
+    \item 检验：认为假设是成立的，然后扔十次，看结果与假设是否相符；
+\end{itemize}
+
+反复扔硬币应该符合二项分布（这就不解释了），也就是：
+$$
+X \sim B(n, \mu)
+$$
+
+其中， $n$ 代表扔硬币的次数， $\mu$代表“花”朝上的概率。
+
+在我们认为硬币是公平的前提下，扔10次硬币应该符合以下分布：
+$$
+X \sim B(10, 0.5)
+$$
+
+下图表示的就是，假如硬币是公平的情况下的分布图：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/P_Value_Example_1.png}
+\end{figure}
+我扔了十次之后得到的结果是，有八次正面：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/P_Value_Example_2.png}
+\end{figure}
+
+这个时候有个数学大佬出来定义了一个称为 P 值（p-value)的概念。把八次正面的概率，与更极端的九次正面、十次正面的概率加起来，得到的就是单侧P值：
+$$
+\text{p-value} = P(8 \le X \le 10) = 0.05
+$$
+
+其实，出现两次正面、一次正面、零次正面的概率也是很极端的，对应双侧P值：
+$$
+\text{p-value} = P(0 \le X \le 2)  +  P(8 \le X \le 10) = 0.1
+$$
+
+\subsection{显著水平}
+总共扔10次硬币，那么是出现7次正面之后，可以认为“硬币是不公平的”，还是9次正面之后我才能确认“硬币是不公平的”，这是一个较为主观的标准。我们一般认为
+$$
+\text{p-value} \le 0.05
+$$
+就可以认为假设是不正确的。
+
+0.05这个标准就是\textbf{显著水平}，当然选择多少作为显著水平也是主观的。
+
+比如，上面的扔硬币的例子，如果取单侧P值，那么根据我们的计算，如果扔10次出现9次正面：
+$$
+\text{p-value} = P(9 \le X \le 10) = 0.01 \le 0.05
+$$
+
+我们可以认为刚开始的假设错的很“显著”，也就是“硬币是不公平的”。
+
+如果扔10次出现出现8次正面：
+$$
+\text{p-value} = P(8 \le X \le 10) = 0.05 \le 0.05
+$$
+这个和我们的显著水平是一样的，我们也可以拒绝假设，只是没有那么“显著”了。
+
+\subsection{置信区间}
+置信区间，就是一种区间估计。
+
+\begin{framed}
+点估计与区间估计：
+
+以前很流行一种刮刮卡，游戏规则是（假设只有一个大奖）：(1) 大奖事先就固定好了，一定印在某一张刮刮卡上；(2) 买了刮刮卡之后，刮开就知道自己是否中奖。
+
+那么我们起码有两种策略来刮奖：(1) \textbf{点估计}：买一张，这就相当于你猜测这一张会中奖；(2) \textbf{区间估计}：买一盒，这就相当于你猜测这一盒里面会有某一张中奖
+
+很显然区间估计的命中率会更高（当然费用会更高，因为风险降低了）。
+\end{framed}
+
+\subsubsection{一个例子}
+对于人类真实的平均身高，我们是没有办法知道的，因为几乎不可能把每个人都统计到。但这个数据肯定是真实存在的，我们可以说，上帝知道。在这里我们引入了上帝视角，即上帝看到的人类身高的真实分布。假设人类的身高分布服从如下正态分布（$\mu = 145, \sigma = 1.4$）：
+$$
+X \sim N(145, 1.4^2)
+$$
+
+也就是说全体人类的平均身高为145cm，为了表示只有上帝可以看到，我把真实分布用虚线来表示：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_1.png}
+\end{figure}
+
+\subsubsection{点估计}
+作为愚蠢的人类，我们只能在人群中抽样统计。比如得到一组抽样数据，我把算出来的样本均值（记作 $\hat{\mu}$ ）画在图上（蓝色的点）：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_2.png}
+\end{figure}
+
+$\hat{\mu}$ 就是对真实的 $\mu$ 的一次点估计。
+
+通过一次次的抽样，我们可以算出不同的身高均值的点估计：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_3.png}
+\end{figure}
+
+如果我们关闭上帝视角，我们分辨不出哪个点估计更好：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_4.png}
+\end{figure}
+区间估计可以改进此问题。
+
+\subsubsection{置信区间}
+置信区间，提供了一种区间估计的方法。
+
+下面采用 $95\%$ 置信区间来构造区间估计（什么是 $95\%$  置信区间，这个我们后面解释）：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_5.png}
+\end{figure}
+
+通过 $95\%$ 置信区间构造出来的区间，我们可以看到，基本上都包含了真实的 $\mu$，除了红色的那根。
+
+关闭上帝视角，我们仍然不知道哪一个区间估计更好：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_6.png}
+\end{figure}
+
+但是，和点估计比较：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 点估计和区间估计，都不知道哪个点或者哪个区间更好；
+    \item 但是，按照 $95\%$ 置信区间构造出来的区间，如果我构造出100个这样的区间，其中大约有95个会包含 $\mu$；
+\end{itemize}
+
+剩下的问题就是 $95\%$ 置信区间是如何构造的。
+
+\subsubsection{ $95\%$ 置信区间}
+假设人群的身高服从：
+$$
+X \sim N(\mu, \sigma^2)
+$$
+
+其中  $\mu$ 未知， $\sigma$ 已知。
+
+我们不断对人群进行采样，样本的大小为 $n$，样本的均值：
+$$
+M = \frac{X_1 + X_2 + \cdots + X_n}{n}
+$$
+
+根据大数定律和中心极限定律， $M$ 服从：
+$$
+M \sim N(\mu, \frac{\sigma^2}{n})
+$$
+
+我们可以算出以 $\mu$ 为中心，面积为0.95的区间，如下图
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_7.png}
+\end{figure}
+
+即：
+$$
+P(\mu - 1.96\frac{\sigma}{\sqrt{n}} \le M \le \mu + 1.96\frac{\sigma}{\sqrt{n}}) = 0.95
+$$
+
+也就是，$M$ 有 $95\%$  的几率落入此区间：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/Confidence_Interval_Example_8.png}
+\end{figure}
+
+我们以 $1.96\frac{\sigma}{\sqrt{n}}$ 为半径做区间，就构造出了  $95\%$ 置信区间。按这样去构造的100个区间，其中大约会有95个会包含 $\mu$。
+
+那么，只有一个问题了，我们不知道、并且永远都不会知道真实的 $\mu$ 是多少。我们就只有用$\hat{\mu}$ 来代替$\mu$：
+$$
+P(\hat{\mu} - 1.96\frac{\sigma}{\sqrt{n}} \le M \le \hat{\mu} + 1.96\frac{\sigma}{\sqrt{n}}) \approx 0.95
+$$
+
+\subsubsection{总结}
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 置信区间要求估计量是个常数；
+    \item $95\%$ 也被称为置信水平，是统计中的一个习惯，可以根据应用进行调整。
+\end{itemize}
+
+\subsection{假设检验与与置信区间的关系}
+置信区间，目的是根据样本构造一个区间，然后希望这个区间可以把真值包含进去，但是并不知道这个真值是多少；而假设检验，则是假设真值是多少，然后检验这个假设是否可能为真。
+
+之所以觉得它们有关系，大概是因为它们都提到了0.05（比如之置信区间 95\%）。它们之间的关系也简单，如果我们提出来的假设 $\mu_0$ 在样本 $\bar{x}$ 的置信区间内，就可以通过测试
+：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/P_Value_Confidential_Example_1.jpg}
+\end{figure}
+
+反之，就不能通过：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{fig/P_Value_Confidential_Example_2.png}
+\end{figure}
+
 \section{离线评估的主要方法\cite{Deep_Learning_Recommender_System}}
 \subsection{Holdout 检验}
 将原始样本随机划分为测试集和验证集两部分；比如，可以将样本按照70\%-30\%的比例随机分成两部分，70\%的样本用于模型的训练，30\%的样本用于模型的评估
@@ -198,6 +419,113 @@ Holdout 检验的缺点：在验证集上计算出来的评估指标与训练集
 不管是 holdout 检验还是交叉检验，都是基于划分样本机和验证集的方式进行模型评估的。然而，当样本规模比较小时，将样本机进行划分会让训练集进一步减小，这可能会影响模型的训练效果。
 
 bootstrap 法能在一定程度上维持训练集样本的规模。是基于自助采样法的验证方法：对于总数为$n$的样本集合，进行$n$次有放回的随机抽样，得到大小为$n$的训练集。在$n$次采样过程中，有的样本会被重复采样，有的样本没有被抽出过，将这些没有被抽出的样本作为验证集进行模型验证，就是自助法的验证过程。
+
+\section{Netflix推荐系统模型的快速线上评估方法——Interleaving\cite{Interleaving_In_Netflix}}
+周所周知，Netflix是美国的流媒体巨头，其广为人知的原因不仅是因为其多部知名的原创剧，高昂的市值，在推荐技术领域，Netflix也一直走在业界的最前沿。那么驱动Netflix实现推荐系统快速迭代创新的重要技术，就是我们今天要介绍的快速线上评估方法——Interleaving。
+
+\subsection{Netflix推荐系统问题背景}
+Netflix几乎所有页面都是推荐算法驱动的，每种算法针对不同的推荐场景进行优化。 例如，主页上的“Top Picks行”根据视频的个性化排名提供推荐，而“Trending Now行”包含了最近的流行趋势。 这些个性化的行共同构成了Netflix将近1亿会员“千人千面“的个性化主页。
+
+对于强算法驱动的Netflix来说，算法的迭代创新当然是必不可少的。为了通过算法最大化Netflix的商业目标（这些商业指标包括每月用户订阅数、观看总时长等等），需要进行大量的AB Test来验证新算法能否有效提升这些关键的产品指标。
+
+这就带来一个矛盾，就是\textbf{算法工程师们日益增长的AB Test需求和线上AB Test资源严重不足之间的矛盾}。因为线上AB Test必然要占用宝贵的线上流量资源，还有可能会对用户体验造成损害，但线上流量资源显然是有限的，而且只有小部分能够用于AB Test；而算法研发这侧，算法驱动的使用场景不断增加，大量候选算法需要逐一进行AB Test。这二者之间的矛盾必然愈演愈烈。这就迫切需要设计一个快速的线上评估方法。
+
+为此，Netflix设计了一个两阶段的线上测试过程（如图2）。
+
+(1). \textbf{第一阶段利用被称为Interleaving的测试方法进行候选算法的快速筛选，从大量初始想法中筛选出少量“优秀的”Ranking算法}。
+
+(2). \textbf{第二阶段是对缩小的算法集合进行传统的AB Test，以测量它们对用户行为的长期影响}。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Netflix_Interleaving_Idea.jpg}
+    \caption*{图2：使用Inter leaving进行快速线上测试。 用灯泡代表候选算法。 其中，最优的获胜算法用红色表示。Interleaving能够快速地将最初的候选算法集合进行缩减，相比传统的AB Test更快地确定最优算法。}
+\end{figure}
+
+\subsection{传统AB Test存在的问题}
+传统的AB Test除了存在效率问题，还存在一些统计学上的显著性差异问题。下面用一个很典型的AB Test问题来进行说明。
+
+这里设计一个AB Test来验证用户群体是否对“可口可乐”和“百事可乐”存在口味倾向。那么按照传统的做法，我们会将测试人群随机分成两组然后进行“盲测”，即在不告知可乐品牌的情况下进行测试。第一组只提供可口可乐，第二组只提供百事可乐，然后根据大家一定时间内的可乐消耗量来观察人们是更喜欢“可口可乐”还是“百事可乐”。
+
+这个实验一般意义上确实是有效的，很多时候我们也是这么做的。但也确实存在一些潜在的问题：
+
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 总的测试人群中，对于可乐的消费习惯肯定各不相同，从几乎不喝可乐到每天喝大量可乐的人都有；
+    \item 可乐的重消费人群肯定只占总测试人群的一小部分，但他们可能占整体汽水消费的较大比例；
+\end{itemize}
+
+这两个问题导致了，即使\textbf{AB两组之间重度可乐消费者的微小不平衡也可能对结论产生不成比例的影响}。
+
+在互联网场景下，这样的问题同样存在。比如Netflix场景下，非常活跃用户的数量是少数，但其贡献的观看时长却占较大的比例，因此Netflix AB Test中活跃用户被分在A组的多还是被分在B组的多，将对结果产生较大影响，从而掩盖模型的真实效果。
+
+那么如何解决这个问题呢？一个方法是不对测试人群进行分组，而是让所有测试者都可以自由选择百事可乐和可口可乐（测试过程中仍没有品牌标签，但能区分是两种不同的可乐）。在实验结束时，统计每个人可口可乐和百事可乐的消费比例，然后进行平均后得到整体的消费比例。
+
+这个测试方案的优点在于：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item \textbf{消除了AB组测试者自身属性分布不均的问题；}
+    \item \textbf{通过给予每个人相同的权重，降低了重度消费者对结果的过多影响。}
+\end{itemize}
+
+\subsection{Netflix的快速线上评估方法——Interleaving}
+图3描绘了AB Test和Interleaving之间的差异。
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 在传统的AB Test中，Netflix会选择两组订阅用户：一组接受Ranking算法A的推荐结果 ，另一组接受Ranking算法B的推荐结果。
+    \item 在Interleaving测试中，只有一组订阅用户，这些订阅用户会接受到通过混合算法A和B的排名生成的交替排名。
+\end{itemize}
+
+这就使得用户同时可以在一行里同时看到算法A和B的推荐结果（用户无法区分一个item是由算法A推荐的还是算法B推荐的）。进而可以通过计算观看时长等指标来衡量到底是算法A好还是算法B好。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Netflix_Interleaving_Vs_AB_Test.jpg}
+    \caption*{图3：传统AB Test和Interleaving 在传统AB Test中，测试用户分为两组，一组暴露于排名算法A ，另一组暴露于算法B，在两组之间进行比较观看时长	等核心评估指标。另一方面，Interleaving将所有测试用户暴露于算法A和B的混合排名，再比较算法相对应的item的指标}
+\end{figure}
+
+当然，在用Interleaving方法进行测试的时候，必须要考虑位置偏差的存在，避免来自算法A的视频总排在第一位。因此需要以相等的概率让算法A和算法B交替领先。这类似于在野球场打球时，两个队长先通过扔硬币的方式决定谁先选人，然后在交替选队员的过程。
+
+在清楚了Interleaving方法之后，还需要验证这个评估方法到底能不能替代传统的AB Test，会不会得出错误的结论。Netflix从两个方面进行了验证，一是Interleaving的“灵敏度”，二是Interleaving的“正确性”。
+
+\subsection{Interleaving与传统AB Test的灵敏度比较}
+Netflix的这组实验希望验证的是Interleaving方法相比传统AB Test，\textbf{需要多少样本就能够验证出算法A和算法B的优劣}。我们之前一再强调线上测试资源的紧张，因此这里自然希望Interleaving能够利用较少的线上资源，较少的测试用户就解决评估问题。这就是所谓的“灵敏度比较”。
+
+图5是实验结果，横轴是参与实验的样本数量，纵轴Netflix没有给出非常精准的解释，但我们可以理解为是判定算法A是否比算法B好的“错误”概率。可以看出的是interleaving的方法利用$10^3$个样本就能够判定算法A是否比B好，而AB test则需要$10^5$个样本才能够将错误率降到5\%以下。这就意味着利用一组AB Test的资源，我们可以做100组Interleaving实验。这无疑大大加强了线上测试的能力。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Netflix_Interleaving_Vs_AB_Test_Result.jpg}
+    \caption*{图5：对Interleaving与传统AB Test指标的灵敏度。 与最敏感的AB Test指标相比，Interleaving也只需要1/100的订阅用户样本就能够确定用户更偏爱哪个算法}
+\end{figure}
+
+\subsection{Interleaving指标与AB Test指标的相关性}
+除了能够利用小样本快速进行算法评估外，Interleaving的判断结果是否与AB Test一致，也是检验Interleaving能否在线上评估第一阶段取代AB Test的关键。
+
+图6显示了Interleaving中的实验指标与AB Test指标之间的相关性。每个数据点代表一个Ranking算法。 我们发现Interleaving指标与AB Test评估指标之间存在非常强的相关性，这就验证了在Interleaving实验中胜出的算法也极有可能在之后的AB Test中胜出。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Netflix_Interleaving_Vs_AB_Test_Relation.jpg}
+    \caption*{图6：Interleaving指标与AB Test指标的相关性。 每个点表示一个Ranking算法的实验结果。 Interleaving指标与AB Test指标存在很强的相关性}
+\end{figure}
+
+\subsection{结论}
+通过实验我们已经知道Interleaving是一种强大快捷的算法验证方法，它加速了Netflix各类Ranking算法的迭代创新。
+
+但我们也要清楚的是Interleaving方法也存在一定的局限性，主要是下面两点：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item \textbf{工程实现的框架较传统AB Test复杂}。由于Interleaving实验的逻辑和业务逻辑纠缠在一起，因此业务逻辑可能会被干扰。而且为了实现Interleaving，需要将大量辅助性的数据标示添加到整个数据pipeline中，这都是工程实现的难点；
+    \item \textbf{Interleaving毕竟只是对用户对算法推荐结果偏好程度的相对测量，不能得出一个算法完整的表现}。比如我们想知道算法A能够将用户整体的观看时长提高多少，使用Interleaving是无法得出这样的结论的。为此Netflix才设计了Interleaving+AB Test两级实验结构，完善整个线上测试的框架。
+\end{itemize}
+
 
 %\printbibliography
 \bibliography{../ref}
