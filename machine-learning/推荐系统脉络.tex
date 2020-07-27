@@ -34,7 +34,7 @@
 \usepackage{setspace}%使用间距宏包
 \linespread{1.5}
 
-\title{推荐系统脉络\cite{Deep_Learning_Recommender_System}}
+\title{推荐系统脉络\cite{Deep_Learning_Recommender_System}\cite{Recommender_System_With_Deep_Learning_Collection}}
 \author{leolinuxer}
 %\date{June 2020}
 
@@ -70,15 +70,78 @@
 \section{协同过滤——经典的推荐算法}
 论文：Amazon.com Recommenders Item-to-Item Collaborative Filtering
 
-\subsection{协同过滤的基本流程}
+\subsection{基于用户的协同过滤}
+基于用户的协同过滤算法的基本思想是：当召回用户A的候选集时，可以先找到和他有相似兴趣的其他用户，然后把那些用户喜欢的、而用户A没有未交互的物品作为候选集。
 
-\subsection{用户相似度计算}
+因此，我们首先需要计算两个用户的兴趣相似度。给定用户$u$和用户$v$，令$N(u)$表示用户$u$曾经有过正反馈的物品集合，令$N(v)$ 为用户$v$曾经有过正反馈的物品集合。那么我们可以通过以下两种方法计算用户的相似度：
+$$
+w_{uv} = \frac{|N(u) \cap N(v)|}{N(u) \cup N(v)} \qquad \qquad \text{基于 Jaccard 公式}
+$$
+$$
+w_{uv} = \frac{|N(u) \cap N(v)|}{\sqrt{|N(u)| |N(v)|}} \qquad \qquad \text{基于余弦相似度}
+$$
 
-\subsection{最终结果的排序}
+余弦相似度为什么是上面这种写法呢，因为这里，我们并不是用的用户对物品的评分，而是用的0-1表示，所以对两个集合做交集，相当于进行了点乘。如果我们的矩阵是用户对物品的评分，那么计算余弦相似度的时候可以利用用户的具体评分而不是0-1值。
 
-\subsection{ItemCF}
+如果简单的基于余弦相似度，显得过于粗糙，以图书为例，如果两个用户都曾经买过《新华字典》，这丝毫不能说明他们兴趣相似， 因为绝大多数中国人小时候都买过《新华字典》。但如果两个用户都买过《数据挖掘导论》，那可 以认为他们的兴趣比较相似，因为只有研究数据挖掘的人才会买这本书。换句话说，\textbf{两个用户对冷门物品采取过同样的行为更能说明他们兴趣的相似度}，因此，我们可以基于物品的流行度对热门物品进行一定的惩罚：
+$$
+w_{uv} = \frac{\sum_{i \in N(u)\cap N(v)\frac{1}{\log 1 + |N(i)|}}}{\sqrt{|N(u)| |N(v)|}}
+$$
+
+得到用户之间的兴趣相似度后，UserCF算法会给用户推荐和他兴趣最相似的$K$个用户喜欢的 物品。如下的公式度量了UserCF算法中用户$u$对物品$i$的感兴趣程度:
+$$
+p(u,i) = \sum_{v \in S(u,K) \cap N(i)} w_{uv}r_{vi}
+$$
+
+其中，$S(u, K)$包含和用户$u$兴趣最接近的$K$个用户，$N(i)$是对物品$i$有过行为的用户集合，$w_{uv}$是用户$u$和用户$v$的兴趣相似度，$r_{vi}$代表用户$v$对物品$i$x的兴趣.
+
+
+\subsection{基于物品的协同过滤}
+UserCF在一些网站(如Digg)中得到了应用，但该算法有一些缺点。首先， 随着网站的用户数目越来越大，计算用户兴趣相似度矩阵将越来越困难，其运算时间复杂度和空间复杂度的增长和用户数的增长近似于平方关系。其次，基于用户的协同过滤很难对推荐结果作出解释。因此，著名的电子商务公司亚马逊提出了另一个算法——基于物品的协同过滤算法。
+
+
+基于物品的协同过滤算法(简称ItemCF)给用户推荐那些和他们之前喜欢的物品相似的物品。 比如，该算法会因为你购买过《数据挖掘导论》而给你推荐《机器学习》。不过，\textbf{ItemCF算法并不利用物品的内容属性计算物品之间的相似度，它主要通过分析用户的行为记录计算物品之间的相似度。该算法认为，物品A和物品B具有很大的相似度是因为喜欢物品A的用户大都也喜欢物品 B}。
+
+基于物品的协同过滤算法主要分为两步：(1) 计算物品之间的相似度；(2)根据物品的相似度和用户的历史行为给用户生成召回候选集。
+
+ItemCF的第一步是计算物品之间的相似度，在网站中，我们经常看到这么一句话：Customers Who Bought This Item Also Bought，那么从这句话的定义出发，我们可以用下面的公式定义物品相似度：
+$$
+w_{ij} = \frac{|N(i) \cap N(j)|}{|N(i)|}
+$$
+
+这里，分母$|N(i)|$是喜欢物品$i$的用户数，而分子 $N(i)\cap N(j) $是同时喜欢物品$i$和物品$j$的用户数。因此，上述公式可以理解为喜欢物品$i$的用户中有多少比例的用户也喜欢物品$j$。但是却存在一个问题。如果物品$j$很热门，很多人都喜欢，那么$W_{ij}$就会很大，接近1。因此，该公式会造成任何物品都会和热门的物品有很大的相似度，这 对于致力于挖掘长尾信息的推荐系统来说显然不是一个好的特性。为了避免推荐出热门的物品，可以用下面的公式:
+$$
+w_{ij} = \frac{|N(i) \cap N(j)|}{\sqrt{|N(i)||N(j)|}}
+$$
+
+这里由于还是0-1的原因，我们的余弦相似度可以写成上面的形式。但是，是不是每个用户的贡献都相同呢? 假设有这么一个用户，他是开书店的，并且买了当当网上80\%的书准备用来自己卖。那么， 他的购物车里包含当当网80\%的书。假设当当网有100万本书，也就是说他买了80万本。从前面 对ItemCF的讨论可以看到，这意味着因为存在这么一个用户，有80万本书两两之间就产生了相似度。这个用户虽然活跃，但是买这些书并非都是出于自身的兴趣，而且这些书覆 盖了当当网图书的很多领域，所以这个用户对于他所购买书的两两相似度的贡献应该远远小于一个只买了十几本自己喜欢的书的文学青年。因此，我们要对这样的用户进行一定的惩罚，John S. Breese在论文1中提出了一个称为IUF(Inverse User Frequence)，即用户活跃度对数的 倒数的参数，他也认为活跃用户对物品相似度的贡献应该小于不活跃的用户，他提出应该增加IUF参数来修正物品相似度的计算公式:
+$$
+w_{ij} = \frac{\sum_{u \in N(i) \cap N(j)\frac{1}{\log 1 + |N(u)|}}}{\sqrt{|N(i)||N(j)|}}
+$$
+
+在得到物品之间的相似度后，ItemCF通过如下公式计算用户$u$对一个物品j的兴趣:
+$$
+P_{uj} = \sum_{i \in N(u) \cap S(j,K)}w_{ji}r_{ui}
+$$
+
+这里$N(u)$是用户喜欢的物品的集合，$S(j,K)$是和物品$j$最相似的$K$个物品的集合，$w_{ji}$是物品$j$和$i$的相似度，$r_{ui}$是用户$u$对物品$i$的兴趣。
+
+\subsection{UserCF和ItemCF的比较}
+先说结论：\textbf{新闻网站一般使用UserCF，而图书、电商网站一般使用ItemCF}。
+
+首先回顾一下UserCF算法和ItemCF算法的推荐原理。UserCF给用户推荐那些和他有共同兴 趣爱好的用户喜欢的物品，而ItemCF给用户推荐那些和他之前喜欢的物品类似的物品。从这个算法的原理可以看到，\textbf{UserCF的推荐结果着重于反映和用户兴趣相似的小群体的热点，而ItemCF 的推荐结果着重于维系用户的历史兴趣}。换句话说，UserCF的推荐更社会化，反映了用户所在的小型兴趣群体中物品的热门程度，而ItemCF的推荐更加个性化，反映了用户自己的兴趣传承。
+
+在新闻网站中，用户的兴趣不是特别细化，绝大多数用户都喜欢看热门的新闻。个性化新闻推荐更加强调抓住 新闻热点，热门程度和时效性是个性化新闻推荐的重点，而个性化相对于这两点略显次要。因 此，UserCF可以给用户推荐和他有相似爱好的一群其他用户今天都在看的新闻，这样在抓住热 点和时效性的同时，保证了一定程度的个性化。同时，在新闻网站中，物品的更新速度远远快于新用户的加入速度，而且 对于新用户，完全可以给他推荐最热门的新闻，因此UserCF显然是利大于弊。
+
+但是，在图书、电子商务和电影网站，比如亚马逊、豆瓣、Netflix中，ItemCF则能极大地发 挥优势。首先，在这些网站中，用户的兴趣是比较固定和持久的。一个技术人员可能都是在购买 技术方面的书，而且他们对书的热门程度并不是那么敏感，事实上越是资深的技术人员，他们看的书就越可能不热门。此外，这些系统中的用户大都不太需要流行度来辅助他们判断一个物品的好坏，而是可以通过自己熟悉领域的知识自己判断物品的质量。因此，这些网站中个性化推荐的 任务是帮助用户发现和他研究领域相关的物品。因此，ItemCF算法成为了这些网站的首选算法。 此外，这些网站的物品更新速度不会特别快，一天一次更新物品相似度矩阵对它们来说不会造成太大的损失，是可以接受的。同时，从技术上考虑，UserCF需要维护一个用户相似度的矩阵，而ItemCF需要维护一个物品相似度矩阵。从存储的角度说，如果用户很多，那么维护用户兴趣相似度矩阵需要很大的空间， 同理，如果物品很多，那么维护物品相似度矩阵代价较大。
+
+\subsection{协同过滤算法的问题}
+热门的商品具有很强的头部效应，容易跟大量物品产生相似性；而尾部的物品由于特征向量稀疏，很少与其他物品产生相似性，导致很少被推荐。
 
 \section{矩阵分解算法——协同过滤的进化}
+
+\section{深度树匹配}
+\url{https://www.jianshu.com/p/ef3caa5672c8}
 
 \section{LR——CTR模型的核心和基础}
 位于正中央的是当之无愧的Logistic Regression。仍记得2012年我刚进入计算广告这个行业的时候，各大中小公司的主流CTR模型无一例外全都是LR模型。LR模型的流行是有三方面原因的，一是数学形式和含义上的支撑；二是人类的直觉和可解释性的原因；三是工程化的需要。
@@ -266,11 +329,19 @@ FTRL的全称是Follow-the-regularized-Leader，是一种在线实时训练模�
     \item Google\textbf{综合FOBOS在精度上的优势和RDA在稀疏性上的优势}，将二者的形式进行了进一步统一，提出并应用FTRL，使FOBOS和RDA均成为了FTRL在特定条件下的特殊形式。
 \end{itemize}
 
-\section{LS-PLM——阿里曾经的主流CTR模型}
+\section{LS-PLM(MLR)——阿里曾经的主流CTR模型}
 下面我们从样本pattern本身来入手，介绍阿里的的LS-PLM（Large Scale Piece-wise Linear Model），它的另一个更广为人知的名字是MLR（Mixed Logistic Regression）。MLR模型虽然在2017年才公之于众，但其早在2012年就是阿里主流的CTR模型，并且在深度学习模型提出之前长时间应用于阿里的各类广告场景。
 
 \subsection{LS-PLM 模型的主要结构}
 本质上，MLR可以看做是对LR的自然推广，它在LR的基础上采用分而治之的思路，先对样本进行分片，再在样本分片中应用LR进行CTR预估。在LR的基础上加入聚类的思想，其动机其实来源于对计算广告领域样本特点的观察 。
+
+MLR可以看做是对LR的一个自然推广，它采用分而治之的思路，用分片线性的模式来拟合高维空间的非线性分类面，其形式化表达如下\cite{Recommender_System_With_Deep_Learning_MLR}：
+$$
+p(y=1|x) = g\Bigg( \sum_{j=1}^m\sigma\Big(u^T_jx\Big)\eta\Big(w^T_jx\Big)\Bigg)
+$$
+
+其中$u$是聚类参数，决定了空间的划分，$w$是分类参数，决定空间内的预测。这里面超参数分片数$m$可以较好地平衡模型的拟合与推广能力。当$m=1$时MLR就退化为普通的LR，$m$越大模型的拟合能力越强，但是模型参数规模随$m$线性增长，相应所需的训练样本也随之增长。因此实际应用中m需要根据实际情况进行选择。
+
 
 举例来说，如果CTR模型要预估的是女性受众点击女装广告的CTR，显然我们并不希望把男性用户点击数码类产品的样本数据也考虑进来，因为这样的样本不仅对于女性购买女装这样的广告场景毫无相关性，甚至会在模型训练过程中扰乱相关特征的权重。为了让CTR模型对不同用户群体，不用用户场景更有针对性，其实理想的方法是\textbf{先对全量样本进行聚类，再对每个分类施以LR模型进行CTR预估}。MLR的实现思路就是由该动机产生的。
 $$
@@ -280,6 +351,22 @@ $$
 MLR目标函数的数学形式如上式，首先用聚类函数 $\pi$ 对样本进行分类（这里的 $\pi$ 采用了softmax函数，对样本进行多分类），再用 LR模型计算样本在分片中具体的 CTR，然后将二者进行相乘后加和。
 
 其中超参数分片数 $m$ 可以较好地平衡模型的拟合与推广能力。当 $m=1$ 时MLR就退化为普通的LR，$m$ 越大模型的拟合能力越强，但是模型参数规模随 $m$ 线性增长，相应所需的训练样本也随之增长。在实践中，阿里给出了 $m$ 的经验值为12。
+
+在这种情况下，MLR模型可以看作是一个FOE model：
+$$
+p(y=1|x) = \sum_{i=1}^mp(z=i|x)p(y|z=i,x)
+$$
+
+关于损失函数的设计，阿里采用了 neg-likelihood loss function以及L1，L2正则，形式如下：
+$$
+\arg\min_\Theta f(\Theta) = \text{loss}(\Theta) + \lambda||\Theta||_{2,1} + \beta||\Theta||_1
+$$
+$$
+\text{loss}(\Theta) = -\sum_{t=1}^n\Bigg[y_t\log\Big(p(y_t=1|x_t,\Theta)\Big) + \Big(1-y_t\Big)\log\Big(p(y_t=0|x_t,\Theta)\Big)\Bigg]
+$$
+
+由于加入了正则项，MLR算法变的不再是平滑的凸函数，梯度下降法不再适用，因此模型参数的更新使用LBFGS和OWLQN的结合，具体的优化细节大家可以参考论文(\url{https://arxiv.org/pdf/1704.05194.pdf})。
+
 
 \subsection{LS-PLM 模型的特点}
 MLR算法适合于工业级的广告、推荐等大规模稀疏数据场景问题。主要是由于表达能力强、稀疏性高等两个优势。
@@ -356,17 +443,12 @@ Multiple Residual Units 层：该层的主要结构是多层感知机，采用�
 
 Scoring 层：该层为输出层，为了拟合优化目标而存在。对于 CTR 这类二分类问题，往往采用逻辑回归模型，对于多分类问题，通常采用 softmax 模型。
 
-\section{FNN（2016年）——用FM的隐向量完成Embedding初始化}
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.6\textwidth]{fig/FNN_Structure.png}
-\end{figure}
+\section{NeuralCF 模型——CF 与深度学习的结合}
+\url{https://www.jianshu.com/p/6173dbde4f53}
 
-FNN 相比 Deep Crossing 的创新在于\textbf{使用 FM 的隐层向量作为 user 和 item 的 Embedding}，从而避免了完全从随机状态训练Embedding。由于 id 类特征大量采用 one-hot 的编码方式，导致其维度极大，向量极稀疏，所以 Embedding 层与输入层的连接极多，梯度下降的效率很低，这大大增加了模型的训练时间和 Embedding 的不稳定性，使用 pre-train 的方法完成 Embedding 层的训练，无疑是降低深度学习模型复杂度和训练不稳定性的有效工程经验。
-
-论文：[FNN] Deep Learning over Multi-field Categorical Data (UCL 2016)
 
 \section{PNN (2016年)——丰富特征交叉的方式}
+\subsection{PNN简介}
 \begin{figure}[H]
     \centering
     \includegraphics[width=.6\textwidth]{fig/PNN_Structure.jpg}
@@ -375,6 +457,133 @@ FNN 相比 Deep Crossing 的创新在于\textbf{使用 FM 的隐层向量作为 
 PNN的全称是Product-based Neural Network，\textbf{PNN的关键在于在embedding层和全连接层之间加入了Product layer}。传统的DNN是直接通过多层全连接层完成特征的交叉和组合的，但这样的方式缺乏一定的“针对性”。首先全连接层并没有针对不同特征域之间进行交叉；其次，全连接层的操作也并不是直接针对特征交叉设计的。但在实际问题中，特征交叉的重要性不言而喻，比如年龄与性别的交叉是非常重要的分组特征，包含了大量高价值的信息，我们急需深度学习网络能够有针对性的结构能够表征这些信息。因此PNN通过加入Product layer完成了针对性的特征交叉，其product操作在不同特征域之间进行特征组合。并定义了inner product，outer product等多种product的操作捕捉不同的交叉信息，增强模型表征不同数据模式的能力 。
 
 论文：[PNN] Product-based Neural Networks for User Response Prediction (SJTU 2016)
+
+\subsection{模型细节}
+\subsubsection{输出层}
+输出层很简单，将上一层的网络输出通过一个全链接层，经过sigmoid函数转换后映射到(0,1)的区间中，得到我们的点击率的预测值：
+$$
+\hat{y} = \sigma(W_3l_2 + b_3)
+$$
+
+\subsubsection{l2层}
+根据l1层的输出，经一个全链接层 ，并使用relu进行激活，得到我们l2的输出结果：
+$$
+l_2 = \text{relu}(W_2l_1 + b_2)
+$$
+
+\subsubsection{l1层}
+l1层的输出由如下的公式计算：
+$$
+l_1 = \text{relu}(l_z + l_p + b_1)
+$$
+
+重点马上就要来了，我们可以看到在得到l1层输出时，我们输入了三部分，分别是$l_z$，$l_p$ 和 $b_1$，$b_1$ 是我们的偏置项，这里可以先不管。$l_z$ 和 $l_p$ 的计算就是PNN的精华所在了。
+
+\subsubsection{Product Layer}
+product思想来源于，在ctr预估中，认为特征之间的关系更多是一种and“且”的关系，而非add"加”的关系。例如，性别为男且喜欢游戏的人群，比起性别男和喜欢游戏的人群，前者的组合比后者更能体现特征交叉的意义。
+
+product layer可以分成两个部分，一部分是线性部分$l_z$，一部分是非线性部分$l_p$。二者的形式如下：
+$$
+l_z = (l_z^1, l_z^2, \cdots, l_z^n, \cdots, l_z^{D1}) \qquad \qquad l_z^n   = W_z^n \odot z
+$$
+$$
+l_p = (l_p^1, l_p^2, \cdots, l_p^n, \cdots, l_p^{D1}) \qquad \qquad l_p^n   = W_p^n \odot p
+$$
+
+在这里，我们要使用到论文中所定义的一种运算方式，其实就是矩阵的点乘：
+$$
+A \odot B = \sum A_{i,j}B_{i,j}
+$$
+
+\subsubsection{Embedding Layer}
+Embedding Layer 跟 DeepFM 中相同，将每一个 field 的特征转换成同样长度的向量，这里用 $f$ 来表示。
+$$
+(f_1, f_2, \cdots, f_N)
+$$
+
+\subsubsection{损失函数}
+使用和逻辑回归同样的损失函数，如下：
+$$
+L(y, \hat{y}) = -y \log \hat{y} - (1-y)\log (1-\hat{y})
+$$
+
+\subsection{Product Layer详细介绍}
+前面提到了，product layer可以分成两个部分，一部分是线性部分$l_z$，一部分是非线性部分$l_p$。
+
+看上面的公式，我们首先需要知道$z$和$p$，这都是由我们的embedding层得到的，其中$z$是线性信号向量，因此我们直接用embedding层得到：
+$$
+z = (z_1, z_2, \cdots, z_n) \triangleq (f_1, f_2, \cdots, f_N)
+$$
+
+论文中使用的等号加一个三角形，其实就是相等的意思，你可以认为$z$就是embedding层的复制。
+
+对于$p$来说，这里需要一个公式进行映射：
+$$
+p = \{p_{i,j}\}, i = 1, \cdots, N, j = 1, \cdots, N
+$$
+$$
+p_{i,j} = g(f_i, f_j)
+$$
+
+不同的 $g$ 的选择使得我们有了两种 PNN 的计算方法，一种叫做Inner PNN，简称 IPNN，一种叫做 Outer PNN，简称 OPNN。
+
+接下来，我们分别来具体介绍这两种形式的PNN模型，由于涉及到复杂度的分析，所以我们这里先定义 Embedding 的大小为 $M$，field 的大小为 $N$，而 $l_z$ 和 $l_p$ 的长度为 $D_1$：
+
+\subsubsection{IPNN}
+IPNN的示意图如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.3\textwidth]{fig/DCN_IPNN_Example.png}
+\end{figure}
+
+IPNN中 $p$ 的计算方式如下，即使用内积来代表 $p_{ij}$：
+$$
+g(f_i, f_j) = \ < f_i, f_j >
+$$
+
+所以，$p_{ij}$其实是一个数，得到一个 $p_{ij}$ 的时间复杂度为 $M$，$p$ 的大小为 $N*N$，因此计算得到 $p$ 的时间复杂度为$N*N*M$。而再由 $p$ 得到 $l_p$的时间复杂度是 $N*N*D_1$。因此 对于 IPNN 来说，总的时间复杂度为 $N*N(D_1+M)$。文章对这一结构进行了优化，可以看到，我们的 $p$ 是一个对称矩阵，因此我们的权重也可以是一个对称矩阵，对称矩阵就可以进行如下的分解：
+$$
+W_p^n = \theta^n \theta^{nT}
+$$
+
+因此：
+$$
+l_p^n = W_p^n \odot p = \sum_{i=1}^N\sum_{j=1}^N \theta_i^n \theta_j^n <f_i, f_j> = < \sum_{i=1}^N\delta_i^n, \sum_{i=1}^N\delta_i^n >
+$$
+$$
+\delta_i^n = \theta_i^nf_i
+$$
+
+因此：
+$$
+\delta^n = (\delta_1^n, \delta_2^n, \cdots, \delta_i^n, \cdots, \delta_N^n) \in \mathbb{R}^{N\times M}
+$$
+
+从而得到：
+$$
+l_p = \Big( ||\sum_i\delta_i^1||, \cdots,  ||\sum_i\delta_i^n||, \cdots,  ||\sum_i\delta_i^{D_1}||\Big)
+$$
+
+可以看到，我们的权重只需要$D_1 * N$就可以了，时间复杂度也变为了$D_1*M*N$。
+
+\subsubsection{OPNN}
+OPNN的示意图如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.3\textwidth]{fig/DCN_OPNN_Example.png}
+\end{figure}
+
+OPNN中 $p$ 的计算方式如下：
+$$
+p_{i,j} = g(f_i, f_j) = f_if_j^T
+$$
+
+此时 $p_{ij}$ 为 $M*M$ 的矩阵，计算一个 $p_{ij}$ 的时间复杂度为$M*M$，而 $p$ 是 $N*N*M*M$ 的矩阵，因此计算 $p$ 的时间复杂度为 $N*N*M*M$。从而计算 $l_p$ 的时间复杂度变为 $D1 * N*N*M*M$。这个显然代价很高的。为了减少负责度，论文使用了叠加的思想，它重新定义了 $p$ 矩阵：
+$$
+p = \sum_{i=1}^N\sum_{j=1}^Nf_if_j^T = f_{\sum}(f_{\sum})^T, \quad f_{\sum} = \sum_{i=1}^Nf_i
+$$
+
+这里计算 $p$ 的时间复杂度变为了 $D1*M*(M+N)$。
 
 \section{Google Wide\&Deep（2016年）——记忆能力和泛化能力的综合权衡}
 \begin{figure}[H]
@@ -386,7 +595,37 @@ Google Wide\&Deep模型的主要思路正如其名，把单输入层的Wide部�
 
 论文：[Wide\&Deep] Wide \& Deep Learning for Recommender Systems (Google 2016)
 
-\section{华为 DeepFM (2017年)——用FM代替Wide部分}
+\section{FM与深度学习模型的结合}
+\subsection{并行结构与串行结构}
+在CTR预估中，为了解决稀疏特征的问题，学者们提出了FM模型来建模特征之间的交互关系。但是FM模型只能表达特征之间两两组合之间的关系，无法建模两个特征之间深层次的关系或者说多个特征之间的交互关系，因此学者们通过Deep Network来建模更高阶的特征之间的关系\cite{Recommender_System_With_Deep_Learning_NFM}。
+
+因此 FM和深度网络DNN的结合也就成为了CTR预估问题中主流的方法。有关FM和DNN的结合有两种主流的方法，并行结构和串行结构。两种结构的理解以及实现如下表所示：
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|}
+    \hline 
+       \textbf{结构}	    & \textbf{描述}	  & \textbf{常见模型} \\ \hline
+       并行结构  & FM部分和DNN部分分开计算，只在输出层进行一次融合得到结果	& DeepFM，DCN，Wide\&Deep \\ \hline
+       串行结构	& 将FM的一次项和二次项结果(或其中之一)作为DNN部分的输入，经DNN得到最终结果	 & PNN,NFM,AFM \\ \hline
+    \end{tabular}
+\end{table}
+
+\subsection{FNN（2016年）——用FM的隐向量完成Embedding初始化}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/FNN_Structure.png}
+\end{figure}
+
+FNN 相比 Deep Crossing 的创新在于\textbf{使用 FM 的隐层向量作为 user 和 item 的 Embedding}，从而避免了完全从随机状态训练Embedding。由于 id 类特征大量采用 one-hot 的编码方式，导致其维度极大，向量极稀疏，所以 Embedding 层与输入层的连接极多，梯度下降的效率很低，这大大增加了模型的训练时间和 Embedding 的不稳定性，使用 pre-train 的方法完成 Embedding 层的训练，无疑是降低深度学习模型复杂度和训练不稳定性的有效工程经验。
+
+论文：[FNN] Deep Learning over Multi-field Categorical Data (UCL 2016)
+
+
+
+
+\subsection{华为 DeepFM (2017年)——用FM代替Wide部分}
+\subsubsection{DeepFM 简介}
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{fig/Huawei_DeepFM_Structure.png}
@@ -396,7 +635,126 @@ Google Wide\&Deep模型的主要思路正如其名，把单输入层的Wide部�
 
 论文：[DeepFM] A Factorization-Machine based Neural Network for CTR Prediction (HIT-Huawei 2017)
 
+\subsubsection{DNN的局限和解决思路\cite{Recommender_System_With_Deep_Learning_DeepFM}}
+我们之前也介绍过了，对于离散特征的处理，我们使用的是将特征转换成为one-hot的形式，但是将One-hot类型的特征输入到DNN中，会导致网络参数太多；如何解决这个问题呢，类似于FFM中的思想，将特征分为不同的field：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Deep_FM_From_One_Hot_To_Dense_Vector.png}
+    \caption*{解决思路：从 OneHot 到 DenseVector}
+\end{figure}
+
+再加两层的全链接层，让Dense Vector进行组合，那么高阶特征的组合就出来了：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Deep_FM_From_One_Hot_To_Dense_Vector_Add_MLP.png}
+\end{figure}
+
+\subsubsection{DNN+FM}
+但是低阶和高阶特征组合隐含地体现在隐藏层中，如果我们希望把低阶特征组合单独建模，然后融合高阶特征组合。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Deep_FM_From_One_Hot_To_Dense_Vector_Improve.png}
+\end{figure}
+
+即将DNN与FM进行一个合理的融合：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Deep_FM_From_One_Hot_To_Dense_Vector_DNN_FM.png}
+\end{figure}
+
+二者的融合总的来说有两种形式，一是并行结构，二是串行结构。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Deep_FM_From_One_Hot_To_Dense_Vector_Fusion_1.png}
+\end{figure}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Deep_FM_From_One_Hot_To_Dense_Vector_Fusion_2.png}
+\end{figure}
+
+而我们今天要讲到的DeepFM，就是并行结构中的一种典型代表。
+
+\subsubsection{DeepFM模型结构}
+观察章节开头 DeepFM 的结构图，可以看出 DeepFM包含两部分：神经网络部分与因子分解机部分，分别负责低阶特征的提取和高阶特征的提取。这两部分共享同样的输入。DeepFM的预测结果可以写为：
+$$
+\hat{y} = \text{sigmoid}(y_{FM} + y_{\text{dnn}})
+$$
+
+\text{FM部分}
+
+FM部分的详细结构如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/DeepFM_FM_Detail.png}
+\end{figure}
+
+FM部分是一个因子分解机。因为引入了隐变量的原因，对于几乎不出现或者很少出现的隐变量，FM也可以很好的学习。
+
+\text{深度部分}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/DeepFM_Deep_Detail.png}
+\end{figure}
+
+深度部分是一个前馈神经网络。与图像或者语音这类输入不同，图像语音的输入一般是连续而且密集的，然而用于CTR的输入一般是及其稀疏的。因此需要重新设计网络结构。具体实现中为，在第一层隐含层之前，引入一个嵌入层来完成将输入向量压缩到低维稠密向量。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/DeepFM_Deep_Detail_Embedding.png}
+\end{figure}
+
+嵌入层(embedding layer)的结构如上图所示。当前网络结构有两个有趣的特性，1）尽管不同field的输入长度不同，但是embedding之后向量的长度均为K。2)在FM里得到的隐变量Vik现在作为了嵌入层网络的权重。
+
+这里的第二点如何理解呢，假设我们的k=5，首先，对于输入的一条记录，同一个field 只有一个位置是1，那么在由输入得到dense vector的过程中，输入层只有一个神经元起作用，得到的dense vector其实就是输入层到embedding层该神经元相连的五条线的权重，即vi1，vi2，vi3，vi4，vi5。这五个值组合起来就是我们在FM中所提到的Vi。在FM部分和DNN部分，这一块是共享权重的，对同一个特征来说，得到的Vi是相同的。
+
+
+\subsection{NFM（2017年）——FM的神经网络化尝试}
+\subsubsection{NFM 简介}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/NFM_Structure.jpg}
+\end{figure}
+
+NFM 是串行结构中一种较为简单的网络模型。
+
+\subsubsection{NFM 模型结构\cite{Recommender_System_With_Deep_Learning_NFM}}
+我们首先来回顾一下 FM 模型，FM 模型用 $n$ 个隐变量来刻画特征之间的交互关系。这里要强调的一点是，$n$ 是特征的总数，是 one-hot 展开之后的，比如有三组特征，两个连续特征，一个离散特征有5个取值，那么 $n=7$ 而不是 $n=3$。
+$$
+\hat{y}_{\text{FM}(x)} = w_0 + \sum_{i=1}^nw_ix_i + \sum_{i=1}^n\sum_{j=i+1}^nv_i^Tv_j \cdot x_ix_j  
+$$
+
+对于 NFM 模型，目标值的预测公式变为：
+$$
+\hat{y}_{\text{NFM}(x)} = w_0 + \sum_{i=1}^nw_ix_i + f(x)
+$$
+
+其中，$f(x)$ 是用来建模特征之间交互关系的多层前馈神经网络模块，架构图如下所示：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/NFM_FM_Detail.png}
+\end{figure}
+
+Embedding Layer 和我们之间几个网络是一样的，embedding 得到的vector 其实就是我们在 FM 中要学习的隐变量 $v$。
+
+Bi-Interaction Layer名字挺高大上的，其实它就是计算 FM 中的二次项的过程，因此得到的向量维度就是我们的Embedding的维度。最终的结果是：
+$$
+f_{BI} (V_x) = \frac{1}{2}\Big[ \Big( \sum_{i=1}^n x_iv_i\Big)^2 - \sum_{i=1}^n(x_iv_i)^2\Big]
+$$
+
+Hidden Layers就是我们的DNN部分，将Bi-Interaction Layer得到的结果接入多层的神经网络进行训练，从而捕捉到特征之间复杂的非线性关系。
+
+在进行多层训练之后，将最后一层的输出求和同时加上一次项和偏置项，就得到了我们的预测输出：
+$$
+\hat{y}_{\text{NFM}(x)} = w_0 + \sum_{i=1}^nw_ix_i + h^T\sigma_L(W_L(\cdots \sigma_1(W_1f_{BI}(V_x)+b_1)\cdots)+b_L)
+$$
+
+
+
+\subsection{基于 FM 的深度学习模型的优点和局限性}
+
 \section{Google Deep\&Cross（2017年）——使用Cross网络代替Wide部分}
+\subsection{DCN简介}
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{fig/Google_Deep_Cross_Network_Structure.jpg}
@@ -404,13 +762,58 @@ Google Wide\&Deep模型的主要思路正如其名，把单输入层的Wide部�
 
 Google 2017年发表的Deep\&Cross Network（DCN）同样是对Wide\&Deep的进一步改进，主要的思路使用Cross网络替代了原来的Wide部分。其中设计Cross网络的基本动机是为了增加特征之间的交互力度，使用多层cross layer对输入向量进行特征交叉。单层cross layer的基本操作是将cross layer的输入向量xl与原始的输入向量x0进行交叉，并加入bias向量和原始xl输入向量。DCN本质上还是对Wide\&Deep Wide部分表达能力不足的问题进行改进，与DeepFM的思路非常类似。
 
+一个DCN模型从嵌入和堆积层开始，接着是一个交叉网络和一个与之平行的深度网络，之后是最后的组合层，它结合了两个网络的输出\cite{Recommender_System_With_Deep_Learning_DCN}。
+
 论文：[DCN] Deep \& Cross Network for Ad Click Predictions (Stanford 2017)
 
-\section{NFM（2017年）——对Deep部分的改进}
+\subsection{嵌入和堆叠层}
+我们考虑具有离散和连续特征的输入数据。在网络规模推荐系统中，如CTR预测，输入主要是分类特征，如“country=usa”。这些特征通常是编码为独热向量如“[ 0,1,0 ]”；然而，这往往导致过度的高维特征空间大的词汇。
+
+为了减少维数，我们采用嵌入过程将这些离散特征转换成实数值的稠密向量（通常称为嵌入向量）：
+$$
+x_{\text{embed},i} = W_{\text{embed},i}x_i
+$$
+
+然后，我们将嵌入向量与连续特征向量叠加起来形成一个向量：
+$$
+x_0 = [x_{\text{embed},1}^T, \cdots, x_{\text{embed},k}^T, x_{\text{dense}}^T]
+$$
+
+拼接起来的向量$X_0$将作为我们Cross Network和Deep Network的输入。
+
+\subsection{Cross Network}
+交叉网络的核心思想是以有效的方式应用显式特征交叉。交叉网络由交叉层组成，每个层具有以下公式：
+$$
+x_{l+1} = x_0x_l^Tw_l + b_l + x_l = f(x_l, w_l, b_l) + x_l
+$$
+
+一个交叉层的可视化如图所示:
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.8\textwidth]{fig/NFM_Structure.jpg}
+    \includegraphics[width=.8\textwidth]{fig/DCN_Cross_Detail.png}
 \end{figure}
+
+可以看到，交叉网络的特殊结构使交叉特征的程度随着层深度的增加而增大。多项式的最高程度（就输入$X_0$而言）为$L$层交叉网络$L + 1$。如果用$L_c$表示交叉层数，$d$表示输入维度。然后，参数的数量参与跨网络参数为：$d * L_c * 2$ ($w$和$b$)
+
+交叉网络的少数参数限制了模型容量。为了捕捉高度非线性的相互作用，模型并行地引入了一个深度网络。
+
+\subsection{Deep Network}
+深度网络就是一个全连接的前馈神经网络，每个深度层具有如下公式：
+$$
+h_{l+1} = f(W_lh_l + b_l)
+$$
+
+\subsection{Combination Layer}
+链接层将两个并行网络的输出连接起来，经过一层全链接层得到输出：
+$$
+p = \sigma\Big( \Big[ x_{L_1}^T, h_{L_2}^T\Big] W_{\text{logits}}\Big)
+$$
+
+如果采用的是对数损失函数，那么损失函数形式如下：
+$$
+\text{loss} = -\frac{1}{N} \sum_{i=1}^Ny_i\log(p_i) + (1-y_i)\log(1-p_i) + \lambda\sum_l||w_l||^2
+$$
+
 
 相对于DeepFM和DCN对于Wide\&Deep Wide部分的改进，NFM可以看作是对Deep部分的改进。NFM的全称是Neural Factorization Machines，\textbf{如果我们从深度学习网络架构的角度看待FM，FM也可以看作是由单层LR与二阶特征交叉组成的Wide\&Deep的架构，与经典W\&D的不同之处仅在于Deep部分变成了二阶隐向量相乘的形式}。再进一步，NFM从修改FM二阶部分的角度出发，用一个带Bi-interaction Pooling层的DNN替换了FM的特征交叉部分，形成了独特的Wide\&Deep架构。其中Bi-interaction Pooling可以看作是不同特征embedding的element-wise product的形式。这也是NFM相比Google Wide\&Deep的创新之处。
 
@@ -423,7 +826,7 @@ Google 2017年发表的Deep\&Cross Network（DCN）同样是对Wide\&Deep的进�
     \includegraphics[width=.8\textwidth]{fig/AFM_Structure.jpg}
 \end{figure}
 
-AFM的全称是Attentional Factorization Machines。AFM 模型可以被认为是之前介绍的 NFM 模型的延续。在 NFM 模型中，不同域的特征 Embedding 向量经过特征交叉池化层的交叉，将各交叉特征向量进行加和，输入最后由多层神经网络组成的输出层。问题的关键在于加和池化（Sum Pooling）操作，它相当于一视同仁地对待所有交叉特征，不考虑不同特征对结果的影响程度，事实上小结了大量有价值的信息。这里注意力机制就派上了用场，它基于假设——\textbf{不同的交叉特征对于结果的影响程度不同}。
+AFM的全称是Attentional Factorization Machines，是串行结构中一种网络模型。AFM 模型可以被认为是之前介绍的 NFM 模型的延续。在 NFM 模型中，不同域的特征 Embedding 向量经过特征交叉池化层的交叉，将各交叉特征向量进行加和，输入最后由多层神经网络组成的输出层。问题的关键在于加和池化（Sum Pooling）操作，它相当于一视同仁地对待所有交叉特征，不考虑不同特征对结果的影响程度，事实上小结了大量有价值的信息。这里注意力机制就派上了用场，它基于假设——\textbf{不同的交叉特征对于结果的影响程度不同}。
 
 通过前面的介绍我们很清楚的知道，FM其实就是经典的Wide\&Deep结构，其中Wide部分是FM的一阶部分，Deep部分是FM的二阶部分，而AFM顾名思义，就是引入Attention机制的FM。
 所以，AFM其实是对FM的二阶部分的每个交叉特征赋予了权重，这个权重控制了交叉特征对最后结果的影响，也就非常类似于NLP领域的注意力机制（Attention Mechanism）。
@@ -472,7 +875,8 @@ AFM在FM中加入了Attention机制，2018年，阿里巴巴正式提出了融�
 \subsection{注意力机制对推荐系统的启发}
 \textbf{注意力机制在数学形式上只是将过去的平均操作或加和操作换成了加权平均操作或者加权和操作}。这一机制对深度学习推荐系统的启发是重大的，因为注意力得分的引入反映了人类天生的注意力机制特点。对这一机制的模拟，使得推荐系统更加接近用户真实的思考过程，从而达到提升推荐系统效果的目的。
 
-\section{阿里DIEN（2018年）——DIN的“进化”}
+\section{DIEN——序列模型与推荐系统的结合}
+\subsection{DIEN 简介}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{fig/Ali_DIEN_Structure.jpg}
@@ -481,6 +885,251 @@ AFM在FM中加入了Attention机制，2018年，阿里巴巴正式提出了融�
 DIEN的全称为Deep Interest Evolution Network，它不仅是对DIN的进一步“进化”，更重要的是\textbf{DIEN通过引入序列模型 AUGRU模拟了用户兴趣进化的过程}。具体来讲模型的主要特点是在Embedding layer和Concatenate layer之间加入了生成兴趣的Interest Extractor Layer和模拟兴趣演化的Interest Evolving layer。其中Interest Extractor Layer使用了DIN的结构抽取了每一个时间片内用户的兴趣，Interest Evolving layer则利用序列模型AUGRU的结构将不同时间的用户兴趣串联起来，形成兴趣进化的链条。最终再把当前时刻的“兴趣向量”输入上层的多层全连接网络，与其他特征一起进行最终的CTR预估。
 
 论文：[DIEN] Deep Interest Evolution Network for Click-Through Rate Prediction (Alibaba 2019)
+
+\subsection{提出背景\cite{Recommender_System_With_Deep_Learning_DIEN}}
+在大多数非搜索电商场景下，用户并不会实时表达目前的兴趣偏好。因此通过设计模型来捕获用户的动态变化的兴趣，是提升CTR预估效果的关键。阿里之前的DIN模型将用户的历史行为来表示用户的兴趣，并强调了用户兴趣的多样性和动态变化性，因此通过attention-based model来捕获和目标物品相关的兴趣。虽然DIN模型将用户的历史行为来表示兴趣，但存在两个缺点：
+
+1）用户的兴趣是不断进化的，而DIN抽取的用户兴趣之间是独立无关联的，没有捕获到兴趣的动态进化性；
+
+2）通过用户的显式的行为来表达用户隐含的兴趣，这一准确性无法得到保证。
+
+基于以上两点，阿里提出了深度兴趣演化网络DIEN来CTR预估的性能。DIEN模型的主要贡献点在于：
+
+1）模型\textbf{关注电商系统中兴趣演化的过程}，并提出了新的网络结果来建模兴趣进化的过程，这个模型能够更精确的表达用户兴趣，同时带来更高的CTR预估准确率。
+
+2）设计了\textbf{兴趣抽取层}，并通过计算一个辅助loss，来提升兴趣表达的准确性。
+
+3）设计了\textbf{兴趣进化层}，来更加准确的表达用户兴趣的动态变化性。
+
+\subsection{DIEN模型原理}
+\subsubsection{模型总体结构}
+我们先来对比一下DIN和DIEN的结构。
+DIN的模型结构如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DIEN_Compare_DIN.png}
+\end{figure}
+
+DIEN的模型结构如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DIEN_Compare_DIEN.png}
+\end{figure}
+
+可以看到，DIN和DIEN的最底层都是Embedding Layer，User profile， target AD和context feature的处理方式是一致的。不同的是，DIEN将user behavior组织成了序列数据的形式，并把简单的使用外积完成的activation unit变成了一个attention-based GRU网络。
+
+\subsubsection{兴趣抽取层Interest Extractor Layer}
+兴趣抽取层Interest Extractor Layer的主要目标是从embedding数据中提取出interest。但一个用户在某一时间的interest不仅与当前的behavior有关，也与之前的behavior相关，所以作者们使用\textbf{GRU单元}来提取interest。GRU单元的表达式如下：
+\begin{align*}
+u_t &= \sigma(W^ui_t + U^uh_{t-1} + b^u) \\
+r_t &= \sigma(W^ri_t + U^rh_{t-1} + b^r) \\
+\tilde{h}_t &= \tanh(W^hi_t + r^t \circ U^h h_{t-1} + b^h) \\
+h_t &= (1-u_t) \circ h_{t-1} + u_t \circ \tilde{h}_t
+\end{align*}
+
+这里我们可以认为$h_t$是提取出的用户兴趣，但是这个地方兴趣是否表示的合理呢？文中别出心裁的增加了一个辅助loss，来提升兴趣表达的准确性：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DIEN_Compare_DIEN.png}
+\end{figure}
+
+这里，作者设计了一个二分类模型来计算兴趣抽取的准确性，我们将用户下一时刻真实的行为$e(t+1)$作为正例，负采样得到的行为作为负例$e(t+1)'$，分别与抽取出的兴趣$h(t)$结合输入到设计的辅助网络中，得到预测结果，并通过logloss计算一个辅助的损失：
+$$
+L_{aux}  = -\frac{1}{N}(\sum_{i=1}^N\sum_t\log\sigma(h_t, e_b^i[t+1]) + \log(1-\sigma(h_t, \hat{e}_b^i[t+1])))
+$$
+
+\subsubsection{兴趣进化层Interest Evolution Layer}
+兴趣进化层Interest Evolution Layer的主要目标是刻画用户兴趣的进化过程。举个简单的例子：
+
+以用户对衣服的interest为例，随着季节和时尚风潮的不断变化，用户的interest也会不断变化。这种变化会直接影响用户的点击决策。建模用户兴趣的进化过程有两方面的好处：
+1）追踪用户的interest可以使我们学习final interest的表达时包含更多的历史信息。
+2）可以根据interest的变化趋势更好地进行CTR预测。
+
+而interest在变化过程中遵循如下规律：
+1）\textbf{interest drift}：用户在某一段时间的interest会有一定的集中性。比如用户可能在一段时间内不断买书，在另一段时间内不断买衣服。
+2）\textbf{interest individual}：一种interest有自己的发展趋势，不同种类的interest之间很少相互影响，例如买书和买衣服的interest基本互不相关。
+
+为了利用这两个时序特征，我们需要再增加一层GRU的变种，并加上attention机制以找到与target AD相关的interest。
+
+attention的计算方式如下：
+$$
+a_t = \frac{\exp{h_tWe_a}}{\sum_{j=1}^T\exp{h_jWe_a}}
+$$
+
+而Attention和GRU结合起来的机制有很多，文中介绍了一下三种：
+
+\textbf{GRU with attentional input (AIGRU)}
+
+这种方式将attention直接作用于输入，无需修改GRU的结构：
+$$
+i'_t = h_t * a_t
+$$
+
+\textbf{Attention based GRU(AGRU)}
+
+这种方式需要修改GRU的结构，此时hidden state的输出变为：
+$$
+h'_t = (1-a_t)*h'_{t-1} + a_t * \bar{h}'_t
+$$
+
+\textbf{GRU with attentional update gate (AUGRU)}
+
+这种方式需要修改GRU的结构，此时hidden state的输出变为:
+$$
+\bar{u}'_t = a_t * u'_t
+$$
+$$
+h'_t = (1-\bar{u}'_t) \circ h'_{t-1} + \bar{u}'_t \circ \bar{h}'_t
+$$
+
+\subsection{模型效果}
+DIEN使用了辅助loss和AUGRU结构，而BaseModel + GRU + AUGRU与DIEN的不同之处就是没有增加辅助loss。可以看到，DIEN的实验效果远好于其他模型。
+
+\section{强化学习与推荐系统的结合}
+\subsection{DRN 模型\cite{Recommender_System_With_Deep_Learning_DRN}}
+论文：DRN: A Deep Reinforcement Learning Framework for News Recommendation
+
+\subsubsection{背景}
+新闻领域的个性化推荐十分重要，传统的方法如基于内容的方法、协同过滤、深度学习方法在建模user-item交互关系时，经常面临以下三个问题：
+
+1）难以处理新闻推荐的动态变化。这种动态变化体现在两个方面，首先新闻具有很强的时效性，其次是用户对于新闻阅读的兴趣是不断变化的。因此，在建模过程中，不仅要考虑用户对当前推荐的反馈，还要考虑长期的影响。就好比买股票，不能只考虑眼前的收益，而是要考虑未来的预期收益。
+
+2）当前的推荐算法通常只考虑用户的点击／未点击 或者 用户的评分作为反馈，然而，用户隔多久会再次使用服务也能在一定程度上反映用户对推荐结果的满意度。
+
+3）目前的推荐系统倾向于推荐用户重复或相似内容的东西，这也许会降低用户在同一个主题上的兴趣度。因此需要进行exploration。传统方法 e-greedy strategy 或者 Upper Con dence Bound (UCB) 都会在短期对推荐系统的效果造成一定的影响，需要更有效的exploration策略。
+
+因此，本文提出了基于强化学习的推荐系统框架来解决上述提到的三个问题：
+1）首先，使用\textbf{DQN网络}来有效建模新闻推荐的动态变化属性，DQN可以将短期回报和长期回报进行有效的模拟。
+
+2）将\textbf{用户活跃度（activeness score）}作为一种新的反馈信息，用户活跃度在后面会详细介绍。
+
+3）使用\textbf{Dueling Bandit Gradient Descent}方法来进行有效的探索。
+
+\subsubsection{问题定义}
+下面是本文中的一些符号约定：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.4\textwidth]{fig/DRN_Notations.png}
+\end{figure}
+
+\subsubsection{算法框架}
+算法的框架如下图所示：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/DRN_Structure.png}
+\end{figure}
+
+\subsubsection{模型整体框架}
+模型整体框架如下图所示：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DRN_Structure_Detail.png}
+\end{figure}
+
+有几个关键的环节：
+
+\textbf{PUSH}：在每一个时刻，用户发送请求时，agent根据当前的state产生k篇新闻推荐给用户，这个推荐结果是exploitation和exploration的结合。
+
+\textbf{FEEDBACK}：通过用户对推荐新闻的点击行为得到反馈结果。
+
+\textbf{MINOR UPDATE}：在每个时间点过后，根据用户的信息（state）和推荐的新闻（action）及得到的反馈（reward），agent会评估exploitation network Q 和 exploration network Q ̃ 的表现，如果exploitation network Q效果更好，则模型保持不动，如果 exploration network Q ̃ 的表现更好，exploitation network Q的参数将会向exploration network Q ̃变化。
+
+\textbf{MAJOR UPDATE}：在一段时间过后，根据DQN的经验池中存放的历史经验，对exploitation network Q 模型参数进行更新。
+
+\subsubsection{特征设计}
+DQN每次的输入有下面四部分的特征：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 新闻的特征：包括题目，作者，排名，类别等等，共417维；
+    \item 用户的特征：包括用户在1小时，6小时，24小时，1周，1年内点击过的新闻的特征表示，共413*5=2065维；
+    \item 新闻和用户的交互特征：25维；
+    \item 上下文特征：32维的上下文信息，如时间，周几，新闻的新鲜程度等；
+\end{itemize}
+
+在这四组特征中，\textbf{用户特征和上下文特征用于表示当前的state，新闻特征和交互特征用语表示当前的一个action}。
+
+\subsubsection{深度强化学习作推荐}
+这里深度强化学习用的是Dueling-Double-DQN。之前我们介绍过DQN的三大改进，包括Double-DQN，Dueling-DQN和优先经验回放，这里用到了两个。将用户特征和上下文特征用于表示当前的state，新闻特征和交互特征用语表示当前的一个action，经过模型可以输出当前状态state采取这个action的预测Q值。
+
+Q现实值包含两个部分：立即获得的奖励和未来获得奖励的折现：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DRN_Q_Value.png}
+\end{figure}
+
+立即的奖励可能包含两部分，即用户的点击奖励和用户活跃度奖励。由于采取了Double-DQN 的结构，Q现实值的计算变为：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DRN_Q_Value_Immediate.png}
+\end{figure}
+
+再加上Dueling的考虑，模型的网络结构如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DRN_Q_Value_Whole.png}
+\end{figure}
+
+\subsubsection{用户活跃度}
+用户活跃度（User Activeness） 是本文提出的新的可以用作推荐结果反馈的指标。用户活跃度可以理解为使用app的频率，好的推荐结果可以增加用户使用该app的频率，因此可以作为一个反馈指标。用户活跃度的图示如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DRN_User_Life.png}
+\end{figure}
+
+
+如果用户在一定时间内没有点击行为，活跃度会下降，但一旦有了点击行为，活跃度会上升。
+
+在考虑了点击和活跃度之后，之前提到过的立即奖励变为：
+$$
+r_{total} = r_{click} + \beta r_{active}
+$$
+
+\subsubsection{探索}
+本文的探索采取的是Dueling Bandit Gradient Descent 算法，算法的结构如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DRN_Gradient_DBGD.png}
+\end{figure}
+
+在DQN网络的基础上又多出来一个exploration network Q ̃ ，这个网络的参数是由当前的Q网络参数基础上加入一定的噪声产生的，具体来说：
+$$
+\Delta W = \alpha \cdot rand(-1, 1) \cdot W
+$$
+
+当一个用户请求到来时，由两个网络同时产生top-K的新闻列表，然后将二者产生的新闻进行一定程度的混合，然后得到用户的反馈。如果exploration network Q ̃的效果好的话，那么当前Q网络的参数向着exploration network Q ̃的参数方向进行更新，具体公式如下：
+$$
+W' = W + \eta \tilde{W}
+$$
+
+
+\subsection{使用强化学习优化用户的长期体验——京东\cite{Recommender_System_With_Deep_Learning_Reinforcement_Learning}}
+论文来源：Reinforcement Learning to Optimize Long-term User Engagement in Recommender Systems
+
+\subsubsection{问题定义}
+本文是京东和清华合作发表的论文，所以我们可以把它视作京东的推荐场景，用户会不断的与推荐系统推荐出的物品进行交互。当页面出现一个物品时，用户可以点击并查看消息详情、进行下单、忽略该物品、继续下滑查看更多物品或者关闭app。推荐系统要做的就是在这个过程中优化用户的体验。这种体验包括两方面，即时体验如用户点击率 和 长期体验如用户的黏度。用户的黏度又可以体现在许多方面，如用户在APP中的停留时间、打开APP的频率等等。
+
+信息流推荐中，可以看作是第1次推荐-用户反馈-第2次推荐-用户反馈----第n次推荐-用户反馈这样的一个过程，或者说，我们可以将其定义为一个马尔可夫决策过程。因而可以通过强化学习方法来进行学习。对于一个马尔可夫决策过程，通常用<S、A、P、R、γ>来表示。在本文的推荐场景中，这几部分的定义分别如下：
+
+\textbf{状态(State)S} : 在这里，我们假定每次推荐一个物品$i$。初始的状态$s_1=\{u\}$，即只有用户的信息。当进行了第一次推荐后，状态变为$s_2={u,(i_1,f_1,d_1)}$。当推荐过$t-1$个物品后，状态$s_t = {u,(i_1,f_1,d_1),(i_2,f_2,d_2),...,(i_{t-1},f_{t-1},d_{t-1})}$。即$s_t = s_{t-1} + \{(i_{t-1},f_{t-1},d_{t-1}\}$。这里$i_{t-1}$代表第${t-1}$时刻推荐的物品，$f_{t-1}$表示用户对物品$i_{t-1}$作出的反馈，$d_{t-1}$表示用户对推荐的物品$i_{t-1}$的停留时间。
+
+\textbf{动作(Action)A}：这里的动作空间是可推荐的物品的集合，与当前的状态$s$相关，计作$A(s)$。初始阶段，所有的物品都可以进行推荐，随着时间步的推进，每推荐一个物品，就将其从可推荐物品集合中剔除。而时刻$t$的动作就是该轮推荐的物品$i_t$
+
+\textbf{状态转移概率P}：状态转移概率可以用如下的式子表示：$p(s_{t+1} | s_t,i_t)$。
+
+\textbf{奖励(Reward)R}: 由于我们不仅要优化用户的即时体验，还要优化用户的长期体验，因此这的即时奖励$r$比较复杂，这里将其定义为:
+$$
+r_t = \omega^T m_t
+$$
+
+可以理解为总的即时奖励$r$，是一堆分解奖励的加权平均，那具体包含哪些因素呢？这里主要包含以下三个方面：\textbf{点击次数}：用户对该次推荐的物品的点击次数；\textbf{滑动深度}：表示用户在经过该次推荐之后，又往下滑动了多少屏。也就是说，该次推荐之后，又经过了多少轮推荐。上面解释的可能比较晦涩，举个简单的例子。假设在一次信息流推荐的过程中，共进行了10轮，当前是第4轮，后面还有6轮，那么其滑动深度的奖励就是6 。\textbf{回归时间}：用户下次访问APP的时间，如果这个时间间隔越小，奖励就越大，所以通常表示为此次访问和下次访问APP中间的时间间隔的倒数：$m_t^r = \beta / v^r$
+
+\subsection{模型介绍}
+略
+
+\subsection{S网络}
+\textcolor{red}{为了离线训练Q网络，这里文中通过一个S网络来对真实环境进行模拟，用来计算即时奖励$r$。}
 
 \section{总结—— CTR模型的深度学习时代}
 结合自己的工作经验，关于深度学习模型我想再分享两点内容：
@@ -777,6 +1426,19 @@ DCN可以看作是对Wide\&Deep模型的进一步改进，主要的思路使用C
 \section{Youtube的深度学习推荐系统}
 论文：Deep Neural Networks for YouTube Recommendations
 
+\subsection{提出背景\cite{Recommender_System_With_Deep_Learning_Youtube}}
+youtube是世界上最大的视频内容平台，在如此体量的平台中，推荐系统是至关重要的。但是，youtube的视频推荐面临三方面的挑战：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item Scale：视频和用户数量巨大，很多现有的推荐算法能够在小的数据集上表现得很好，但是在这里效果不佳。需要构建高度专业化的分布式学习算法和高效的服务系统来处理youtube庞大的用户和视频数量；
+    \item Freshness：这体现在两方面，一方面视频更新频繁，另一方面用户行为更新频繁；
+    \item Noise：相较于庞大的视频库，用户的行为是十分稀疏的，同时，我们基本上能获得的都是用户的隐式反馈信号。构造一个强健的系统是十分困难的。
+\end{itemize}
+
+
+
 \subsection{算法基本架构}
 Youtube的算法架构如下：
 \begin{figure}[H]
@@ -808,6 +1470,7 @@ Inspired by continuous bag of words language models, we learn high dimensional e
 三层神经网络过后，我们看到了softmax函数。这里Youtube的同学们把这个问题看作为用户推荐next watch的问题，所以输出应该是一个在所有candidate video上的概率分布，自然是一个\textbf{多分类}问题。
 
 \subsection{排序层}
+\subsubsection{模型结构}
 既然得到了几百个候选集合，下一步就是利用ranking模型进行精排序，下面是ranking深度学习网络的架构图。
 \begin{figure}[H]
     \centering
@@ -816,6 +1479,7 @@ Inspired by continuous bag of words language models, we learn high dimensional e
 
 乍一看上面的ranking model似乎与candidate generation模型没有什么区别，模型架构还是深度学习的“基本操作”，唯一的区别就是特征工程，那么我们就讲讲特征工程。
 
+\subsubsection{输入特征}
 事实上原文也明确说明了，引入另一套DNN作为ranking model的目的就是引入更多描述视频、用户以及二者之间关系的特征，达到对候选视频集合准确排序的目的。
 
 During ranking, we have access to many more features describing the video and the user's relationship to the video because only a few hundred videos are being scored rather than the millions scored in candidate generation.
@@ -839,6 +1503,35 @@ During ranking, we have access to many more features describing the video and th
 有一些引入attention的意思，这里是用了time since last watch这个特征来反应用户看同类视频的间隔时间。从用户的角度想一想，假如我们刚看过“DOTA经典回顾”这个channel的视频，我们很大概率是会继续看这个channel的视频的，那么该特征就很好的捕捉到了这一用户行为。
 
 第5个特征\#previous impressions则一定程度上引入了exploration的思想，避免同一个视频持续对同一用户进行无效曝光。尽量增加用户没看过的新视频的曝光可能性。
+
+\subsubsection{特征处理}
+特征处理主要包含对于离散变量的处理和连续变量的处理。
+
+对于离散变量，这里主要是视频ID，Youtube这里的做法是有两点：
+
+(1). 只保留用户最常点击的N个视频的embedding，剩余的长尾视频的embedding被赋予全0值。可能的解释主要有两点，一是出现次数较少的视频的embedding没法被充分训练。二是也可以节省线上服务宝贵的内存资源。
+
+(2). 对于相同域的特征可以共享embedding，比如用户点击过的视频ID，用户观看过的视频ID，用户收藏过的视频ID等等，这些公用一套embedding可以使其更充分的学习，同时减少模型的大小，加速模型的训练。
+
+
+对于连续特征，主要进行归一化处理，神经网络对于输入的分布及特征的尺度是十分敏感。因此作者设计了一种积分函数将连续特征映射为一个服从[0,1]分布的变量。该积分函数为：
+$$
+\tilde{x} = \int_{-\infty}^{x}df
+$$
+
+个人理解就是将概率密度分布转换成了累计密度分布。为了引入特征的非线性，除了加入归一化后的特征外，还加入了该特征的平方和开方值。
+
+
+
+\subsection{离线训练}
+从模型结构可以看出，在离线训练阶段，我们将其视为了一个分类问题。我们使用隐式反馈来进行学习，用户完整观看过一个视频，便视作一个正例。如果将视频库中的每一个视频当作一个类别，那么在时刻$t$，对于用户$U$和上下文$C$，用户会观看视频i的概率为：
+$$
+P(w_t = i|U,C) = \frac{e^{v_iu}}{\sum_{j \in V}{e^{v_ju}}}
+$$
+
+其中，$u$是用户的embedding，这个embedding，是网络最后一个Relu激活函数的输出，$v_i$是视频$i$的embedding。那么问题来了，输入时，每一个视频也有一个对应的embedding，这个embedding是不是计算softmax的embedding呢？这里文章也没有说清楚。
+
+使用多分类问题的一个弊端是，我们有百万级别的classes，模型是非常难以训练的，因此在实际中，Youtube使用负样本采样(negative sampling)的方法，将class的数量减小。还有一种可以替换的方法，成为hierarchical softmax，但经过尝试，这种方法并没有取得很好的效果。这里的负采样和word2vec中的负采样方法是不同的，这里采样之后还是一个多分类问题，而word2vec中的负采样方法是将问题转为了一个二分类问题。
 
 \subsection{工程实践}
 \subsubsection{softmax的训练}
@@ -864,10 +1557,26 @@ Youtube的用户对新视频有偏好，那么在模型构建的过程中如何�
 
 文章也验证了，example age这个feature能够很好的把视频的freshness的程度对popularity的影响引入模型中。
 
+\begin{framed}
+\textbf{Example Age}特征\cite{Recommender_System_With_Deep_Learning_Youtube}：
+
+我们知道，每一秒中，YouTube都有大量视频被上传，推荐这些最新视频对于YouTube来说是极其重要的。同时，通过观察历史数据发现，用户更倾向于推荐那些尽管相关度不高但是是最新（fresh）的视频。看论文的图片，我们可能认为该特征表示视频被上传之后距现在的时间。但文章其实没有定义这个特征是如何获取到的，应该是训练时间-Sample Log的产生时间。而在线上服务阶段，该特征被赋予0值甚至是一个比较小的负数。这样的做法类似于在广告排序中消除position bias。
+
+假设这样一个视频十天前发布的，许多用户在当前观看了该视频，那么在当天会产生许多Sample Log，而在后面的九天里，观看记录不多，Sample Log也很少。如果我们没有加入Example Age这个特征的话，无论何时训练模型，这个视频对应的分类概率都是差不多的，但是如果我们加入这个特征，模型就会知道，如果这条记录是十天前产生的话，该视频会有很高的分类概率，如果是最近几天产生的话，分类概率应该低一些，这样可以更加逼近实际的数据。
+\end{framed}
+
 \subsubsection{采样训练样本}
 在对训练集的预处理过程中，YouTube没有采用原始的用户日志，而是对每个用户提取等数量的训练样本，这是为什么？
 
 原文的解答是这样的：Another key insight that improved live metrics was to generate a fixed number of training examples per user, effectively weighting our users equally in the loss function. This prevented a small cohort of highly active users from dominating the loss. 理由很简单，这是为了减少高度活跃用户对于loss的过度影响。
+
+\begin{framed}
+\textbf{样本和上下文选择}
+
+正样本是用户所有完整观看过的视频，其余可以视作负样本。
+
+训练样本是从Youtube所有的用户观看记录里产生的，而并非只是通过推荐系统产生的。同时，\textbf{针对每一个用户的观看记录，都生成了固定数量的训练样本，这样，每个用户在损失函数中的地位都是相等的，防止一小部分超级活跃用户主导损失函数} 。
+\end{framed}
 
 \subsubsection{历史的时序特征}
 YouTube为什么不采取类似RNN的Sequence model，而是完全摒弃了用户观看历史的时序特征，把用户最近的浏览历史等同看待，这不会损失有效信息吗？
@@ -1019,6 +1728,32 @@ $$
 当我们的场景中，概率 $p$（在推荐中即ctr）达到20\%甚至更高，直接忽略近似会boost click，那么我们就要在分母项补上$N_{pos}$的值。显然，我们可以在负样本中随机采样$N_{pos}$的样本进行填充，即可达到我们的目的。
 
 \section{阿里深度兴趣网络（DIN）}
+\subsection{背景\cite{Recommender_System_With_Deep_Learning_DIN}}
+深度学习在CTR预估领域已经有了广泛的应用，常见的算法比如Wide\&Deep，DeepFM等。这些方法一般的思路是：通过Embedding层，将高维离散特征转换为固定长度的连续特征，然后通过多个全联接层，最后通过一个sigmoid函数转化为0-1值，代表点击的概率。即Sparse Features -> Embedding Vector -> MLPs -> Sigmoid -> Output。
+
+这种方法的优点在于：通过神经网络可以拟合高阶的非线性关系，同时减少了人工特征的工作量。
+
+不过，阿里的研究者们通过观察收集到的线上数据，发现了用户行为数据中有两个很重要的特性：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item \textbf{Diversity}：用户在浏览电商网站的过程中显示出的兴趣是十分多样性的；
+    \item \textbf{Local activation}: 由于用户兴趣的多样性，只有部分历史数据会影响到当次推荐的物品是否被点击，而不是所有的历史记录。
+\end{itemize}
+
+这两种特性是密不可分的。举个简单的例子，观察下面的表格：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/DIN_User_Interest_Table_Example.png}
+\end{figure}
+
+\textbf{Diversity}体现在年轻的母亲的历史记录中体现的兴趣十分广泛，涵盖羊毛衫、手提袋、耳环、童装、运动装等等；而爱好游泳的人同样兴趣广泛，历史记录涉及浴装、旅游手册、踏水板、马铃薯、冰激凌、坚果等等。
+
+\textbf{Local activation}体现在，当我们给爱好游泳的人推荐goggle(护目镜)时，跟他之前是否购买过薯片、书籍、冰激凌的关系就不大了，而跟他游泳相关的历史记录如游泳帽的关系就比较密切。
+
+针对上面提到的用户行为中存在的两种特性，阿里将其运用于自身的推荐系统中，推出了深度兴趣网路DIN。
+
 \subsection{用户场景}
 用户场景很简单，就是在一个电商网站或APP中给用户推荐广告，当然对于阿里妈妈来说，广告也是商品，所以这篇文章的广告场景其实也是一个经典的推荐场景。
 
@@ -1039,6 +1774,18 @@ $$
 这事不用问算法工程师，你就回家问问你老妈估计答案都是一定的，肯定是浏览过另一件大衣这件事的参考价值高啊。好了，就是这件你老妈都知道的事情，让阿里妈妈的算法工程师们加上了attention机制。
 \end{framed}
 
+\subsection{模型设计\cite{Recommender_System_With_Deep_Learning_DIN}}
+整个流程可以描述为：
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 检查用户历史行为数据；
+    \item 使用matching module产生候选ads；
+    \item 通过ranking module做point-wise的排序，即得到每个候选ads的点击概率，并根据概率排序得到推荐列表；
+    \item 记录下用户在当前展示广告下的反应(点击与否)，作为label
+\end{enumerate}
+
 \subsection{注意力机制}
 注意力机制顾名思义，就是模型在预测的时候，对用户不同行为的注意力是不一样的，“相关”的行为历史看重一些，“不相关”的历史甚至可以忽略。那么这样的思想反应到模型中也是直观的。
 $$
@@ -1049,6 +1796,17 @@ $$
 
 因为加入了注意力机制，$V_u$ 从过去 $V_i$ 的\textbf{加和}变成了$V_u$ 的\textbf{加权和}， $V_i$ 的权重 $w_i$ 就由 $V_i$ 与 $V_a$ 的关系决定，也就是上式中的 $g(V_i, V_a)$。
 
+\begin{framed}
+例如，针对不同的广告，用户历史行为与该广告的权重是不同的。假设用户有 A、B、C 三个历史行为，对于广告 D，那么 A、B、C 的权重可能是 0.8、0.1、0.1；对于广告 E，那么 A、B、C 的权重可能是0.3、0.6、0.1。这里的权重，就是Attention机制下图中的Activation Unit所需要学习的。
+
+为什么要引入这一个机制呢？难道仅仅是通过观察历史数据拍脑袋决定的么？当然不是，如果不用 Local activation 的话，将会出现下面的情况：假设用户的兴趣的 Embedding 是 $V_u$，候选广告的 Embedding是 $V_a$，用户兴趣和候选的广告的相关性可以写作
+$$
+F(U,A) = V_a * V_u
+$$。
+
+如果没有Local activation机制的话，那么同一个用户对于不同的广告，$V_u$ 都是相同的。举例来说，如果有两个广告 A 和 B，用户兴趣和A，B的相似性都很高，那么在$V_a$和$V_b$连线上的广告都会有很高的相似性。这样的限制使得模型非常难学习到有效的用户和广告的embedidng表示。
+\end{framed}
+
 那么 $g(V_i, V_a)$ 这个函数到底采用什么比较好呢？看完下面的架构图自然就清楚了。
 \begin{figure}[H]
     \centering
@@ -1056,11 +1814,45 @@ $$
     \caption{用户的行为序列}
 \end{figure}
 
-相比原来这个标准的深度推荐网络（Base model），DIN在生成用户embedding vector的时候加入了一个activation unit层，这一层产生了每个用户行为$V_i$ 的权重，下面我们仔细看一下这个权重是怎么生成的，也就是 $g(V_i, V_a)$ 是如何定义的。
+左边是标准的模型，其中 element-wise 的意思其实就是元素级别的加减。注意，一个元素和一个向量相乘，也可以看作element-wise的，因为这个元素会广播成和向量一样的长度。
+
+可以看到，Base Model首先吧one-hot或multi-hot特征转换为特定长度的embedding，作为模型的输入，然后经过一个DNN的part，得到最终的预估值。特别地，针对multi-hot的特征，做了一次element-wise+的操作，这里其实就是sum-pooling，这样，不管特征中有多少个非0值，经过转换之后的长度都是一样的。
+
+相比左边这个标准的深度推荐网络（Base model），DIN在生成用户embedding vector的时候加入了一个activation unit层，这一层产生了每个用户行为$V_i$ 的权重，下面我们仔细看一下这个权重是怎么生成的，也就是 $g(V_i, V_a)$ 是如何定义的。
 
 传统的Attention机制中，给定两个item embedding，比如 $u$ 和 $v$，通常是直接做点积 $uv$ 或者 $uWv$，其中 $W$ 是一个 $|u|\times |v|$ 的权重矩阵，但这篇paper中阿里显然做了更进一步的改进，着重看上图右上角的activation unit，\textbf{首先是把 $u$ 和 $v$ 以及 $u v$ 的element wise差值向量合并起来作为输入，然后喂给全连接层，最后得出权重}，这样的方法显然损失的信息更少。但如果你自己想方便的引入attention机制的话，不妨先从点积的方法做起尝试一下，因为这样连训练都不用训练。
 
 再稍微留意一下这个架构图中的红线，你会发现每个ad会有 good\_id, shop\_id 两层属性，shop\_id只跟用户历史中的shop\_id序列发生作用，good\_id只跟用户的good\_id序列发生作用，这样做的原因也是显而易见的。
+
+\subsection{模型的一些细节}
+\subsubsection{评价指标GAUC}
+模型使用的评价指标是GAUC，我们先来看一下GAUC的计算公式：
+$$
+GAUC = \frac{\sum_{i=1}^nw_i*AUC_i}{\sum_{i=1}^nw_i} = \frac{\sum_{i=1}^n impression_i * AUC_i}{\sum_{i=1}^nimpression_i}
+$$
+
+我们首先要肯定的是，\textbf{AUC是要分用户看的，我们的模型的预测结果，只要能够保证对每个用户来说，他想要的结果排在前面就好了}。
+
+假设有两个用户A和B，每个用户都有10个商品，10个商品中有5个是正样本，我们分别用TA，TB，FA，FB来表示两个用户的正样本和负样本。也就是说，20个商品中有10个是正样本。假设模型预测的结果大小排序依次为TA，FA，TB，FB。如果把两个用户的结果混起来看，AUC并不是很高，因为有5个正样本排在了后面，但是分开看的话，每个用户的正样本都排在了负样本之前，AUC应该是1。显然，分开看更容易体现模型的效果，这样消除了用户本身的差异。
+
+但是上文中所说的差异是在用户点击数即样本数相同的情况下说的。还有一种差异是用户的展示次数或者点击数，如果一个用户有1个正样本，10个负样本，另一个用户有5个正样本，50个负样本，这种差异同样需要消除。那么GAUC的计算，不仅将每个用户的AUC分开计算，同时根据用户的展示数或者点击数来对每个用户的AUC进行加权处理。进一步消除了用户偏差对模型的影响。通过实验证明，GAUC确实是一个更加合理的评价指标。
+
+\subsubsection{自适应正则 Adaptive Regularization}
+CTR中输入稀疏而且维度高，通常的做法是加入L1、L2、Dropout等防止过拟合。但是论文中尝试后效果都不是很好。\textbf{用户数据符合长尾定律long-tail law，也就是说很多的feature id只出现了几次，而一小部分feature id出现很多次。这在训练过程中增加了很多噪声，并且加重了过拟合}。
+
+对于这个问题一个简单的处理办法就是：直接去掉出现次数比较少的feature id。但是这样就人为的丢掉了一些信息，导致模型更加容易过拟合，同时阈值的设定作为一个新的超参数，也是需要大量的实验来选择的。
+
+因此，阿里提出了自适应正则的做法，即：
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 针对feature id出现的频率，来自适应的调整他们正则化的强度；
+    \item 对于出现频率高的，给与较小的正则化强度；
+    \item 对于出现频率低的，给予较大的正则化强度。
+\end{enumerate}
+
+计算公式略。
 
 \subsection{论文作者的评论}
 其实最初的时候我们不是按照借鉴attention的套路来的，当时想法就是希望做个反向激活的网络结构，能自适应地挑跟candidate相关的用户行为来做用户兴趣的表征，后来写论文的时候仔细survey发现这个是attention的解法。再透露个细节，其实在DL模型之前，我们就研制了一种可以认为是hard模式的attention结构：那是特征组合的解法，我们用ad的shop属性去hit用户历史行为过的shop list，如果命中了那么就说明历史用户有过直接行为，用行为id和频次来表示这个组合特征；如果没有命中特征就是空的，那显然attention结构就是一种自然的soft扩展，不过适用范围更强了

@@ -145,7 +145,7 @@ $$
 最后，我们不加说明的点出，贝叶斯版本的K-arm MAB也有相同阶的这两类lower bound。以及，我们确实有算法，可以达到这两类regret，即它们在理论意义上是最优的。
 
 
-\section{Bandit算法}
+\section{前置知识}
 在介绍具体Bandit算法前先补充一个概念：
 
 \subsection{累积遗憾}
@@ -159,8 +159,24 @@ $$
 
 这个公式可以用来对比不同Bandit算法的效果：对同样的多臂问题，用不同的Bandit算法试验相同次数，哪个算法的总regret增长最慢，其效果就是比较好的。
 
+\subsection{Beta分布}
+有关Beta分布，可以参考帖子：\url{https://www.zhihu.com/question/30269898}。这里只做一个简单的介绍。
 
-常用的Bandit算法如下：
+beta分布可以看作是一个概率的概率分布。它是对二项分布中成功概率 $p$ 的概率分布的描述。它的形式如下：
+$$
+Beta(a,b) = \frac{\theta^{a-1}(1-\theta)^{b-1}}{B(a,b)} \propto \theta^{a-1}(1-\theta)^{b-1}
+$$
+
+其中，$a$ 和 $b$ 分别代表在 $a+b$ 次伯努利试验中成功和失败的次数。我们用下面的图来说明一下 Beta 分布的含义：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Beta_Example.png}
+\end{figure}
+上图中一共有三条线，我们忽略中间的一条线，第一条线中 $a=81$，$b=219$。也就是说在我们进行了 300 次伯努利试验中，成功81次，失败219次的情况下，成功概率 $p$ 的一个分布，可以看到，$p$的概率在0.27左右概率最大，但我们不能说成功的概率就是0.27，这也就是频率派和贝叶斯派的区别，哈哈。此时，我们又做了300次试验，此时在总共600次伯努利试验中，成功了181次，失败了419次，此时成功概率 $p$ 的概率分布变为了蓝色的线，在0.3左右概率最大。
+
+
+\section{Bandit算法}
+常见的 Bandit 算法如下：
 
 \subsection{朴素Bandit算法}
 先随机试验若干次，计算每个臂的平均收益，一直选均值最大的那个臂。
@@ -176,7 +192,26 @@ $$
 \end{itemize}
 
 \subsection{Upper Confidence Bound（UCB）}
-步骤如下：
+前面提到了，Epsilon-Greedy算法在探索的时候，所有的老虎机都有同样的概率被选中，这其实没有充分利用历史信息，比如每个老虎机之前探索的次数，每个老虎机之前的探索中吐钱的频率\cite{Recommender_System_With_Deep_Learning_Bandit}。
+
+那我们怎么能够充分利用历史信息呢？首先，根据当前老虎机已经探索的次数，以及吐钱的次数，我们可以计算出当前每个老虎机吐钱的观测概率$p'$。同时，由于观测次数有限，因此观测概率和真实概率 $p$ 之间总会有一定的差值 $ \Delta $ ，即 $p' - \Delta <= p <= p' +  \Delta $。
+
+基于上面的讨论，我们得到了另一种常用的Bandit算法：UCB(Upper Confidence Bound)算法。该算法在每次推荐时，总是乐观的认为每个老虎机能够得到的收益是 $p' +  \Delta $。
+
+好了，接下来的问题就是观测概率和真实概率之间的差值 $ \Delta $ 如何计算了，我们首先有两个直观的理解：
+
+1）对于选中的老虎机，多获得一次反馈会使 $ \Delta $ 变小，当反馈无穷多时，$ \Delta $ 趋近于0，最终会小于其他没有被选中的老虎机的 $ \Delta $。
+
+2）对于没有被选中的老虎机，$ \Delta $ 会随着轮数的增大而增加，最终会大于其他被选中的老虎机。
+
+因此，当进行了一定的轮数的时候，每个老虎机都有机会得到探索的机会。UCB算法中 $p' +  \Delta $的计算公式如下：
+$$
+p' + \sqrt{\frac{2\ln T}{n}}
+$$
+
+其中加号前面是第 $j$ 个老虎机到目前的收益均值，后面的叫做bonus，本质上是均值的标准差，$T$ 是目前的试验次数，$n$ 是该老虎机被试次数。
+
+具体步骤如下：
 \begin{enumerate}
 \setlength{\itemsep}{0pt}
 \setlength{\parsep}{0pt}
@@ -245,6 +280,32 @@ $$
 也就是说，如果选择 UCB 的上界是 $\sqrt{\frac{2\ln{t}}{T_{j,t}}}$ 的形式，那么 \textbf{$X$ 的均值与 $X$ 的实际期望的差距在上界之外的概率非常小}，小于 $t^{-4}$，这就说明采用 UCB 的上界形式是严格且合理的。
 
 总结来说，就是 \textbf{UCB 的上界形式相当于老虎机收益期望的严格的置信区间}。
+
+~\\
+
+再举个例子（\url{https://www.jianshu.com/p/95b2de50ce44}）：
+
+注：这里利用了霍夫丁不等式的另外一个形式，和上面是等价的：
+$$
+P(\bar{X} - E[\bar{X}] \le \sqrt{\frac{2\ln{t}}{T_{j,t}}}) \ge 1 - \frac{2}{t^{-4}}
+$$
+
+当 $\delta$ 取值为 $\sqrt{2\ln T/n}$ 时，可以得到：
+$$
+P(|\bar(p) - p| \le \sqrt{2\ln T/n} ) \le  
+$$
+
+也就是说，$\bar{X} - \sqrt{\frac{2\ln{t}}{T_{j,t}}} \le E[\bar{X}] \le \bar{X} + \sqrt{\frac{2\ln{t}}{T_{j,t}}}$ 是以 $1 - \frac{2}{t^{-4}}$ 的概率成立的：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 当 $T = 2$ 时，成立的概率为 0.875；
+    \item 当 $T = 3$ 时，成立的概率为 0.975；
+    \item 当 $T = 4$ 时，成立的概率为 0.992；
+\end{itemize}
+
+可以看出 $\Delta = \sqrt{\frac{2\ln{t}}{T_{j,t}}}$ 是一个不错的选择。
 \end{framed}
 
 \subsection{Thompson sampling算法}
@@ -266,6 +327,13 @@ $$
     \item 优点：实现相对简单，计算量较小
     \item 缺点：返回的结果具有一定随机性，不是确定的事件。
 \end{itemize}
+
+\subsection{linUCB方法}
+论文（雅虎的新闻推荐算法）：\url{https://arxiv.org/pdf/1003.0146.pdf}
+
+解析：\url{https://www.jianshu.com/p/e0e843d78e3c}
+
+
 
 \section{扩展阅读}
 覃含章：在线学习(MAB)与强化学习(RL)[2]：IID Bandit的一些算法

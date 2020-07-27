@@ -182,6 +182,78 @@ F1-score &= \frac{2}{1/precision + 1/recall}\\
 
 如果两个模型，一个precision特别高，recall特别低，另一个recall特别高，precision特别低的时候，F1-score可能是差不多的，也不能基于此来作出选择。
 
+\subsection{Hit Ratio(HR)\cite{Common_Evaluation_Index_In_Recommender_System}}
+在top-K推荐中，HR 是一种常用的衡量召回率的指标，其计算公式如下：
+$$
+HR@K = \frac{NumberOfHits@K}{|GT|}
+$$
+
+分母是所有的测试集合，分子式每个用户 top-K 推荐列表中属于测试集合的个数的总和。举个简单的例子，三个用户在测试集中的商品个数分别是10，12，8，模型得到的top-10推荐列表中，分别有6个，5个，4个在测试集中，那么此时HR的值是 (6+5+4)/(10+12+8) = 0.5。
+
+\subsection{Normalized Discounted Cummulative Gain(NDCG)\cite{Common_Evaluation_Index_In_Recommender_System}}
+对于NDCG，我们需要一步步揭开其神秘的面纱，先从CG说起：
+
+\subsubsection{CG(Cummulative Gain)}
+我们先从CG(Cummulative Gain)说起, 直接翻译的话叫做“累计增益”。 在推荐系统中，CG即将每个推荐结果相关性(relevance)的分值累加后作为整个推荐列表(list)的得分。即
+$$
+CG_k = \sum_{i=1}^krel_i
+$$
+这里， $rel_i$ 表示处于位置 $i$ 的推荐结果的相关性，$k$ 表示所要考察的推荐列表的大小。
+
+\subsubsection{DCG}
+CG的一个缺点是没有考虑每个推荐结果处于不同位置对整个推荐效果的影响，例如我们总是希望相关性高的结果应排在前面。显然，如果相关性低的结果排在靠前的位置会严重影响用户体验， 所以在CG的基础上引入位置影响因素，即DCG(Discounted Cummulative Gain), “Discounted”有打折，折扣的意思，这里指的是对于排名靠后推荐结果的推荐效果进行“打折处理”:
+$$
+DCG_k = \sum_{i=1}^k\frac{2^{rel_i} - 1}{\log_2(i+1)}
+$$
+
+从上面的式子可以得到两个结论：
+1）推荐结果的相关性越大，DCG越大；
+2）相关性好的排在推荐列表的前面的话，推荐效果越好，DCG越大。
+
+\subsubsection{NDCG}
+DCG仍然有其局限之处，即不同的推荐列表之间，很难进行横向的评估。而我们评估一个推荐系统，不可能仅使用一个用户的推荐列表及相应结果进行评估， 而是对整个测试集中的用户及其推荐列表结果进行评估。 那么不同用户的推荐列表的评估分数就需要进行归一化，也即NDCG(Normalized Discounted Cummulative Gain)。
+
+在介绍NDCG之前，还需要了解一个概念：IDCG. IDCG, 即Ideal DCG， 指推荐系统为某一用户返回的最好推荐结果列表， 即假设返回结果按照相关性排序， 最相关的结果放在最前面， 此序列的DCG为IDCG。因此DCG的值介于 (0,IDCG] ，故NDCG的值介于(0,1]，那么用户 $u$ 的 NDCG@K定义为：
+$$
+NDCG_u@k = \frac{DCG_u@k}{IDCG_k}
+$$
+
+因此，平均NDCG计算为：
+$$
+NDCG@k = \frac{\sum_{u \in U^{te}}NDCG_u@k}{|U^{te}|}
+$$
+
+\begin{framed}
+NDCG的完整案例
+
+假设在Baidu搜索到一个词，得到5个结果。我们对这些结果进行3个等级的分区，对应的分值分别是3、2、1，等级越高，表示相关性越高。假设这5个结果的分值分别是3、1、2、3、2。
+
+因此 CG 的计算结果为3+1+2+3+2 = 11。DCG的值为 6.69；
+
+理想状况下，我们的IDCG排序结果的相关性应该是3，3，2，2，1，因此IDCG为7.14，因此NDCG结果为6.69/7.14 = 0.94。
+\end{framed}
+
+\subsection{Mean Reciprocal Rank (MRR)\cite{Common_Evaluation_Index_In_Recommender_System}}
+MRR计算公式如下：
+$$
+MRR = \frac{1}{|Q|}\sum_{i=1}^{|Q|}\frac{1}{rank_i}
+$$
+
+其中 $|Q|$ 是用户的个数，$rank_i$是对于第 $i$个用户，推荐列表中第一个在 ground-truth 结果中的 item 所在的排列位置。
+
+举个例子，有三个用户，推荐列表中正例的最小rank值分别为3，2，1，那么MRR=(1 + 0.5 + 0.33) / 3 = 0.61
+
+\subsection{ILS\cite{Common_Evaluation_Index_In_Recommender_System}}
+ILS是衡量推荐列表多样性的指标，计算公式如下：
+$$
+ILS(L) = \frac{\sum_{b_i \in L}\sum_{b_j \in L, b_j \neq b_i} S(b_i, b_j)}{\sum_{b_i \in L}\sum_{b_j \in L, b_j \neq b_i} 1}
+$$
+
+如果 $S(b_i,b_j)$ 计算的是 $i$ 和 $j$ 两个物品的相似性，如果推荐列表中物品越不相似，ILS越小，那么推荐结果的多样性越好。
+
+
+
+
 \section{假设检验/P-Value和置信区间\cite{P_Value_In_Statistics_Hypothesis}\cite{How_To_Understand_95_Confidential}}
 \subsection{假设检验}
 你说你的硬币是公平的，也就是“花”和“字”出现的概率是差不多的。然后，你想和我打赌，作为一个资深的理智赌徒，我怎能听信你的一面之词，我提出要检查下你的硬币到底是不是公平的，万一是两面“花”怎么办？你神色紧张，死活不让我检查，后来我们提出了折衷的方案，抛几次硬币，看看结果是不是公平的。总共扔了两次，都是“花”朝上，虽然几率是 $0.5 \times 0.5 = 0.25$ ，但是也正常，继续扔；总共扔了四次，也都是“花”朝上，几率是$0.5^4 = 0.0625$ ，感觉有点不正常，但是万一是运气呢？继续扔。总共扔了十次，也都是“花”朝上，那我就认为很可能你这枚硬币不是公平的。

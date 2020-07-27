@@ -591,6 +591,30 @@ $$
 
 除此之外，文章多介绍了一下\textbf{cold start}的问题。简言之，\textbf{如果有new listing缺失embedding vector，就找附近的3个同样类型、相似价格的listing embedding进行平均得到}，不失为一个实用的工程经验。
 
+\begin{framed}
+理解目标函数和输入、输出Embedding\cite{Recommender_System_With_Deep_Learning_Airbnb}
+
+在Skip-Gram中，我们的目标是使如下的函数取值最大：
+$$
+L = \sum_{s \in S}\sum_{l_i \in s}(\sum_{-m \le j \le m, i \neq 0}\log{P(l_{i+j}|l_i)})
+$$
+
+而概率计算如下，是一个softmax过程：
+$$
+P(l_{i+1}|l_i) = \frac{\exp(v^T_{l_i}v'_{l_{i+1}})}{\sum_{l=1}^{|V|}\exp(v^T_{l_i}v'_l)}
+$$
+
+这里，$V$是所有的房源的集合，$v_l$是房源的输入向量，而$v'l$是房源的输出向量。同一个房源，有一个输入向量和一个输出向量，我们来简单回顾一下这两个概念，通过下图便可以理解：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Embedding_House_Input_Output_Embedding_Example.png}
+\end{figure}
+
+这里，我画了一个简单的图示，来表示输入向量和输出向量，比如，对于第2个房源来说，其输入向量就是[0.8,0.4,0.2]，对于第1个房源来说，其输出向量就是[0.3,0.7,0.1]，那么在softmax之前，第二个房源和第一个房源的相关性计算为0.8 * 0.3 + 0.4 * 0.7 + 02 * 0.1 = 0.54。也就是说，从输入层到embedding层上的权重，是我们要学习的输入向量，而embedding层到输出层上的权重，正好对应于每个房源的输出向量。
+
+但是呢，如果每次都计算根所有房源的相关性的话，太大了，因为我们有数百万的房源，所以通常情况下，会采用负采样的方法，即随机选择一小部分作为负样本。
+\end{framed}
+
 \subsection{对 booking 进行 embedding 的方法}
 上面我们介绍了Airbnb为了捕捉用户的短期兴趣，使用用户的点击数据构建了listing（也可称为item，即一个短租屋）的 embedding，基于该embedding，可以很好的找出相似listing，但有所欠缺的是，该embedding并没有包含用户的长期兴趣信息。比如用户6个月前订了一个listing，其中包含了该用户对于房屋价格、房屋类型等属性的长期偏好，但由于之前的embedding只使用了session级别的点击数据，从而明显丢失了用户的长期兴趣信息。
 
@@ -679,6 +703,81 @@ instead of listing l , the center item that needs to be updated is either user\_
 我们可以很清楚的看到，最后一个feature UserTypeListingTypeSim指的是 user type和listing type的similarity，该feature使用了我们这篇文章介绍的包含用户长期兴趣的embedding，除此之外的其他feature都是基于上篇文章介绍的listing embedding。比如EmbClickSim指的是candidate listing与用户最近点击过的listing的相似度。
 
 这里我想我们可以回答这个问题了，为什么airbnb在文章题目中强调是real time personalization？\textbf{原因就是由于在这些embedding相关的feature中，我们加入了“最近点击listing的相似度”，“最后点击listing的相似度”这类特征，由于这类特征的存在，用户在点击浏览的过程中就可以得到实时的反馈，搜索结果也是实时地根据用户的点击行为而改变，所以这无疑是一个real time个性化系统}。
+
+\section{阿里电商推荐中亿级商品的embedding策略\cite{Recommender_System_With_Deep_Learning_Ali_Embedding}}
+论文：Billion-scale Commodity Embedding for E-commerce Recommendation in Alibaba
+
+在淘宝的推荐中，主要面临着三个技术挑战，分别是可扩展性(scalability)、稀疏性(sparsity)、冷启动问题(cold start)。
+
+\textbf{可扩展性(scalability)}：一些现有的推荐系统方法，在小规模数据集上效果很好，但是在想淘宝这样的拥有十亿用户和二十亿商品的数据集上，表现得并不好；
+
+\textbf{稀疏性(sparsity)}：用户仅与非常少的商品有过交互行为，这样的话很难精确训练一个推荐模型；
+
+\textbf{冷启动(cold start)}：在淘宝中，每个小时都有百万级别的新的商品上线，这些商品没有过用户行为，预测用户对这些商品的偏好是十分具有挑战性的。
+
+为了解决上面的这些问题，淘宝也采用了业界常用的两阶段框架，第一阶段称为匹配阶段，也可以叫做召回阶段，从大规模的商品集中召回一个比较小的候选集。第二阶段是排序阶段，对召回的候选集进行精确排序。
+
+在召回阶段，主要的方法是计算商品之间的相似性，从而根据用户的历史交互行为得到用户可能喜欢的相似商品。计算商品的相似性，可以采用协同过滤的方法，但是协同过滤仅仅考虑了商品在交互矩阵中的共现性；使用图嵌入(Base Graph Embedding (BGE))的方法，比如随机游走的方法，可以学习到比较好的商品之间的相似性，但是对于出现次数很少甚至没有用户交互过的商品，依然难以有效地学习。
+
+因此，本文提出使用基于side information的图嵌入学习方法，称作Graph Embedding with Side information (GES)。这里的side information你可以理解为辅助信息，比如一个商品的品牌、店铺名、类别等等。使用side information来学习商品的embedding的话，同一个品牌或者类别的商品应当更相似。但是在淘宝中，有数以百计的side information，这些side information对于商品向量的贡献程度是不同的，比如一个购买了iphone的用户，倾向于查看mac或者ipad，更多的是因为他们都是苹果的牌子。考虑不同的side information对最终的item embedding的不同影响，这种方法称作Enhanced Graph Embedding with Side information (EGES)。
+
+接下来，我们就来介绍三种方法，分别是Base Graph Embedding (BGE)、Graph Embedding with Side information (GES)和Enhanced Graph Embedding with Side information (EGES)。
+
+\subsection{模型介绍}
+\subsubsection{Base Graph Embedding (BGE)}
+Base Graph Embedding (BGE)的完整流程可以参考下图：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Graph_Embedding_BGE.png}
+\end{figure}
+
+首先，从用户的行为中抽取出序列表示，这里有两个地方需要注意：
+1）如果使用用户整个的行为历史序列，计算和空间存储资源耗费巨大
+2）用户的兴趣在长时间内是会变化的，但是用户短时间内的兴趣是相同的
+基于以上两点原因，需要对用户的历史行为序列进行切割／这里以一小时为间隔，若两个商品的交互时间超过1小时，就进行切分。如图中的U2，E和D的时间间隔大于1小时，所以将序列切割为BE和DEF。
+
+接下来，将所有的到的序列表示称有向带权图，如图中的D->A出现了一次，那么就会有一条从D指向A的边，同时边的权重记为1。再强调一次，这里是用\textbf{所有用户经上一步的到的序列汇总起来得到一个有向带权图，而非每个用户对应于一张图}。
+
+在实际应用中，需要对一些噪声信息进行过滤，主要有：
+
+1）点击之后用户停留时间小于1s，这可能是用户的误点击，需要过滤。
+2）太过活跃的用户进行过滤，比如三个月内购买了1000件以上的商品，点击了3500个以上的商品。
+3）同一个ID，但是发生变化的商品需要过滤。
+
+在得到有向带权图之后，基于随机游走的方法产生一批序列，商品转移概率基于边的权重$M_{ij}$为：
+$$
+P(v_j|v_i) \begin{cases}
+\frac{M_{ij}}{\sum_{j \in N_{+}(v_j)} M_{ij}}, v_j \in N_{+}(v_i) \\
+0, e_{ij} \notin \epsilon
+\end{cases}
+$$
+
+得到的序列举例如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.4\textwidth]{fig/Graph_Embedding_BGE_Sequences.png}
+\end{figure}
+
+随后，我们便可以通过Skip-Gram的方法来学习每个商品的 Embedding 向量。
+
+\subsubsection{Graph Embedding with Side information (GES)}
+上面的Base方法，可以较好的学习到item embedding，但是冷启动问题无法很好的解决。基于此，提出了Graph Embedding with Side information方法。为了与之前的item embedding区分开，在加入Side information之后，我们称得到的embedding为商品的aggregated embeddings。商品v的aggregated embeddings计作Hv。
+
+aggregated embeddings的计算公式如下：
+$$
+H_v = \frac{1}{n+1} \sum_{s=0}^nW_v^s
+$$
+
+其中，$W^0$代表item embedding，$W^1,W^n$代表每种Side information对应的embedding。
+
+\subsubsection{Enhanced Graph Embedding with Side information (EGES)}
+正如前文的例子，比如一个购买了iphone的用户，倾向于查看mac或者ipad，更多的是因为他们都是苹果的牌子。因此不同的side information在最终的aggregated embeddings中所占的权重应该是不同的，所以此时的aggregated embeddings计算公式如下:
+$$
+H_v = \frac{\sum_{j=0}^ne^{a^j_v}W^j_v}{\sum_{j=0}^ne^{a^j_v}}
+$$
+
+\subsubsection{GES和EGES的学习}
+见原文，核心思路仍然是根据目标函数做反向传播学习。
 
 
 \section{扩展阅读}
