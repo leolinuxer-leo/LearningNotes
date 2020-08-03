@@ -45,10 +45,19 @@
 
 \part{推荐系统的基本概念}
 \section{推荐系统的系统架构}
+\subsection{整体架构}
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{fig/Deep_Learning_Refenrence_System_Architecture.jpg}
 \end{figure}
+
+\subsection{多路召回和排序}
+目前工业界的推荐系统，在召回阶段，一般都采取多路召回策略。上图展示了一个简化版本的例子，以微博信息流排序为例，不同业务召回路数不太一样，但是常用的召回策略，基本都会包含，比如兴趣标签，兴趣Topic，兴趣实体，协同过滤，热门，相同地域等，多者几十路召回，少者也有7／8路召回[\url{https://zhuanlan.zhihu.com/p/59528983}]。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Recall_Candidates_Multi_Methods_And_Rank.png}
+\end{figure}
+
 
 \part{前深度学习时代CTR预估模型的演化之路}
 \begin{figure}[H]

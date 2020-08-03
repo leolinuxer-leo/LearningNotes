@@ -518,11 +518,90 @@ $$
 \cos(\theta) = \frac{A\cdot B}{||A||\cdot||B||} = \frac{\sum_1^n(A_i \times B_i)}{\sqrt{\sum_i^n(A_i)^2} \times \sqrt{\sum_i^n(B_i)^2}}
 $$
 
+\subsubsection{F-散度}
+散度是用来衡量两个概率密度$p$，$q$区别的函数，即：两个分布的相似程度：
+$$
+D_f(p||q) = \int q(x) f\Big(\frac{p(x)}{q(x)}\Big)dx
+$$
+
+这里的 $f$ 需要满足2个条件: $f$是凸函数且 $f(1) = 0$ .
+
+可以证明: 因为 $f$ 是凸函数,由Jensen不等式可知 E[f(x)] >= f(E[x])
+$$
+D_f(p||q) = \int q(x) f\Big(\frac{p(x)}{q(x)}\Big)dx \ge f\Big(\int q(x)\frac{p(x)}{q(x)}\Big) = f(x) = 0
+$$
+
+
 \subsubsection{K-L散度 Kullback-Leibler Divergence}
 即相对熵；是衡量两个分布$P$、$Q$之间的距离；越小越相似。
 $$
-D(P||Q) = \sum_i^nP(i) \log{\frac{P(i)}{Q(i)}}
+D_{KL}(P||Q) = \sum_i^nP(i) \log{\frac{P(i)}{Q(i)}}
 $$
+
+连续形式：KL散度是F-散度的一个特例,当$f(x) = x\log x$的时候
+$$
+D_{KL}(P||Q) = \int p(x) \log\Big(\frac{p(x)}{q(x)}\Big)dx
+$$
+
+需要注意：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item KL散度非对称,即 $D_{KL}(p||q) \neq D_{KL}(q||p)$,所以KL散度不是一个真正的距离或者度量
+    \item KL散度不满足三角不等式$D_{KL}(p||q) > D_{KL}(p||r) + D_{KL}(r||q)$
+    \item KL散度取值范围 $[0, \infty]$ , $p=q$ 的时候,两个分布完全一样取到0。
+\end{itemize}
+
+p和q的影响:
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 如果想要$D_{KL}$ 小，那么 $p$ 大的地方，$q$ 要大；$p$ 小的地方，$q$ 对 $D_{KL}$ 的影响不大；
+    \item 如果想要 $D_{KL}$ 大，那么 $p$ 大的地方，$q$ 对 $D_{KL}$ 的影响不大；$p$ 小的地方，$q$ 要小；
+\end{itemize}
+
+KL散度不对称导致的问题：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 情况1. 当 $p \rightarrow 0$ 且 $q \rightarrow 1$ 时, $p(x) \log\Big(\frac{p(x)}{q(x)}\Big) \rightarrow 0$，$q$ 对 $D_{KL}(p||q) $ 的贡献为0；
+    \item 情况2. 当 $p \rightarrow 1$ 且 $q \rightarrow 0$ 时, $p(x) \log\Big(\frac{p(x)}{q(x)}\Big) \rightarrow +\infty$， $q$ 对 $D_{KL}(p||q) $ 的贡献为 $+\infty$；
+\end{itemize}
+
+进步一这里可以解释为什么我们通常选择正态分布而不是均匀分布：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 均匀分布:只要两个均分分布不是完全相同,必然出现 $p\neq q, q=0$ 的情况, 导致  $D_{KL}(p||q) \rightarrow +\infty$；
+    \item 正态分布:所有概率密度都是非负的,所以不会出现上述情况；
+\end{itemize}
+
+换而言之, $p,q$ 之间的KL散度可能导致惩罚或者梯度差距极大.
+
+\subsubsection{JS散度}
+JS散度实际就是KL散度的一个扩展,被用来推导GAN：
+$$
+D_{JS} (p||q) = \frac{1}{2} D_{KL}(p||\frac{p+q}{2}) + \frac{1}{2} D_{KL}(q||\frac{p+q}{2})
+$$
+
+需要注意：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item JS散度是对称的；
+    \item JS散度有界,范围是 $[0, \log 2]$，与$D_{KL}$ 的上界不同。
+\end{itemize}
+
+\begin{framed}
+KL散度和JS散度度量的时候有一个问题：
+
+如果两个分布 $P,Q$ 离得很远，完全没有重叠的时候，那么KL散度值是没有意义的，而JS散度值是一个常数。这在学习算法中是比较致命的，这就意味这这一点的梯度为0。梯度消失了。
+\end{framed}
 
 \subsection{余弦距离探讨\cite{Cosine_Distance}}
 \subsubsection{余弦距离}

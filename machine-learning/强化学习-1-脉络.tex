@@ -1,4 +1,4 @@
-\documentclass[12pt]{article}
+ \documentclass[12pt]{article}
 %\usepackage[utf8]{inputenc}
 %\documentclass[UTF8]{ctexart}
 %\usepackage[UTF8, heading = false, scheme = plain]{ctex}
@@ -89,7 +89,7 @@
     \includegraphics[width=.5\textwidth]{fig/ReinforcementLearning/RL_Markov_Chain_Tree-Example.png}
 \end{figure}
 
-其中，$\pi$代表选择策略的概率分布；$P$代表状态转移的概率分布；
+其中，\textbf{$\pi$代表选择策略的概率分布；$P$代表状态转移的概率分布}；
 
 我们看到的链，是因为我们从现在往后看，但如果往前看，是充满不确定性的。这里的不确定性包括两方面：
 
@@ -126,19 +126,20 @@
 
 \begin{framed}
 \small{
-举例：
+举例：我们用影分身，从某个节点出发，一直到最终节点。每个影分身途径都会获得不同的奖励。那么，平均一个影分身能够获得多少奖励，就是对这个节点的价值的估算。
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{fig/ReinforcementLearning/RL_V_Q_R_Example_1.png}
+    \includegraphics[width=.6\textwidth]{fig/ReinforcementLearning/RL_V_Q_R_Example_1.png}
 \end{figure}
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.8\textwidth]{fig/ReinforcementLearning/RL_V_Q_R_Example_2.png}
+    \includegraphics[width=.6\textwidth]{fig/ReinforcementLearning/RL_V_Q_R_Example_2.png}
 \end{figure}
 }
 \end{framed}
 
-看了上面的例子，感觉就是根据概率求期望；但在实际运用中，大多时候我们并不知道真实概率是多少。以上的概率都是我们自己估算，没有经过验证的。\textbf{在强化学习中，我们为了获得概率，我们将会不断地让我们智能体重复，或者让多个智能体进行试验以获得数据}。
+看了上面的例子，感觉就是根据概率求期望；但在实际运用中，大多时候我们并不知道真实概率是多少。以上的概率都是我们自己估算，没有经过验证的。\textcolor{red}{在强化学习中，我们为了获得概率，我们将会不断地让我们智能体重复，或者让多个智能体进行试验以获得数据}。
 
 \subsection{Q和V的意义}
 智能体在做决策的时候，需要把眼光放远点，把未来的价值换到当前，才能做出选择。为了方便，我们希望可以有一种方法衡量我做出每种选择的价值。这样，我只要看一下标记，以后的事情我也不用理了，我选择那个动作价值更大，就选那个动作就可以了。
@@ -273,6 +274,8 @@ S状态下有若干个动作，每个动作的Q值，就是从这个动作之后
     \item V就是子节点的Q的期望，但要注意V值和策略相关；
     \item Q就是子节点的V的期望，但要注意，记得把R计算在内；
 \end{itemize}
+
+计算某一个节点的Q值和V值，需要许多次试验，取其中的平均值。但实际上，我们不但需要求一个节点的值，而是求所有节点的值。如果我们每一个节点都用同样的方法，消耗必然会很大。所以人们发明了许多方式去计算Q值和V值，基于价值计算的算法就是围绕Q和V展开的。这些在后面会说到。
 
 \section{估算节点的价值-蒙特卡洛(MC)和时序差分(TD)}
 \subsection{蒙特卡洛MC}
@@ -420,8 +423,7 @@ TD算法对MC进行了改进：
 但问题是，如果既要估算$V(S_{t+1})$,又要估算$Q(S_t,A_t)$，就相当麻烦了。能不能都统一成Q值呢？也就是说$V(S_{t+1})$用一个动作的Q值所代替。\textbf{于是便有两种不同的替代方案：Qlearning和SARSA。}
 
 \subsection{SARSA}
-SARSA的想法是，用\textbf{同一个策略下产生的动作A的Q值替代；也就是说，St选At的策略和St+1选At+1是同一个策略。
-$V(S_{t+1})$}。
+SARSA的想法是，用\textbf{同一个策略下产生的动作A的Q值替代}；也就是说，$S_t$选$A_t$的策略和$S_{t+1}$选$A_{t+1}$是同一个策略。
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{fig/ReinforcementLearning/RL_SARSA_Update_V.png}
