@@ -438,6 +438,79 @@ L1正则的本质其实是为模型增加了“\textcolor{red}{模型参数服�
 
 TBD
 
+\subsubsection{数学推导\cite{L1_Normalization_By_Wen}}
+带 L1 正则化的目标函数为：
+$$
+J(w;X,y) = L(w;X,y) + \alpha||w||
+$$
+其中，$L(w;X,y)$代表经验损失，$\alpha||w||$代表 L1 正则项，$w = [w_1, w_2, \cdots, w_n]^T$ 是模型的参数。
+
+在 $\alpha = 0$，即没有正则化的情况下，假设最优解是$w^*$，用泰勒公式将损失函数在 $w^*$ 处展开，得到：
+$$
+J(w;X,y) = J(w^*;X,y) + J'(w^*;X,y)(w - w^*) + \frac{1}{2}(w-w^*)H(w-w^*)^T
+$$
+其中 $H$ 是 $J(w;X,y) $关于$w$的 Hessian 矩阵；同时因为 $w^*$是最优解，所以一阶导为零，即：
+$$
+J(w;X,y) = J(w^*;X,y)  + \frac{1}{2}(w-w^*)H(w-w^*)^T
+$$
+
+我们假设$w$的元素两两互不影响，则 Hessian 矩阵变为对角阵，即：
+$$
+H = diag(H_{1,1}, H_{2,2}, \cdots, H_{n,n})
+$$
+
+所以，上式变为：
+$$
+J(w;X,y) = J(w^*;X,y)  + \sum_i\Big[ \frac{1}{2}H_{i,i}(w_i - w^*_i)^2 + \alpha|w_i|\Big]
+$$
+
+可以对每个参数进行独立求解，对于$w_i$，损失为：
+$$
+J(w_i;X,y) = J(w^*_i;X,y) + \frac{1}{2}H_{i,i}(w_i - w^*_i)^2 + \alpha|w_i| \qquad \qquad \qquad (1)
+$$
+
+求导后，得到：
+$$
+H_{i,i} (w_i - w^*_i) + \alpha * sign(w_i) = 0 \qquad \qquad \qquad \qquad \qquad   (2)
+$$
+
+其中，如果$w_i > 0$，则 $sign(w_i) = 1$；如果 $w_i < 0$，则 $sign(w_i) = -1$；如果 $w_i = 0$，则 $sign(w_i) = 0$。
+
+我们将 (1) 简化为如下形式：
+$$
+J = \underbrace{\frac{1}{2}H_{i,i}(w - w^*)^2}_{part\_A} + \underbrace{\alpha|w_i|}_{part\_B} + \underbrace{J^*}_{part\_C} \qquad \qquad \qquad (3)
+$$
+
+其中，part\_C 是常数；接下来对 part\_A 和 part\_B 进行分情况讨论：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 先固定 part\_A（即保持part\_A 不变）：显然它关于 $w^*$ 对称，即 $w = w^* \pm \beta, \ \beta > 0$ 时， part\_A 不变；那么显然当 $|w| < |w^*|$时，可以使 part\_B 更小，从而$J$ 更小；从而\textbf{得到第一个结论：$|w| < |w^*|$}；
+    \item 再固定 part\_B（即保持part\_B 不变）：对于三种情况 (a). $sign(w) = sign(w^*)$， (b). $sign(w) \neq sign(w^*)$ 和 (c). $w = 0$ ，都有 part\_B 不变，但显然当前者 (a) 或者 (c) 成立时，part\_A 更小，从而 J 更小；从而\textbf{得到第二个结论：$sign(w) = sign(w^*)$ 或者 $w = 0$}；
+\end{itemize}
+
+那么接下来，我们有：
+\begin{align*}
+&H_{i,i} (w_i - w^*_i) + \alpha * sign(w_i) = 0 \\
+& w_i = w^*_i - \frac{\alpha}{H_{i,i}} sign(w_i) \\
+& w_i = sign(w^*_i)|w^*_i| - \frac{\alpha}{H_{i,i}} sign(w_i)  \\
+& w_i = sign(w^*_i) \Big(|w^*_i| - \frac{\alpha}{H_{i,i}}\Big) \\
+\end{align*}
+
+分情况讨论：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item  若 $sign(w^*_i) <  \frac{\alpha}{H_{i,i}}$，那么有 $sign(w_i) \neq sign(w^*_i)$，所以这时有 $w_i = 0$，即获得了稀疏解；
+    \item 若 $sign(w^*_i) > \frac{\alpha}{H_{i,i}}$，正则化不会推最优解推向0，而是在这个方面上向原点移动了$\frac{\alpha}{H_{i,i}}$的距离。
+\end{itemize}
+
+综上所述，(2) 的最优解是：
+$$
+w_i = sign(w^*_i) \max\Big\{\|w^*_i| - \frac{\alpha}{H_{i,i}}, 0 \Big\}
+$$
 \subsection{L2 正则化}
 $$
 \psi(W) = ||W||_2^2 = \sum_{i=1}^NW_i^2 = W^TW
