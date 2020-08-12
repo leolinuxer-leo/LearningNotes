@@ -97,10 +97,31 @@ $$
 $$
 E(X^2) = 1^2 * 2/3 + 0^2 * 1/6 + (-1)^2 * 1/6 = 2/3 + 1/6 = 5/6.
 $$
-
 $$
 D(X) = E(X^2) - [E(X)]^2 = 5/6 - (1/2)^2 = 7/12
 $$
+
+\begin{framed}
+注意：期望的公式 $E[x] = \sum p(x)f(x)$ 中的 $p(x)$ 是指 $x$ 出现的概率，所以：
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|c|c|c|c|}
+    \hline 
+       X=   &  1 & 0 & -1 \\ 
+       \hline
+       P=   & 2/3 & 1/6 & 1/6 \\
+       \hline\hline
+       $X^2=$ & $1^2$ & $0^2$ & $(-1)^2$ \\
+       \hline
+       P=    & 2/3 & 1/6 & 1/6 \\
+       \hline
+    \end{tabular}
+\end{table}
+所以：
+$$
+E(X^2) = 1^2 * \mathbf{2/3} + 0^2 * \mathbf{1/6} + (-1)^2 * \mathbf{1/6} = 2/3 + 1/6 = 5/6.
+$$
+\end{framed}
 
 
 \subsubsection{一幅图理解期望和方差}
@@ -109,9 +130,9 @@ $$
 结果与期望的偏离称之为偏差（Bias）。通俗的讲，Bias描述了结果与中心的偏离程度。而方差（Variance）描述了结果互相之间的散列程度。
 
 你可以对比下面这幅图的四种情况来加深理解：
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
-  \includegraphics[width=.8\textwidth]{fig/bias_variance.png} %1.png是图片文件的相对路径
+  \includegraphics[width=.6\textwidth]{fig/bias_variance.png} %1.png是图片文件的相对路径
   \caption{Bias 和方差的比较} %caption是图片的标题
   %\label{HingeLossExample} %此处的label相当于一个图片的专属标志，目的是方便上下文的引用
 \end{figure}
@@ -127,7 +148,7 @@ $$
 \subsubsection{凸函数和Jensen不等式\cite{Understanding_Jensen_Nnequality_And_Proof}}
 \textbf{凸函数}
 
-凸函数是一个定义在某个向量空间的凸子集 $C$（区间）上的实值函数 $f$，如果在其定义域 $C$ 上的任意两点 $x1,x2x $, $0 \le t \le 1 $ ，有
+凸函数是一个定义在某个向量空间的凸子集 $C$（区间）上的实值函数 $f$，如果在其定义域 $C$ 上的任意两点 $x_1,x_2$, $0 \le t \le 1 $ ，有
 $$
 tf(x_1) + (1-t)f(x_2) \ge f(tx_1 + (1-t)x_2)
 $$
@@ -136,9 +157,9 @@ $$
 
 \textbf{Jensen不等式}
 
-若对于任意点集$\{xi\}$，若$\lambda_i \ge 0$ 且$\sum_i\lambda_i = 1$，则凸函数 $f(x)$ 满足：
+若对于任意点集$\{x_i\}$，若$\lambda_i \ge 0$ 且$\sum_i\lambda_i = 1$，则凸函数 $f(x)$ 满足：
 $$
-f(\sum_{i=1}^{M}\lambda_ix_i) \le \sum_{i=1}^{M}\lambda_if(x_i)
+\sum_{i=1}^{M}\lambda_if(x_i) \ge f(\sum_{i=1}^{M}\lambda_ix_i) 
 $$
 
 \begin{framed}  
@@ -186,50 +207,28 @@ $$
 \end{framed}
 
 \subsubsection{Jensen不等式和期望}
-\textcolor{red}{在概率论中，如果把$λ_i$ 看成取值为 $x_i$的离散变量 $x$ 的概率分布，那么 Jensen不等式就可以写成：}
+已知 Jensen 不等式：
 $$
-f(E[x]) \le E[f(x)]
+\sum_{i=1}^{M}\lambda_if(x_i) \ge f(\sum_{i=1}^{M}\lambda_ix_i) 
+$$
+
+\textcolor{red}{在概率论中，如果把$\lambda_i$ 看成取值为 $x_i$的离散变量 $x$ 的概率分布}，那么 
+$$
+\sum_{i=1}^{M}\lambda_if(x_i) = \sum_{i=1}^Mp(x_i)f(x_i) = E[f(x)]
+$$  
+$$
+f(\sum_{i=1}^{M}\lambda_ix_i) = f\Big(\sum_{i=1}^{M}p(x_i)x_i\Big) = f(E[x])
+$$
+
+则 Jensen不等式就可以写成：
+$$
+ E[f(x)] \ge f(E[x])
 $$
 
 对于连续变量，Jensen不等式给出了积分的凸函数值和凸函数的积分值间的关系：
 $$
-f(\int{xp(x)dx}) \le \int{f(x)p(x)dx}
+\int{f(x)p(x)dx} \ge f(\int{xp(x)dx})
 $$
-
-\begin{framed}  
-%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
-\small{
-一道关于概率论的不等式问题：已知 $X_1, X_2, X_3>0$是某个概率空间上的随机变量，证明：
-$$
-E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]E[\frac{X_3}{X_1}] \ge 1
-$$
-
-证明：先看有两个变量的情况：
-
-令$g(x) = \frac{1}{x}, \quad x > 0$，则 $g(x)$是右半空间上的凸函数。所以根据 Jensen 不等式，有：
-$$
-E[g(x)] \ge g(E[x]) = \frac{1}{E[x]}
-$$
-
-令 $x = \frac{X_1}{X_2}$，则有：
-$$
-E[g(\frac{X_1}{X_2})] \ge g(E[\frac{X_1}{X_2}]) = \frac{1}{E[\frac{X_1}{X_2}]}
-$$
-$$
-E[\frac{X_1}{X_2}]E[g(\frac{X_1}{X_2})] \ge E[\frac{X_1}{X_2}]\frac{1}{E[\frac{X_1}{X_2}]} = 1
-$$
-
-更进一步，有（??如何证明??）：
-$$
-E[\frac{X_1}{X_3}] = E[\frac{X_1}{X_2}\frac{X_2}{X_3}] \le E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]
-$$
-
-那么对于三个元的情况类似得可以按以下方式处理，
-$$
-E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]E[\frac{X_3}{X_1}] \ge E[\frac{X_1}{X_3}]E[\frac{X_3}{X_1}] = \ge 1
-$$
-}
-\end{framed}
 
 \subsubsection{期望和协方差的关系}
 \begin{align*}
@@ -307,6 +306,93 @@ $\rho$描述了两个变量相关的程度，当 $\rho = 1$时，两个变量完
 
 皮尔逊相关系数受异常值的影响比较大。
 
+\section{再论 Jensen 不等式}
+\textbf{Jensen不等式}：若对于任意点集$\{x_i\}$，若$\lambda_i \ge 0$ 且$\sum_i\lambda_i = 1$，则凸函数 $f(x)$ 满足：
+$$
+\sum_{i=1}^{M}\lambda_if(x_i) \ge f(\sum_{i=1}^{M}\lambda_ix_i) 
+$$
+
+\subsection{从“Jensen不等式”导出几个著名不等式}
+\url{https://zhuanlan.zhihu.com/p/55307171}
+
+\subsection{一些题目}
+\begin{framed}
+若 $\cos\beta + \cos \alpha - \cos(\alpha + \beta) = \frac{3}{2}$，$\alpha, \beta \in \Big(0, \frac{\pi}{2}\Big)$，求$\alpha, \beta$ 的值。
+
+\textbf{解}：依Jensen不等式，将成立：
+\begin{align*}
+\cos\beta + \cos \alpha - \cos(\alpha + \beta) &= \cos\beta + \cos \alpha + \cos(\pi - \alpha - \beta) \\
+	&\le 3 \cos\Big(\frac{\beta + \alpha + \pi - \alpha - \beta}{3}\Big)\\
+	&= \frac{3}{2}
+\end{align*}
+
+并且可知，当前方程中的 $\alpha, \beta $应满足上述不等式的取等条件，即$\alpha = \beta = \pi - \alpha - \beta$，所以 $\alpha = \beta = \frac{\pi}{3}$
+
+\begin{framed}
+\small{
+附：对于凹函数，根据 Jensen 不等式，当 $n = 3$ 时，有：
+$$
+f\Big(\frac{1}{3}x_1 + \frac{1}{3}x_2 + \frac{1}{3}x_3\Big) \ge \frac{1}{3}f(x_1) + \frac{1}{3}f(x_2) + \frac{1}{3}f(x_3)
+$$
+$$
+\therefore f(x_1) + f(x_2) + f(x_3) \le 3f\Big(\frac{1}{3}x_1 + \frac{1}{3}x_2 + \frac{1}{3}x_3\Big)
+$$
+}
+\end{framed}
+\end{framed}
+
+\begin{framed}
+设 $x, y \ge 0$，$n$ 为正整数，证明：
+$$
+\frac{x^n + y^n}{2} \ge \Big(\frac{x+y}{2}\Big)^n
+$$
+
+\textbf{证明}：因为当 $x \ge 0$ 且 $n$ 为正整数时， $f(x) = x^n$ 是凸函数，所以根据 Jensen 不等式，有：
+$$
+\frac{x^n + y^n}{2} = \frac{1}{2}f(x) + \frac{1}{2}f(y) \ge f\Big(\frac{x+y}{2}\Big) = \Big(\frac{x+y}{2}\Big)^2
+$$
+\end{framed}
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+一道关于概率论的不等式问题：已知 $X_1, X_2, X_3>0$是某个概率空间上的随机变量，证明：
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]E[\frac{X_3}{X_1}] \ge 1
+$$
+
+\textbf{证明}：先看有两个变量的情况：
+
+令$g(x) = \frac{1}{x}, \quad x > 0$，则 $g(x)$是右半空间上的凸函数。所以根据 Jensen 不等式，有：
+$$
+E[g(x)] \ge g(E[x]) = \frac{1}{E[x]}
+$$
+
+令 $x = \frac{X_1}{X_2}$，则有：
+$$
+E[g(\frac{X_1}{X_2})]  = E[\frac{X_2}{X_1}] \ge g(E[\frac{X_1}{X_2}]) = \frac{1}{E[\frac{X_1}{X_2}]}
+$$
+
+也就是说：
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_1}] \ge 1
+$$
+
+更进一步，有（??如何证明??）：
+$$
+E[\frac{X_1}{X_3}] = E[\frac{X_1}{X_2}\frac{X_2}{X_3}] \le E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]
+$$
+
+那么对于三个元的情况类似得可以按以下方式处理，
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]E[\frac{X_3}{X_1}] \ge E[\frac{X_1}{X_3}]E[\frac{X_3}{X_1}] = \ge 1
+$$
+
+类似地，可以推广到 $n$ 元的情况：
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]\cdots E[\frac{X_n}{X_1}] \ge 1
+$$
+\end{framed}
+
 \section{离散型分布}
 \subsection{伯努利分布（零一分布）}
 伯努利（Bernoulli）分布是最基本，也是我们最常见的分布。伯努利分布在生活中非常的常见。例如，抛掷一枚硬币的结果就是符合伯努利分布的：结果只会是正面或者反面。
@@ -349,13 +435,13 @@ $$
 二项分布的期望值是$np$，方差是$np(1-p)$。
 
 期望的推导过程：
-\begin{align}
+\begin{align*}
     E(X) &= \sum_{k=0}^nP\{X=k\}k \\
     &= \sum_{k=1}^n \binom{n}{k}kp^{k}(1-p)^{n-k} \\
     &= \sum_{k=1}^nnp\binom{n-1}{k-1}p^{k-1}(1-p)^{n-k} \\
     &= np\sum_{k=1}^n\binom{n-1}{k-1}p^{k-1}(1-p)^{n-k} \\
     &= np
-\end{align}
+\end{align*}
 这里有两个变换：
 $$
 \binom{n}{k} = \frac{n!}{k!(n-k)!} = \frac{n}{k}\binom{n-1}{k-1}
@@ -384,7 +470,7 @@ $$
 \end{framed}  
 
 方差的推导过程：
-\begin{align}
+\begin{align*}
     E(X^2) &= \sum_{k=0}^n k^2\binom{n}{k}p^k(1-p)^{n-k}  \quad \text{令 1-p = q}\\
     E(X^2) &= \sum_{k=1}^n k^2\binom{n}{k}p^kq^{n-k} \\
     &= \sum_{k=1}^n nk\binom{n-1}{k-1}p^kq^{n-k} \\
@@ -392,15 +478,15 @@ $$
     &= \sum_{k=1}^n n(k-1)\binom{n-1}{k-1}p^kq^{n-k} + \sum_{k=1}^n np\binom{n-1}{k-1}p^{k-1}q^{n-k} \\
     &= \sum_{k=2}^n n(n-1)p^2\binom{n-2}{k-2}p^{k-2}q^{n-k} + np \\
     &= n(n-1)p^2 + np
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
     D(X) &= E(X^2) - [E(X)]^2 \\
          &= n(n-1)p^2 + np - (np)^2 \\
          &= n^2p^2 - np^2 + np - n^2p^2\\
          &= np - np^2 \\
          &= np(1-p)
-\end{align}
+\end{align*}
 
 
 \subsection{几何分布}
@@ -421,14 +507,14 @@ E(X) = \sum_{k=1}^{\infty}kp(1-p)^{k-1} = p\sum_{k=1}^{\infty}k(1-p)^{k-1}
 $$
 
 令 $q = 1 - p$，$S = \sum_{k=1}^{\infty}k(q)^{k-1}$，有：
-\begin{align}
+\begin{align*}
     S &= 1 + 2q + 3q^2 + 4q^3 + \cdots + kq^{k-1}\\
    qS &= q + 2q^2 + 3q^3 + 4q^4 + \cdots + kq^{k}\\
    S - qS &= 1 + q + q^2 + \cdots + q^{k-1} - kq^k \\
    S &= \frac{1-q^k}{(1-q)^2} - \frac{kq^k}{1-q} \\
      &= \frac{1}{(1-q)^2} \quad \text{这里因为} k \rightarrow \infty \\
      &= \frac{1}{p^2}
-\end{align}
+\end{align*}
 $$
 E(X) = p\frac{1}{p^2} = \frac{1}{p}
 $$
@@ -439,7 +525,7 @@ E(X^2) = \sum_{k=1}^{\infty}k^2p(1-p)^{k-1} = p\sum_{k=1}^{\infty}k^2(1-p)^{k-1}
 $$
 
 令 $q = 1 - p$，有
-\begin{align}
+\begin{align*}
     S &= \sum_{k=1}^{\infty}k^2q^{k-1} \\
       &= \sum_{k=1}^{\infty}(kq^k)' \quad' \text{表示求导} \\
       &= [\sum_{k=1}^{\infty}(kq^k)]' \\
@@ -447,7 +533,7 @@ $$
       &= \frac{(1-q)^2+2(1-q)q)}{(1-q)^4} \\
       &= \frac{2p-p^2}{p^4} \\
       &= \frac{2-p}{p^3}
-\end{align}
+\end{align*}
 所以：
 $$
 E(X^2) = \frac{2-p}{p^2}
@@ -535,12 +621,12 @@ $\lambda$是过去单位时间内发生的频率，$k$是预测发生的次数�
 泊松分布的期望值和方差都是$\lambda$。
 
 期望的推导过程：
-\begin{align}
+\begin{align*}
 E(X) &= \sum_{k=0}^{\infty}k\frac{e^{-\lambda}\lambda^{k}}{(k-1)!} \\
 &= \lambda e^{-\lambda}\sum_{k=1}^{\infty}\frac{\lambda^{k-1}}{k!} \\
 &= \lambda e^{-\lambda}e^{\lambda} \\
 &= \lambda
-\end{align}
+\end{align*}
 
 这里也有一个变换(就是$e^x$的泰勒展开式)：
 $$
@@ -548,14 +634,14 @@ e^{\lambda} = \sum_{k=0}^{\infty}\frac{\lambda^k}{k!}
 $$
 
 方差的推导过程：
-\begin{align}
+\begin{align*}
 E(X^2) &= \sum_{k=0}^{\infty}k^2\frac{e^{-\lambda}\lambda^{k}}{(k-1)!} \\
 &= \sum_{k=1}^{\infty}k e^{-\lambda}\lambda \frac{\lambda^{k-1}}{(k-1)!} \\
 &= \sum_{k=1}^{\infty}(k-1+1) \lambda e^{-\lambda} \frac{\lambda^{k-1}}{(k-1)!} \\
 &= \sum_{k=1}^{\infty}(k-1) \lambda e^{-\lambda} \frac{\lambda^{k-1}}{(k-1)!} + \lambda e^{-\lambda} \sum_{k=1}^{\infty}\frac{\lambda^{k-1}}{(k-1)!} \\
 &= \lambda^2 e^{-\lambda} \sum_{k=2}^{\infty}\frac{\lambda^{k-2}}{(k-2)!} + \lambda \\
 &= \lambda^2 + \lambda
-\end{align} 
+\end{align*} 
 
 $$
 D(X) = \lambda^2
@@ -587,7 +673,7 @@ $\mu$ 就是高斯分布的期望，而$\sigma^2$就是方差。
 当 $\mu = 0, \sigma = 1$时，我们称之为标准正态分布。
 
 期望的推导过程：
-\begin{align}
+\begin{align*}
 E(X) &= \int_{-\infty}^{+\infty}xf(x)dx \\
 &= \frac{1}{\sqrt{2 \pi}\sigma} \int_{-\infty}^{+\infty}xe^{-\frac{(x - \mu)^2}{2\sigma^2}}dx \quad \text{令} \frac{x-\mu}{\sigma} = t \\
 &= \frac{1}{\sqrt{2 \pi}}\int_{-\infty}^{+\infty}(\sigma t+\mu)e^{-\frac{t^2}{2}}dt \\
@@ -595,7 +681,7 @@ E(X) &= \int_{-\infty}^{+\infty}xf(x)dx \\
 &= \frac{1}{\sqrt{2 \pi}}{\mu}{\sqrt{2}}\int_{-\infty}^{+\infty}e^{-(\frac{t}{\sqrt{2}})^2}d{(\frac{t}{\sqrt{2}})} \\
 &=  \frac{1}{\sqrt{2 \pi}}{\mu}{\sqrt{2}\sqrt{\pi}} \\
 &= \mu
-\end{align}
+\end{align*}
 
 最后一步利用了积分公式：
 $$
@@ -603,14 +689,14 @@ $$
 $$
 
 方差的推导过程：
-\begin{align}
+\begin{align*}
 E(X^2) &= \int_{-\infty}^{+\infty}x^2f(x)dx \\
 &= \frac{1}{\sqrt{2 \pi}\sigma} \int_{-\infty}^{+\infty}x^2e^{-\frac{(x - \mu)^2}{2\sigma^2}}dx \quad \text{令} \frac{x-\mu}{\sigma} = t \\
 &= \frac{1}{\sqrt{2 \pi}}\int_{-\infty}^{+\infty}(\sigma t+\mu)^2e^{-\frac{t^2}{2}}dt \\
 &= \frac{1}{\sqrt{2 \pi}}\int_{-\infty}^{+\infty}({\sigma }^2t^2+2\mu\sigma t+{\mu}^2)e^{-\frac{t^2}{2}}dt \\
 &= \cdots \\
 &= {\sigma}^2 + {\mu}^2
-\end{align}
+\end{align*}
 $$
 D(X) = E(X^2) - [E(X)]^2 = {\sigma}^2
 $$
@@ -653,23 +739,23 @@ $$
 
 （注：这里指数分布的概率密度函数定义为: $f(x) = {\lambda}e^{-{x}{\lambda}}$）
 
-\begin{align}
+\begin{align*}
 E(X) &= \int_0^{+\infty}x{\lambda}e^{-{x}{\lambda}}dx \\
 &= -\int_0^{+\infty}xd(e^{-\lambda x}) \\
 &= -xe^{-\lambda x}\big|_0^{+\infty} + \int_0^{+\infty} e^{-\lambda x}dx \\
 &= -\frac{1}{\lambda}e^{-\lambda x}\big|_0^{+\infty} \\
 &= \frac{1}{\lambda}
-\end{align}
+\end{align*}
 
 方差的推导过程：
-\begin{align}
+\begin{align*}
 E(X^2) &= \int_0^{+\infty}x^2{\lambda}e^{-{x}{\lambda}}dx \\
 &= -\int_0^{+\infty}x^2d(e^{-\lambda x}) \\
 &= -x^2e^{-\lambda x}\big|_0^{+\infty} + \int_0^{+\infty}2x e^{-\lambda x}dx \\
 &= -x^2e^{-\lambda x}\big|_0^{+\infty} + \int_0^{+\infty}2x e^{-\lambda x}dx \\
 &= \frac{2}{\lambda} E(X) \\
 &= \frac{2}{\lambda^2}
-\end{align}
+\end{align*}
 $$
 D(X) = E(X^2) - [E(X)]^2 = \frac{1}{\lambda^2}
 $$

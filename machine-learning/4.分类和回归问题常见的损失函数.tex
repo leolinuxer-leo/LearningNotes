@@ -36,8 +36,14 @@
 %\author{leolinuxer }
 %\date{June 2020}
 
+\title{分类和回归问题常见的损失函数}
+\author{leolinuxer}
+%\date{June 2020}
+
 \begin{document}
-%\maketitle
+%\setlength{\parindent}{0pt}
+\maketitle
+\tableofcontents
 
 \section{损失函数\cite{Compare_Loss_Func_Between_Regression_Classification}}
 损失函数一般表示为：$L(y,f(x))$，用来衡量真实值 $y$ 和预测值 $f(x)$ 之间不一致的程度，一般越小越好。为了便于不同损失函数的比较，常将其表示为单变量的函数，在{\color{red}{回归问题中，这个变量为 $y-f(x)$， 在分类问题中，这个变量为 $yf(x)$}}。

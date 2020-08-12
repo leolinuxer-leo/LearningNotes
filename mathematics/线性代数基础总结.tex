@@ -679,7 +679,7 @@ $$
     \centering
     \includegraphics[width=.5\textwidth]{fig/UnderstandDeterminant_4.png}
 \end{figure}  
-    \item 三阶矩阵的行列式是\textbf{列}组成的平行六面体的\textbf{体积}（对单位正方体进行了缩放
+    \item 三阶矩阵的行列式是\textbf{列}组成的平行六面体的\textbf{体积}（对单位正方体进行了缩放）
 \end{itemize}
 
 \section{理解正交矩阵\cite{Fantastic_Matrix_1}}
@@ -725,6 +725,8 @@ $$
 MM^{-1} = MM^T = E
 $$
 
+\begin{framed}
+\small{
 举例证明上述结论：给定正交矩阵
 $$
 M = \begin{bmatrix}
@@ -793,8 +795,10 @@ $$
 $$
 TT^{-1} = TT^T = E
 $$
+}
+\end{framed}
 
-一个矩阵是旋转矩阵，当且仅当它是正交矩阵并且它的行列式是单位1。
+\textbf{一个矩阵是旋转矩阵，当且仅当它是正交矩阵并且它的行列式是单位1}。
 
 \textbf{正交矩阵的行列式是 $\pm 1$；如果行列式是 $−1$，则它包含了一个反射而不是真旋转矩阵}。
 
@@ -1050,7 +1054,7 @@ $$
 
 所以有下面一一对应的关系：
 \begin{center}
-\textbf{对称矩阵$\Longleftrightarrow$二次型矩阵$\Longleftrightarrow$二次型矩阵}
+\textbf{对称矩阵$\Longleftrightarrow$二次型矩阵$\Longleftrightarrow$二次型}
 \end{center}
 
 在线代里面，就是通过一个对称矩阵，去研究某个二次型。
@@ -1268,7 +1272,31 @@ $$
     \includegraphics[width=.5\textwidth]{fig/UnderstandEigenValueVector_8.png}
 \end{figure} 
 
-也就是说，反复运用矩阵乘法，矩阵所代表的运动的最明显的特征，即速度最大的方向，就由最大特征值对应的特征向量展现了出来。
+也就是说，反复运用矩阵乘法，矩阵所代表的运动的最明显的特征，即速度最大的方向，就由最大特征值对应的特征向量展现了出来
+
+\begin{framed}
+参见《共轭梯度法中的特征值部分》：
+
+如果矩阵 $A$ 的特征向量为 $\vec{v}_1, \vec{v}_2, \cdots, \vec{v}_n$，对应的特征值为 $\lambda_1, \lambda_2, \cdots, \lambda_n$，那么可以将$\vec{v}$分解为 
+$$
+\vec{v} = \xi_1\vec{v}_1 + \xi_2\vec{v}_2 + \cdots + \xi_n\vec{v}_n
+$$
+
+那么有：
+\begin{align*}
+A\vec{v} &= A\xi_1\vec{v}_1 + A\xi_2\vec{v}_2 + \cdots + A\xi_n\vec{v}_n \\
+	&= \xi_1A\vec{v}_1 + \xi_2A\vec{v}_2 + \cdots + \xi_nA\vec{v}_n \\
+	&= \xi_1\lambda_1\vec{v}_1 + \xi_2\lambda_2\vec{v}_2 + \cdots + \xi_n\lambda_n\vec{v}_n \\
+\end{align*}
+
+所以：
+\begin{align*}
+A^i\vec{v} &= \xi_1\lambda_1^i\vec{v}_1 + \xi_2\lambda_2^i\vec{v}_2 + \cdots + \xi_n\lambda_n^i\vec{v}_n
+\end{align*}
+
+所以会越来越贴合到最大的特征值对应的特征空间上。
+\end{framed}
+
 
 但是，上面的推论有一个重要的条件：特征向量正交，这样变换后才能保证变换最大的方向在基方向。如果特征向量不正交就有可能不是变化最大的方向。所以我们在实际应用中，都要去找正交基。但是特征向量很可能不是正交的，那么我们就需要奇异值分解了。
 
@@ -1586,7 +1614,7 @@ A^k\mathbf{v} &= A^kc_1\mathbf{x_1} + \cdots + A^kc_n\mathbf{x_n} \\
 \end{align*}
 
 
-\subsection{矩阵的特征值和”谱“\cite{Fantastic_Matrix_1}}
+\subsection{矩阵的特征值和“谱”\cite{Fantastic_Matrix_1}}
 矩阵的特征值有时会被称为谱，这和特征值的物理意义有关。如果你学过线性系统理论或者振动分析类的课程，就会知道，一阶线性微分方程组对应的矩阵的特征值，就是系统的固有频率。我们知道，凡是叫谱的东西，都是可以分解的，比如光谱。那么这个矩阵可不可以 分解呢？答案是肯定的：我们可以将一个具有良好性能的矩阵分解成多个作用的叠加。
 
 在数学中有一个谱定律（Spectral theorem），也叫谱分解或者特征值分解。它的核心内 容如下：一个矩阵 $A$ 可表示为如下线性组合
@@ -1618,6 +1646,8 @@ $$
 如果特征值相同，只要矩阵 $A$ 可对角化，上面的分解也是可以进行的。把相同特征值的 块合并在一起就可以，从它的应用角度来说这样处理是合理的。
 
 从这里我们可以看出，\textbf{一个变换（矩阵）可由它的所有特征值和谱族完全表示。特征值 和谱族的乘积就代表了它对矩阵 $A$ 的贡献率}——说的通俗一点就是能量（power）或者权重 (weight)。这样，能量多的、权重大的部分当然重要，问题的主要矛盾就凸显出来了！当 然，也可以这样理解：把特征值看成坐标，谱族看成基。于是，一组基+一组坐标就表示了一个对象——矩阵 $A$。
+
+同理可参考《共轭梯度法》中的特征值和谱半径部分。
 
 \section{理解迹\cite{How_To_Understand_Trace}}
 线性代数中，把方阵的对角线之和称为“迹”，即对于给定的矩阵：
