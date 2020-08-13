@@ -1,0 +1,495 @@
+\documentclass[12pt]{article}
+%\usepackage[utf8]{inputenc}
+%\documentclass[UTF8]{ctexart}
+%\usepackage[UTF8, heading = false, scheme = plain]{ctex}
+\usepackage{geometry}
+%geometry{a4paper,scale=0.9}
+\geometry{a4paper,left=1cm,right=1cm,top=1cm,bottom=2cm}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{cite}
+%\addbibresource{ref.bib}
+%\bibliography{ref.bib}
+\usepackage{caption}
+\usepackage{graphicx, subfig}
+\usepackage{float}
+%\usepackage[fontset=ubuntu]{ctex}
+%\usepackage{fontspec}
+\usepackage{xeCJK}
+%\usepackage[colorlinks,
+%anchorcolor=black,
+%citecolor=black]{hyperref}
+%\setmainfont{SimSun}
+\usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{indentfirst}
+\usepackage{setspace}%使用间距宏包
+\linespread{1.5}
+%\title{预备知识}
+%\author{leolinuxer }
+%\date{June 2020}
+
+\title{Jensen 不等式}
+\author{leolinuxer}
+%\date{June 2020}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{Jensen 不等式}
+\textbf{Jensen不等式}：若对于任意点集$\{x_i\}$，若$\lambda_i \ge 0$ 且$\sum_i\lambda_i = 1$，则凸函数 $f(x)$ 满足：
+$$
+\sum_{i=1}^{M}\lambda_if(x_i) \ge f(\sum_{i=1}^{M}\lambda_ix_i) 
+$$
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+\small{
+使用数学归纳法证明如下：
+
+当 $i=1$或 $i=2$时，根据凸函数的定义，显然成立；
+
+假设当 $i=M$ 时不等式成立，现在证明当 $i=M+1$ 时不等式也成立：
+\begin{align*}
+f(\sum_{i=1}^{M+1}\lambda_ix_i) &= f(\lambda_{M+1}x_{M+1} + \sum_{i=1}^M\lambda_ix_i) \\
+&= f(\lambda_{M+1}x_{M+1} + (1-\lambda_{M+1})\sum_{i=1}^M\eta_ix_i)
+\end{align*}
+其中，
+$$
+\eta_i = \frac{\lambda_i}{1 - \lambda_{M+1}}
+$$
+
+注意到 $\lambda_i$ 满足：
+$$
+\sum_{i=1}^{M+1}\lambda_i = 1
+$$
+
+所以：
+$$
+\sum_{i=1}^{M}\lambda_i = 1 - \lambda_{M+1}
+$$
+
+所以$\eta_i$ 满足：
+$$
+\sum_{i=1}^{M}\eta_i = \frac{\sum_{i=1}^{M}\lambda_i }{1 - \lambda_{M+1}} = 1
+$$
+
+所以：
+$$
+\sum_{i=1}^{M}f(\eta_ix_i) \le \sum_{i=1}^{M}\eta_if(x_i)
+$$
+
+所以命题得证：
+$$
+f(\sum_{i=1}^{M+1}\lambda_ix_i) \le \lambda_{M+1}f(x_{M+1}) + (1-\lambda-{M+1})\sum_{i=1}^{M}\eta_if(x_i) = \sum_{i=1}^{M+1}\lambda_if(x_i)
+$$
+}
+\end{framed}
+
+
+\section{从“Jensen 不等式”导出几个著名不等式}
+\url{https://zhuanlan.zhihu.com/p/55307171}
+
+\subsection{加权AG不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+对 $a_i > 0, \alpha_i > 0$，有：
+$$
+\frac{\alpha_1a_1 + \alpha_2a_2 + \cdots + \alpha_na_n}{\alpha_1 + \alpha_2 + \cdots + \alpha_n} \ge (a_1^{\alpha_1}a_2^{\alpha_2}\cdots a_n^{\alpha_n})^{\frac{1}{\alpha_1 + \alpha_2 + \cdots + \alpha_n}}
+$$
+\end{mdframed}
+
+\textbf{证明}：记
+$$
+\lambda_i = \frac{\alpha_i}{\alpha_1 + \alpha_2 + \cdots + \alpha_n}
+$$
+
+因为对数函数为凹函数，使用加权琴生不等式，可得：
+\begin{align*}
+\ln(\lambda_1x_1 + \lambda_2x_2 + \cdots + \lambda_nx_n) &\ge \lambda_1\ln{x_1} + \lambda_2\ln{x_2} + \cdots + \lambda_n\ln{x_n} \\
+	&= \ln{x_1}^{\lambda_1}{x_2}^{\lambda_2}\cdots{x_n}^{\lambda_n} \\
+\therefore \lambda_1x_1 + \lambda_2x_2 + \cdots + \lambda_nx_n &\ge {x_1}^{\lambda_1}{x_2}^{\lambda_2}\cdots{x_n}^{\lambda_n}\\
+\therefore \frac{\alpha_1a_1 + \alpha_2a_2 + \cdots + \alpha_na_n}{\alpha_1 + \alpha_2 + \cdots + \alpha_n} &\ge (a_1^{\alpha_1}a_2^{\alpha_2}\cdots a_n^{\alpha_n})^{\frac{1}{\alpha_1 + \alpha_2 + \cdots + \alpha_n}} \\
+\end{align*}
+
+\subsection{Young不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+若 $x > 0, y > 0, p > 1, q > 1$, $\frac{1}{p} + \frac{1}{q} = 1$，则：
+$$
+xy \le \frac{x^p}{p} + \frac{y^q}{q}
+$$
+\end{mdframed}
+\textbf{证明}：利用上述加权AG不等式有：
+\begin{align*}
+x_1^{\frac{\alpha_1}{\alpha_1+\alpha_2}}\cdot x_2^{\frac{\alpha_2}{\alpha_1+\alpha_2}} &\le \frac{\alpha_1x_1 + \alpha_2x_2}{\alpha_1+\alpha_2} \\
+\text{记} \ \frac{1}{p} = \frac{\alpha_1}{\alpha_1+\alpha_2}, & \frac{1}{q} = \frac{\alpha_2}{\alpha_1+\alpha_2} \\
+\therefore x_1^{\frac{1}{p}} \cdot  x_2^{\frac{1}{q}} &\le \frac{\alpha_1x_1 + \alpha_2x_2}{\alpha_1+\alpha_2} \\
+&= \frac{x_1}{p} + \frac{x_2}{q}
+\end{align*}
+
+令 $x = x_1^{\frac{1}{p}}, y = x_2^{\frac{1}{1}}$，即有：
+$$
+xy \le \frac{x^p}{p} + \frac{y^q}{q}
+$$
+
+注意，推导过程中得到的下式也很有用：
+$$
+x_1^{\frac{1}{p}} \cdot  x_2^{\frac{1}{q}} \le \frac{x_1}{p} + \frac{x_2}{q}
+$$
+
+\subsection{AG不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+假设上述加权AG不等式中 $\alpha_i = 1$ 则得AG不等式
+$$
+\frac{a_1 + a_2 + \cdots a_n}{n} \ge \sqrt[n]{a_1a_2\cdots a_n}
+$$
+\end{mdframed}
+
+\subsection{哈代不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+若对下列正数
+$$
+x_1, x_2, \cdots, x_n, y_1, y_2, \cdots, y_n, \alpha, \beta
+$$
+有：
+$$
+\frac{1}{\alpha} + \frac{1}{\beta}  = 1
+$$
+那么有如下不等式成立：
+$$
+\sum_k^nx_ky_k \le (\sum_k^nx_k^{\alpha})^{\frac{1}{\alpha}}(\sum_k^ny_k^{\beta})^{\frac{1}{\beta}} 
+$$
+\end{mdframed}
+\textbf{证明}：由加权AG不等式或Young不等式，得：
+\begin{align*}
+\Big(\frac{x_k^{\alpha}}{\sum_i^nx_i^{\alpha}}\Big)^{\frac{1}{\alpha}}\Big(\frac{y_k^{\beta}}{\sum_i^ny_i^{\beta}}\Big)^{\frac{1}{\beta}} & \le \frac{1}{\alpha}\cdot\frac{x_k^{\alpha}}{\sum_i^nx_i^{\alpha}} + \frac{1}{\beta}\cdot\frac{y_k^{\beta}}{\sum_i^ny_i^{\beta}} \\
+\therefore \frac{\sum_k^nx_ky_k}{(\sum_i^nx_i^{\alpha})^{\frac{1}{\alpha}}(\sum_i^ny_i^{\beta})^{\frac{1}{\beta}}} &\le \frac{1}{\alpha} + \frac{1}{\beta} = 1 \\
+\therefore \sum_k^nx_ky_k &\le (\sum_k^nx_k^{\alpha})^{\frac{1}{\alpha}}(\sum_k^ny_k^{\beta})^{\frac{1}{\beta}} 
+\end{align*}
+
+\subsection{柯西不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+对下列正数
+$$
+x_1, x_2, \cdots, x_n, y_1, y_2, \cdots, y_n
+$$
+有如下不等式成立：
+$$
+(\sum_{k=1}^nx_ky_k)^2 \le (\sum_{k=1}^nx_k^2) (\sum_{k=1}^ny_k^2)
+$$
+\end{mdframed}
+\textbf{证明}：在哈代不等式中，令 $\alpha = \beta = 2$ 即可证明柯西不等式。
+
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{二维形式}:
+$$
+ac + bd \le \sqrt{(a^2+b^2)(c^2+d^2)}
+$$
+等号成立条件：当且仅当 $ad = bc$ (即$\frac{a}{c} = \frac{b}{d}$)
+
+\textbf{向量形式}
+$$
+|a| \cdot |b| \ge |a\cdot b|, \quad a = (a_1, a_2, \cdots, a_n), b = (b_1, b_2. \cdots, b_n)
+$$
+
+\textbf{三角形式}
+$$
+\sqrt{a^2+b^2}+\sqrt{c^2+d^2} \ge \sqrt{(a-c)^2 + (b-d)^2}
+$$
+
+\textbf{概率论形式}
+$$
+\sqrt{E[X^2]}\sqrt{E[Y^2]} \ge |E[XY]|
+$$
+
+\textbf{变形}
+$$
+\sum_{i=1}^nx_i^2 \ge \frac{(\sum_{i=1}^nx_iy_y)^2}{\sum_{i=1}^ny_i^2}
+$$
+
+以 $\Psi_i/u_i$ 替换$x_i^2$，$u_i$ 替换 $y_i^2$，$(\Psi_i, u_i > 0)$有：
+$$
+\sum_{i=1}^n\frac{\Psi_i}{u_i} \ge \frac{\Big(\sum_{i=1}^n\sqrt{\Psi_i}\Big)^2}{\sum_{i=1}^nu_i}
+$$
+\end{mdframed}
+
+\subsection{霍尔德不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+假设：$a_i \ge 0, b_i \ge 0, (1 \le i \le n), \alpha > 0, \beta > 0, \alpha + \beta = 1$，那么有如下不等式成立：：
+$$
+\sum_i^na_i^{\alpha}b_i^{\beta} \le (\sum_i^na_i)^{\alpha}(\sum_i^nb_i)^{\beta}
+$$
+\end{mdframed}
+\textbf{证明}：由哈代不等式，替换变量可得
+
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+\textbf{多元推广(符号存疑)}
+
+\url{http://blog.sina.com.cn/s/blog_4aeef05d01030w1g.html}
+
+设 $a_{ij} > 0, (i = 1, 2, \cdots, n, j = 1, 2, \cdots, m)$, $\alpha_j > 0$ 是正实数，且 $\alpha_1 + \alpha_2 + \cdots \alpha_m = 1$，则：
+$$
+\prod_{j=1}^m\Big(\sum_{i=1}^na_{ij}\Big)^{\alpha_j} \ge \sum_{i=1}^n\Big(\prod_{j=1}^ma_{ij}^{\alpha_j}\Big)
+$$
+\end{mdframed}
+
+\subsection{幂平均值不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+假设：$a_i > 0, (1 \le i \le n), \alpha > \beta > 0$，那么有如下不等式成立：
+$$
+\Big(\frac{1}{n}\sum_{i}^{n}a_i^{\alpha}\Big)^{\frac{1}{\alpha}} \ge \Big(\frac{1}{n}\sum_{i}^{n}a_i^{\alpha}\Big)^{\frac{1}{\beta}} 
+$$
+\end{mdframed}
+\textbf{证明}：使用哈代不等式，令
+\begin{align*}
+x_i &= 1, \qquad(1 \le i \le n) \\
+\sum_i^nx_iy_i &\le \Big(\sum_i^nx_i^p\Big)^{\frac{1}{p}}\Big(\sum_i^ny_i^q\Big)^{\frac{1}{q}} \\
+\therefore \sum_i^ny_i &\le n^{\frac{1}{p}}\Big(\sum_i^ny_i^q\Big)^{\frac{1}{q}} \\
+\because \frac{1}{p} + \frac{1}{q} &= 1 , (p > 1, q > 1)\\
+\therefore \sum_i^ny_i &\le n^{1-\frac{1}{q}}\Big(\sum_i^ny_i^q\Big)^{\frac{1}{q}} \\
+\therefore \frac{1}{n}\sum_i^ny_i &\le n^{-\frac{1}{q}}\Big(\sum_i^ny_i^q\Big)^{\frac{1}{q}} \\
+\therefore \frac{1}{n}\sum_i^ny_i &\le \Big(\frac{1}{n}\sum_i^ny_i^q\Big)^{\frac{1}{q}} \\
+y_i = a_i^{\beta}, & q = \frac{\alpha}{\beta} > 1 \\
+\therefore \frac{1}{n}\sum_i^na_i^{\beta} &\le \Big(\frac{1}{n}\sum_i^na_i^{\alpha}\Big)^{\frac{\beta}{\alpha}} \\
+\therefore \Big(\frac{1}{n}\sum_i^na_i^{\alpha}\Big)^{\frac{1}{\alpha}} &\ge \Big(\frac{1}{n}\sum_i^na_i^{\beta}\Big)^{\frac{1}{\beta}} \\
+\end{align*}
+
+\subsection{Minkowski不等式}
+\begin{mdframed}[
+linecolor=black!40,outerlinewidth=1pt,roundcorner=.5em,innertopmargin=1ex,innerbottommargin=.5\baselineskip,innerrightmargin=1em,innerleftmargin=1em,backgroundcolor=gray!5,
+%backgroundcolor=blue!10,%userdefinedwidth=1\textwidth,%shadow=true,%shadowsize=6,%shadowcolor=black!20,%frametitle={The \textit{two-step} model of XMCD:},%frametitlebackgroundcolor=cyan!40,%frametitlerulewidth=10pt
+]
+对 $a_i \ge 0, b_i \ge 0, p > 1$，有如下不等式成立：
+$$
+\Big(\sum_i^n(a_i+b_i)^p \Big)^{\frac{1}{p}} \le \Big(\sum_i^na_i^p\Big)^{\frac{1}{p}} + \Big(\sum_i^nb_i^p\Big)^{\frac{1}{p}} 
+$$
+\end{mdframed}
+\textbf{证明}：令 
+$$
+\frac{1}{p} + \frac{1}{q} = 1
+$$
+
+由哈代不等式，有：
+\begin{align*}
+\sum_i^na_i(a_i+b_i)^{p-1}&\le \Big(\sum_i^na_i^p\Big)^{\frac{1}{p}}\Big(\sum_i^n(a_i+b_i)^{(p-1)q}\Big)^{\frac{1}{q}} \\
+%
+\because \frac{1}{p} + \frac{1}{q} &= 1 \\
+\therefore (p-1)q &= p \\
+%
+\therefore \sum_i^na_i(a_i+b_i)^{p-1} &\le \Big(\sum_i^na_i^p\Big)^{\frac{1}{p}}\Big(\sum_i^n(a_i+b_i)^p\Big)^{1-\frac{1}{p}} \\
+\text{同理，有：} &\ \\
+\sum_i^nb_i(a_i+b_i)^{p-1} &\le \Big(\sum_i^nb_i^p\Big)^{\frac{1}{p}}\Big(\sum_i^n(a_i+b_i)^p\Big)^{1-\frac{1}{p}} \\
+\text{两式相加，有：} &\ \\
+\sum_i^n(a_i+b_i)^{p} &\le 
+\Bigg(\Big(\sum_i^na_i^p\Big)^{\frac{1}{p}} + \Big(\sum_i^nb_i^p\Big)^{\frac{1}{p}}\Bigg) \Big(\sum_i^n(a_i+b_i)^p\Big)^{1-\frac{1}{p}} \\
+\therefore \Big(\sum_i^n(a_i+b_i)^{p}\Big)^{\frac{1}{p}} &\le \Big(\sum_i^na_i^p\Big)^{\frac{1}{p}} + \Big(\sum_i^nb_i^p\Big)^{\frac{1}{p}}
+\end{align*}
+
+\section{一些题目}
+\begin{framed}
+若 $\cos\beta + \cos \alpha - \cos(\alpha + \beta) = \frac{3}{2}$，$\alpha, \beta \in \Big(0, \frac{\pi}{2}\Big)$，求$\alpha, \beta$ 的值。
+
+\textbf{解}：依Jensen不等式，将成立：
+\begin{align*}
+\cos\beta + \cos \alpha - \cos(\alpha + \beta) &= \cos\beta + \cos \alpha + \cos(\pi - \alpha - \beta) \\
+	&\le 3 \cos\Big(\frac{\beta + \alpha + \pi - \alpha - \beta}{3}\Big)\\
+	&= \frac{3}{2}
+\end{align*}
+
+并且可知，当前方程中的 $\alpha, \beta $应满足上述不等式的取等条件，即$\alpha = \beta = \pi - \alpha - \beta$，所以 $\alpha = \beta = \frac{\pi}{3}$
+
+\begin{framed}
+\small{
+附：对于凹函数，根据 Jensen 不等式，当 $n = 3$ 时，有：
+$$
+f\Big(\frac{1}{3}x_1 + \frac{1}{3}x_2 + \frac{1}{3}x_3\Big) \ge \frac{1}{3}f(x_1) + \frac{1}{3}f(x_2) + \frac{1}{3}f(x_3)
+$$
+$$
+\therefore f(x_1) + f(x_2) + f(x_3) \le 3f\Big(\frac{1}{3}x_1 + \frac{1}{3}x_2 + \frac{1}{3}x_3\Big)
+$$
+}
+\end{framed}
+\end{framed}
+
+\begin{framed}
+已知$x,y,z \in (0, +\infty)$，且 $x + y + z = 1$，求 $\frac{1}{x} + \frac{9}{y} + \frac{25}{z}$ 的最小值。
+
+\textbf{解}：根据柯西不等式，有：
+\begin{align*}
+\Big(\frac{1}{x} + \frac{9}{y} + \frac{25}{z}\Big)\Big(x + y + z\Big) &\ge \Big(\sqrt{\frac{1}{x}}\sqrt{x} + \sqrt{\frac{9}{y}}\sqrt{y} + \sqrt{\frac{25}{z}}\sqrt{z}\Big) ^2\\
+    &= (1 + 3 + 5)^2 = 81 \\
+\therefore \frac{1}{x} + \frac{9}{y} + \frac{25}{z} &\ge 81 \\
+\end{align*}
+
+取等号的条件： $\sqrt{\frac{1}{x}} = \sqrt{\frac{9}{y}} = \sqrt{\frac{25}{z}}$，即： $x = 1/9, y = 3/9, z = 5/9$
+\end{framed}
+
+\begin{framed}
+已知
+$$
+t = \frac{x + y + z}{\sqrt{x^2 + 2y^2 + 4z^2}}
+$$ 
+
+求 t 的最大值。
+
+\textbf{解}：利用柯西不等式，假设：$t \le m$，即：
+\begin{align*}
+(x + y + z)^2 &\le (x^2 + 2y^2 + 4z^2)\cdot m^2 \\
+\text{令：} m^2 &= a_1^2 + a_2^2 + a_3^2 \\
+\therefore (x^2 + 2y^2 + 4z^2)(a_1^2 + a_2^2 + a_3^2) &\ge (xa_1 + \sqrt{2}ya_2 + 2za_3)^2 \triangleq (x + y + z)^2\\
+\therefore a_1 = 1, a_2 &= \frac{\sqrt{2}}{2}, a_3 = \frac{1}{2} \\
+\text{即：}\frac{(x + y + z)^2}{x^2 + 2y^2 + 4z^2} &\le ((1)^2 + (\frac{\sqrt{2}}{2})^2 + (\frac{1}{2})^2) = \frac{7}{4} \\
+\therefore t &\le \frac{\sqrt{7}}{2} \\
+\end{align*}
+\end{framed}
+
+
+\begin{framed}
+已知 $ \frac{3}{2} \le x \le 5$，求证：
+$$
+\sqrt{4x+4} + \sqrt{2x-3} + \sqrt{15-3x} < \sqrt{78}
+$$ 
+
+\textbf{证明}：利用柯西不等式，令：
+\begin{align*}
+x_1y_1 &= \sqrt{4x + 4} = \sqrt{x+1} \cdot 2 \\
+x_2y_2 &= \sqrt{2x-3} = \sqrt{2x-3} \cdot 1 \\
+x_3y_3 &= \sqrt{15-3x} = \sqrt{15-3x} \cdot 1 \\
+%
+\therefore (\sum{x_iy_i})^2 &\le (x+1+2x-3+15-3x)(2^2+1^2+1^2) = 78 \\
+\end{align*}
+
+因为当$\frac{x+1}{4} = 2x-3 = 15-3x$ 时等号成立，此时 $x$ 无解，所以等号不成立。
+\end{framed}
+
+\begin{framed}
+设 $x, y \ge 0$，$n$ 为正整数，证明：
+$$
+\frac{x^n + y^n}{2} \ge \Big(\frac{x+y}{2}\Big)^n
+$$
+
+\textbf{证明}：因为当 $x \ge 0$ 且 $n$ 为正整数时， $f(x) = x^n$ 是凸函数，所以根据 Jensen 不等式，有：
+$$
+\frac{x^n + y^n}{2} = \frac{1}{2}f(x) + \frac{1}{2}f(y) \ge f\Big(\frac{x+y}{2}\Big) = \Big(\frac{x+y}{2}\Big)^2
+$$
+\end{framed}
+
+\begin{framed}
+Given 2017 positive numbers $x_1, x_2, \cdots, x_n$ such that
+$$
+\sum_{i=1}^{2017} x_i = \sum_{i=1}^{2017}{\frac{1}{x_i}} = 2018
+$$
+
+compute the maximum possible value of $x_1 + \frac{1}{x_1}$
+
+\textbf{解}：By Cauchy-Schwarz,
+\begin{align*}
+\Big(\sum_{i=2}^{2017} x_i\Big)\Big(\sum_{i=2}^{2017} \frac{1}{x_i}\Big) &\ge \Big(\sum_{i=2}^{2017}\sqrt{x_i}\sqrt{\frac{1}{x_i}}\Big)^2 = 2016^2 \\
+\therefore (2018 - x_1)(2018 - \frac{1}{x_1}) &= 2016^2 \\
+\therefore x_1 + \frac{1}{x_1} &\le \frac{2018^2-2016^2+1}{2018} = \frac{8069}{2018}
+\end{align*}
+
+\end{framed}
+
+\begin{framed}
+已知 $a,b > 0$，且满足 $2a+b=1$，求 $\frac{3}{a}+\frac{4}{b}$的最小值
+
+\textbf{解}：根据变形后的柯西不等式，有：
+\begin{align*}
+\frac{3}{a}+\frac{4}{b} &= \frac{6}{2a}+\frac{4}{b}\\
+&\ge \frac{(\sqrt{6} + \sqrt{4})^2}{2a + b} = 10 + 4\sqrt{6}
+\end{align*}
+\end{framed}
+
+\begin{framed}
+已知 $x_i > 0, i = 1, 2, \cdots, n$，且满足 $\sum_i^nx_i = 1$，求 $\frac{x_1^2}{x_1 + x_2} + \frac{x_2^2}{x_2 + x_3} + \cdots + \frac{x_n^2}{x_n + x_1}$的最小值
+
+\textbf{解}：根据变形后的柯西不等式，有：
+\begin{align*}
+\frac{x_1^2}{x_1 + x_2} + \frac{x_2^2}{x_2 + x_3} + \cdots + \frac{x_n^2}{x_n + x_1} \ge \frac{x_1 + \cdots + x_n)^2}{2(x_1+\cdots+x_n)} = \frac{1}{2}
+\end{align*}
+\end{framed}
+
+\begin{framed}  
+%\verb|\documentstyle[ifthen,12pt,titlepage]{article}|
+一道关于概率论的不等式问题：已知 $X_1, X_2, X_3>0$是某个概率空间上的随机变量，证明：
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]E[\frac{X_3}{X_1}] \ge 1
+$$
+
+\textbf{证明}：先看有两个变量的情况：
+
+令$g(x) = \frac{1}{x}, \quad x > 0$，则 $g(x)$是右半空间上的凸函数。所以根据 Jensen 不等式，有：
+$$
+E[g(x)] \ge g(E[x]) = \frac{1}{E[x]}
+$$
+
+令 $x = \frac{X_1}{X_2}$，则有：
+$$
+E[g(\frac{X_1}{X_2})]  = E[\frac{X_2}{X_1}] \ge g(E[\frac{X_1}{X_2}]) = \frac{1}{E[\frac{X_1}{X_2}]}
+$$
+
+也就是说：
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_1}] \ge 1
+$$
+
+更进一步，有（??如何证明??）：
+$$
+E[\frac{X_1}{X_3}] = E[\frac{X_1}{X_2}\frac{X_2}{X_3}] \le E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]
+$$
+
+那么对于三个元的情况类似得可以按以下方式处理，
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]E[\frac{X_3}{X_1}] \ge E[\frac{X_1}{X_3}]E[\frac{X_3}{X_1}] = \ge 1
+$$
+
+类似地，可以推广到 $n$ 元的情况：
+$$
+E[\frac{X_1}{X_2}]E[\frac{X_2}{X_3}]\cdots E[\frac{X_n}{X_1}] \ge 1
+$$
+
+另，根据多元 Holder 不等式，立刻可得：
+$$
+\Big[ E[\frac{X_1}{X_2}] E[\frac{X_2}{X_3}] E[\frac{X_3}{X_1}] \Big]^3 \ge E^3[1^{\frac{1}{3}}]
+$$
+\end{framed}
+
+%\printbibliography
+\bibliography{../ref}
+\bibliographystyle{IEEEtran}
+\end{document}
