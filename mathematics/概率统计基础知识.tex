@@ -12,6 +12,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{latexsym}
+\usepackage{pythonhighlight}
 \usepackage{cite}
 %\addbibresource{ref.bib}
 %\bibliography{ref.bib}
@@ -929,21 +930,116 @@ $$
 
 “三阶矩”、“四阶矩”、“高阶矩”，各有用途，但是共同的特点就是称量之后才能使用。
 
-\section{正态分布可以生成均匀分布吗}
+\section{关于概率的题目}
+\subsection{随机数发生器}
+\url{https://zhuanlan.zhihu.com/p/81368406}
+
+\textbf{已知一随机发生器，产生 0 的概率是 p，产生 1 的概率是 1-p，现在要你构造一个发生器，使得它产生 0 和 1 的概率均为 1/2}。
+
+随机产生两个数，那么无论p为多少，01和10的概率是相等的，因此把01当作0，10当作1，00或11则重新产生两个数。
+
+\textbf{已知一随机发生器，产生的数字的分布不清楚，现在要你构造一个发生器，使得它产生 0 和 1 的概率均为 1/2}。
+
+随机产生两个数a,b，那么无论分布如何，a>b和b>a的概率是相等的，因此如果a>b则为0，b>a则为1，a=b则重来。
+
+\textbf{已知有个 rand7() 的函数，返回 1 到 7 随机自然数，怎样利用这个 rand7() 构造 rand10()，随机 1 - 10}。
+
+rand7() 返回 1 - 7 的自然数，构造新的函数 (rand7() - 1) * 7 + rand7()，这个函数会随机产生 1 到 49 的自然数。原因是 1 到 49 中的每个数只有唯一的第一个 rand7() 的值和第二个 rand7() 的值表示，于是它们出现的概率是相等。
+
+然后丢弃41到49的数字，把1到40的数字分成10组，每组映射到1~10种的一个数，就得到rand10()了。
+
+即 (rand7() - 1) * 7 + rand7()得到x，x大于40就重新开始，如果小于等于40，则随机数为(x-1) // 4 + 1。这里//代表得到商的值。
+
+\subsection{正态分布可以生成均匀分布吗}
 来源：\url{https://www.zhihu.com/question/25111423/answer/33796836?utm_source=wechat_session&utm_medium=social&utm_oi=38064281878528}
 
 这是阿里的一道笔试题. 假如有一个服从正态分布的真随机数生成器, 是否可以通过程序的处理, 得到一个服从均匀分布的随机数生成器? 如果可以, 具体应该怎样做呢? 
 
-\subsection{均匀分布可以生成正态分布吗}
+\subsubsection{均匀分布可以生成正态分布吗}
 通常来说我们一般的程序都能更直接地生成均匀分布的随机变量。一种业界广泛使用的做法叫Box-Muller-Wiener算法。首先生成一对$[0,1]$上的均匀分布的，独立的随机变量$A$和$B$。然后用$A *2\pi $作为角度，$sqrt(-2*log(B))$ 作为半径，得到极坐标下的一个点。这个点的两个坐标 $(X,Y)$ 就是一个二维的标准正态分布。
 
-\subsection{正态分布可以生成均匀分布吗}
+\subsubsection{正态分布可以生成均匀分布吗}
 那么回到本题，如何利用正态分布的两个变量 $X,Y$ 生成均匀分布的随机变量？现有的答案们提到了其中一种做法， 即计算点 $(X,Y)$ 在二维平面内与$x$轴（或任意其他固定方向）的夹角——这样我们就得到了前述过程中的随机变量 $A * 2\pi$。其实另一种方式是计算$exp( -0.5 * (X^2 + Y^2))$ ——这样我们就得到了前述过程中的随机变量$B$。某种意义上来说，后者更为稳定，因为不涉及除法运算（例如$arctan(Y/X)$），可以以很大概率避免 overflow 等等问题。
 
 值得注意的是，点$(X,Y)$到原点距离的平方$X^2 + Y^2$是服从卡方分布的随机变量。当变量数为2的时候，这是一个参数为2的指数分布。对于指数分布的随机变量来说，其累积密度函数有解析的表达式，可以直接通过均匀分布来生成。同样的办法对一维正态分布则只能近似数值处理。
 
 另外一种正确的做法：生成两个独立的正太分布变量$X,Y$, 然后$arctan(X/Y)/(2\pi)+0.5$，可以生成0-1均匀分布的变量,已经通过程序验证。解释下正确性，熟知生成二维标准正态分布的方法就是取两个独立的标准正态分布变量 $X$ 和 $Y$ 放在一起 $(X, Y)$ 就行了，然后\textbf{二维标准正态分布在直角坐标系里有各向同性}，也就是 $(X, Y)$这个点所指的方向和 $x$ 轴(或者任何一个给定方向)的夹角是均匀分布的。
 
+\subsection{Penny's Game}
+\url{https://zhuanlan.zhihu.com/p/83717478}
+
+甲乙二人玩掷硬币的游戏。\textbf{连续抛掷同一枚硬币}，如果\textbf{最近三次硬币}抛掷结果是“正反反”，则甲胜；如果是“反反正”，则乙胜。问：谁胜的概率更高？
+
+单纯看扔3次硬币的结果，“正反反”和“反反正”出现的概率都是 1/8（1/2的3次方）。那么，是不是就代表两人胜的概率是一样的呢？
+
+单次掷硬币，正反面的概率各是50\%，这个是没有疑问的。那我们只要根据这个概率持续地产生硬币结果序列，再判断最近三次硬币结果是否触发胜负条件即可。然后，重复这个过程足够多的次数，统计双方胜负的总数，就能得到两人胜负概率的参考值。
+\begin{python}
+import random
+
+p1 = 0
+p2 = 0
+for i in range(100000):
+    last3 = []
+    while True:
+        x = random.choice([0, 1])
+        last3.append(x)
+        if len(last3) > 3:
+            last3.pop(0)
+        if last3 == [1, 0, 0]:
+            p1 += 1
+            break
+        elif last3 == [0, 0, 1]:
+            p2 += 1
+            break
+
+print('甲（正反反）', p1)
+print('乙（反反正）', p2)
+\end{python}
+
+运行后的结果：
+\begin{python}
+甲（正反反） 74820
+乙（反反正） 25181
+\end{python}
+
+每次结果不会一样，但大致比例不变，基本上\textbf{甲赢的概率是乙的3倍}。
+
+解释：因为甲的后两位和乙的前两位是一样的，所以，\textbf{对于进行中的序列，一旦出现“正”，乙就没有机会了}。比如：
+\begin{python}
+反正反正……
+\end{python}
+这样一个序列，如果出现乙胜的情况，必须先连出至少两个“反”，但这样就必定会形成“正反反”而导致甲胜。
+
+所以甲胜的可能性比较复杂，但乙胜的情况只可能是从一开始就一直是“反”，包括：
+\begin{python}
+反反正
+反反反正
+反反反反正
+反反反反反正
+……
+\end{python}
+
+这个概率还是相对好计算的：
+$$
+P(2) = (1/2)^3 + (1/2)^4 + (1/2)^5 + \cdots = 1/4
+$$
+
+所以乙胜的概率就是 25\%；对应的，甲胜的概率就是 75\%。
+
+\subsection{Penny's Game 扩展}
+\url{https://en.wikipedia.org/wiki/Penney%27s_game}
+
+如果甲乙两人任意选择序列，甲先选，乙后选，则乙总有提升胜率的策略，如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{fig/Probability_Penny_Game.png}
+\end{figure}
+
+An easy way to remember the sequence is for the second player to start with the opposite of the middle choice of the first player, then follow it with the first player's first two choices.
+
+So for the first player's choice of 1-2-3
+the second player must choose (not-2)-1-2
+where (not-2) is the opposite of the second choice of the first player.[1]
 
 %\printbibliography
 \bibliography{../ref}
