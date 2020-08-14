@@ -579,7 +579,7 @@ $$
 
 \section{共轭方向法（The Method of Conjugate Directions）}
 \subsection{共轭性（Conjugacy）}
-从图8中可以看出， SD 算法在早期的梯度方向是相同的；一个直观的加速收敛的思路是，选择一系列互相正交的方向：$d_0, d_1, \cdots, d_{n-1}$，每一步都走到恰好合适的位置（和 $x$ 对齐），这样经过 $n$ 步后，就收敛到最佳位置了；如图21所示，使用坐标轴的方向作为搜索的方向，第一步沿着正确的 $x_1$轴方向，第二步即收敛了；注意，$e_1$和 $d_0$ 是正交的；也就是说，详细的迭代过程为：
+从图8中可以看出， SD 算法在早期的梯度方向是重复的；一个直观的加速收敛的思路是，选择一系列互相正交的方向：$d_0, d_1, \cdots, d_{n-1}$，每一步都走到恰好合适的位置（和 $x$ 对齐），这样经过 $n$ 步后，就收敛到最佳位置了（也就是说，如果优化空间有 $n$ 维，那么最多只需要迭代 $n$ 轮就能求解出来）；如图21所示，使用坐标轴的方向作为搜索的方向，第一步沿着正确的 $x_1$轴方向，第二步即收敛了；注意，$e_1$和 $d_0$ 是正交的；也就是说，详细的迭代过程为：
 $$
 x_{i+1} = x_i + \alpha_i d_i
 $$
@@ -610,6 +610,14 @@ $$
     \centering
     \includegraphics[width=1\textwidth]{fig/CG_Convergence_CD_2.png}
 \end{figure}
+
+\begin{framed}
+举个共轭的例子（\url{https://zhuanlan.zhihu.com/p/23804838}）：
+
+对于向量 $a = [1,1], b = [1, 0.5]^T$，因为 $a\cdot b = 1.5$，所以它们不是正交的；但是如果给定矩阵 $A = [[1,0],[0,-2]]$，那么 $b$ 经过$A$ 旋转后，有：$b' = Ab = [1,-1]^T$，此时 $a \cdot b' = aAb = 0$，也就是 $a$ 和 $b'$ 是正交的了，这就是矩阵 $A$ 的作用。
+
+\textbf{【理解】回归到共轭$d_i^TAd_j = 0$的定义：对于原本不正交的向量 $d_i^T, d_j$，经过矩阵 $A$ 对 $d_j$ 的旋转后得到新的向量 $Ad_j$，使得 $d_i^T$ 与旋转后的向量 $Ad_j$正交}。
+\end{framed}
 
 接下来，我们令 $e_{i+1}$ 与 $d_i$ 满足 A-orthogonal，如图23(a) 所示。这个正交的条件等价于在 SD 算法中，沿着 $d_i$ 方向查找最小值点。证明如下：
 \begin{align*}
@@ -668,6 +676,17 @@ e_i &= e_0 + \sum_{j=0}^{i-1}\alpha_jd_j \\
     \includegraphics[width=1\textwidth]{fig/CG_Gram_Schmidt_Example.png}
 \end{figure}
 
+即(\url{https://zhuanlan.zhihu.com/p/23810213})：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 对于第一个向量，我们保持它不变；
+    \item 对于第二个向量，我们去掉其中和第一个向量共线的部分；
+    \item 对于第三个向量，我们去掉其中和第一、二个向量共线的部分；
+    \item 对于第N个向量，我们去掉其中和第一、二、……N-1个向量共线的部分；
+\end{itemize}
+
 也就是说，令 $d_0 = u_0$，对于任意 $i > 0$，令：
 $$
 d_i = u_i + \sum_{k=0}^{i-1}\beta_{ik}d_k
@@ -705,7 +724,7 @@ Conjugate Direction 方法有一个很好的性质：在允许的搜索空间内
 
 其中每一项都和未进行的搜索的方向有关；任意从空间$e_0 + \mathcal{D}_i$中得到的误差 $e$ 都会有相同的扩展项，从而证明了 $e_i$ 一定最小化的 energy norm？？？。
 
-图27(a)(c) 演示了 $\mathbb{R}^2$ 和 $\mathbb{R}^3$ 空间中的 Conjugate Directions 方法，图中看起来垂直的线是正交的；图27(b)(d) 对应在变形后的空间中（椭圆形变成圆形）图中看起来垂直的线是A-orthogonal 的。
+图27(a)(c) 演示了 $\mathbb{R}^2$ 和 $\mathbb{R}^3$ 空间中的 Conjugate Directions 方法，图中看起来垂直的线是正交的；图27(b)(d) 对应在变形(沿特征向量方向)后的空间中（椭圆形变成圆形）图中看起来垂直的线是A-orthogonal 的。
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{fig/CG_Convergence_CD_6.png}
