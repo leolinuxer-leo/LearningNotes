@@ -12,6 +12,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{latexsym}
+\usepackage{listings}
 \usepackage{cite}
 %\addbibresource{ref.bib}
 %\bibliography{ref.bib}
@@ -982,6 +983,136 @@ AUUC是一个很重要且奇怪的指标。说重要，是因为它几乎是Upli
 我们还尝试过使用AUC的近似计算方法（Pairwise）去近似计算AUUC，得到的结果虽然确保了在0-1区间内的离散性但仍然无法保证在所有情况下，他得出的模型优劣顺序与AUUC本身保持一致。
 
 最后，我们也只能用“补贴问题本身就是与实验批次和样本强相关的问题”这个理由盖过对这个问题的纠结。但能否在增量预估模型中建立一套类似auc的标准，我们仍然认为这个问题是值得投入一点心力去探索的方向。 
+
+\section{微软的例子\cite{Customer_Segmentation_Example_From_Microsoft}}
+背景介绍略
+
+\subsection{数据样本}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Casual_Inference_Microsoft_Example_1.png}
+\end{figure}
+\begin{framed}
+理解：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item W：用户特征和用户的历史行为特征
+    \item X：用户收入
+    \item T：实验变量（曝光价格：折扣后的价格）
+    \item Y:  用户的行为结果（购买的数量）
+\end{itemize}
+\end{framed}
+
+其中，实验变量 T 和 Y 基于如下关系生成：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Casual_Inference_Microsoft_Example_2.png}
+\end{figure}
+
+\subsection{构造因果图并发现因果效应（Create Causal Model and Identify Causal Effect）}
+基于DoWhy库，可以输入并构造因果图如下：
+\begin{lstlisting}
+common_causes=["account_age","age","avg_hours","days_visited","friends_count","has_membership","is_US","songs_purchased","income"]
+
+
+model = CausalModel(
+    data=train_data, 
+    treatment='log_price', 
+    outcome='log_demand', 
+    common_causes=common_causes,
+    effect_modifiers='income'
+)
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Casual_Inference_Microsoft_Example_3.png}
+\end{figure}
+
+\subsection{计算因果效应（Get Causal Effects ）}
+基于上述因果关系，定义如下模型：
+\begin{align*}
+\log(T) &= g(X,W) + \mu \\
+\log(Y) &= \theta(X) \cdot \log(T) + f(X,W) + \epsilon \\
+\end{align*}
+
+其中 $\epsilon, \mu$ 是误差项。
+
+这里的模型和上面数据集的生成方式并不一样。但是如果近似的好，那么就能够指导我们制定折扣策略。
+
+\subsection{训练模型}
+\subsubsection{参数异质性(Parametric Heterogeneity)}
+First of all, we can try to learn a linear projection of the treatment effect assuming a polynomial form of $\theta(X)$. 
+
+可以得到如下收入和购买量的弹性曲线：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Casual_Inference_Microsoft_Example_4.png}
+\end{figure}
+
+From the plot above, it's clear to see that the true treatment effect is a nonlinear function of income, with elasticity around -1.75 when income is smaller than 1 and a small negative value when income is larger than 1. The model fits a quadratic treatment effect, which is not a great fit. But it still captures the overall trend: the elasticity is negative and people are less sensitive to the price change if they have higher income.
+
+\subsubsection{非参数异质性(Nonparametric Heterogeneity)}
+Since we already know the true treatment effect function is nonlinear, let us fit another model using ForestDMLCateEstimator, which assumes a fully nonparametric estimation of the treatment effect.
+
+可以得到如下收入和购买量的弹性曲线：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Casual_Inference_Microsoft_Example_5.png}
+\end{figure}
+
+We notice that this model fits much better than the LinearDMLCateEstimator, the 90\% confidence interval correctly covers the true treatment effect estimate and captures the variation when income is around 1. Overall, the model shows that people with low income are much more sensitive to the price changes than higher income people.
+
+\subsection{测试鲁棒性（Test Estimate Robustness with DoWhy ）}
+\subsubsection{Add Random Common Cause}
+How robust are our estimates to adding another confounder? We use DoWhy to test this!
+
+\subsubsection{Add Unobserved Common Cause}
+How robust are our estimates to unobserved confounders? Since we assume the model is under unconfoundedness, adding an unobserved confounder might bias the estimates. We use DoWhy to test this!
+
+
+\subsubsection{Replace Treatment with a Random (Placebo) Variable}
+What happens our estimates if we replace the treatment variable with noise? Ideally, the average effect would be wildly different than our original estimate. We use DoWhy to investigate!
+
+\subsubsection{Remove a Random Subset of the Data}
+Do we recover similar estimates on subsets of the data? This speaks to the ability of our chosen estimator to generalize well. We use DoWhy to investigate this!
+
+\subsection{理解因果效应(Understand Treatment Effects with EconML)}
+EconML includes interpretability tools to better understand treatment effects. Treatment effects can be complex, but oftentimes we are interested in simple rules that can differentiate between users who respond positively, users who remain neutral and users who respond negatively to the proposed changes.
+
+基于 EconML 得到因果效应的直观解释图如下：
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Casual_Inference_Microsoft_Example_6.png}
+\end{figure}
+
+\subsection{制定折扣策略(Make Policy Decision with EconML)}
+目标是最大化收益（Revenue），而非购买量，先定义收益如下：
+\begin{align*}
+Rev &= Y \cdot T \\
+	&= \exp^{\log(Y)} \cdot T \\
+	&= \exp^{\theta(X) \cdot \log(T) + f(X,W) + \epsilon} \cdot T \\
+	&= exp^{(f(X,W) + \epsilon)} \cdot T^{(\theta(X) + 1)}
+\end{align*}
+
+With the decrease of price, revenue will increase only if $\theta(X)+1 < 0$. Thus, we set $sample\_treatment_cast=-1$ here to learn \textbf{what kinds of customers we should give a small discount to maximum the revenue.}
+
+The EconML library includes policy interpretability tools such as SingleTreePolicyInterpreter that take in a treatment cost and the treatment effects to learn simple rules about which customers to target profitably. In the figure below we can see the model recommends to give discount for people with income less than $0.985$ and give original price for the others.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.6\textwidth]{fig/Casual_Inference_Microsoft_Example_7.png}
+\end{figure}
+
+Now, let us compare our policy with other baseline policies! Our model says which customers to give a small discount to, and for this experiment, we will set a discount level of 10\% for those users. Because the model is misspecified we would not expect good results with large discounts. Here, because we know the ground truth, we can evaluate the value of this policy.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{fig/Casual_Inference_Microsoft_Example_8.png}
+\end{figure}
+
+\textbf{We beat the baseline policies}! Our policy gets the highest revenue except for the one raising the price for the No-Discount group. That means our currently baseline price is low, but the way we segment the user does help increase the revenue!
 
 %\printbibliography
 \bibliography{../ref}

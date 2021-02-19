@@ -1,0 +1,122 @@
+\documentclass[12pt]{article}
+%\usepackage[utf8]{inputenc}
+%\documentclass[UTF8]{ctexart}
+%\usepackage[UTF8, heading = false, scheme = plain]{ctex}
+\usepackage{geometry}
+%geometry{a4paper,scale=0.9}
+\geometry{a4paper,left=1cm,right=1cm,top=1cm,bottom=2cm}
+\usepackage{amsfonts}
+\usepackage{color}
+\usepackage{url}
+%\usepackage{biblatex}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{latexsym}
+\usepackage{cite}
+%\addbibresource{ref.bib}
+%\bibliography{ref.bib}
+\usepackage{caption}
+\usepackage{graphicx, subfig}
+\usepackage{float}
+%\usepackage[fontset=ubuntu]{ctex}
+%\usepackage{fontspec}
+\usepackage{xeCJK}
+%\usepackage[colorlinks,
+%anchorcolor=black,
+%citecolor=black]{hyperref}
+%\setmainfont{SimSun}
+\usepackage[section]{placeins}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{indentfirst}
+\usepackage{setspace}%使用间距宏包
+\linespread{1.5}
+
+\title{系统设计\cite{System_Design_Primer}}
+\author{leolinuxer}
+%\date{June 2020}
+
+\begin{document}
+%\setlength{\parindent}{0pt}
+\maketitle
+\tableofcontents
+
+\section{系统设计的思路}
+系统设计大致分为如下几步：
+
+\subsection{描述使用场景，约束和假设}
+把所有需要的东西聚集在一起，审视问题。不停的提问，以至于我们可以明确使用场景和约束。讨论假设。
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 谁会使用它？
+    \item 他们会怎样使用它？
+    \item 有多少用户？
+    \item 系统的作用是什么？
+    \item 系统的输入输出分别是什么？
+    \item 我们希望处理多少数据？
+    \item 我们希望每秒钟处理多少请求？
+    \item 我们希望的读写比率？
+\end{itemize}
+
+\subsection{创造一个高层级的设计}
+使用所有重要的组件来描绘出一个高层级的设计。
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 画出主要的组件和连接
+    \item 证明你的想法
+\end{itemize}
+
+\subsection{设计核心组件}
+对每一个核心组件进行详细深入的分析。举例来说，如果需要设计一个 url 缩写服务，开始讨论：
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 生成并储存一个完整 url 的 hash
+	\begin{itemize}
+	\setlength{\itemsep}{0pt}
+	\setlength{\parsep}{0pt}
+	\setlength{\parskip}{0pt}
+    		\item MD5 和 Base62
+    		\item Hash 碰撞
+    		\item SQL 还是 NoSQL
+		\item 数据库模型
+	\end{itemize}
+    \item 将一个 hashed url 翻译成完整的 url
+	\begin{itemize}
+	\setlength{\itemsep}{0pt}
+	\setlength{\parsep}{0pt}
+	\setlength{\parskip}{0pt}
+    		\item 数据库查找
+	\end{itemize}
+     \item API 和面向对象设计
+\end{itemize}
+
+\subsection{扩展设计}
+确认和处理瓶颈以及一些限制。举例来说就是你需要下面的这些来完成扩展性的议题吗？
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\parskip}{0pt}
+    \item 负载均衡
+    \item 水平扩展
+    \item 缓存
+    \item 数据库分片
+\end{itemize}
+
+
+
+
+
+
+
+
+%\printbibliography
+\bibliography{../ref}
+\bibliographystyle{IEEEtran}
+\end{document}
